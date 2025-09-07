@@ -9,7 +9,6 @@ import {
   SidebarInset,
   SidebarHeader,
   SidebarTrigger,
-  SidebarFooter,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -20,17 +19,19 @@ import {
   Flame,
 } from "lucide-react";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import dynamic from "next/dynamic";
 
 const menuItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", tooltip: "Dashboard" },
-    { href: "/streak-tracker", icon: Flame, label: "Streak Tracker", tooltip: "Streak Tracker" },
     { href: "/settings", icon: Settings, label: "Settings", tooltip: "Settings" },
     { href: "/pricing", icon: CreditCard, label: "Pricing", tooltip: "Pricing" },
     { href: "/privacy", icon: Shield, label: "Privacy Policy", tooltip: "Privacy Policy" },
     { href: "/terms", icon: FileText, label: "Terms of Service", tooltip: "Terms of Service" },
 ];
+
+const ClientThemeToggle = dynamic(() => import('@/components/theme-toggle').then(m => m.ThemeToggle), { ssr: false });
+
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -56,9 +57,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           ))}
         </SidebarMenu>
         
-        <SidebarFooter>
-           
-        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center gap-4 border-b bg-background/50 backdrop-blur-sm px-6">
@@ -66,7 +64,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex-1">
                 {/* Add search or other header items here */}
             </div>
-            <ThemeToggle />
+            <ClientThemeToggle />
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
       </SidebarInset>
