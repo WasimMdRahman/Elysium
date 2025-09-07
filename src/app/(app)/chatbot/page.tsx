@@ -42,7 +42,7 @@ export default function ChatbotPage() {
   
   const createNewChat = () => {
       const newSession: ChatSession = {
-          id: `chat-${new Date().getTime()}-${Math.random()}`,
+          id: `chat-${new Date().getTime()}-${Math.random().toString(36).substring(7)}`,
           title: "New Chat",
           timestamp: new Date(),
           messages: [
@@ -85,6 +85,8 @@ export default function ChatbotPage() {
         // Prevent saving the initial empty array or the initial "New Chat" before user interacts
         if (sessions.length > 0 && (sessions[0].messages.length > 1 || sessions.length > 1)) {
             localStorage.setItem('chatSessions', JSON.stringify(sessions));
+        } else if (sessions.length === 0) {
+             localStorage.removeItem('chatSessions');
         }
     } catch (error) {
         console.error("Failed to save chat sessions to localStorage", error);
@@ -147,21 +149,20 @@ export default function ChatbotPage() {
     }
   };
   
-    const handleDeleteSession = (sessionId: string) => {
-        setSessions(prev => {
-            const newSessions = prev.filter(s => s.id !== sessionId);
-            if (activeSessionId === sessionId) {
-                const sorted = [...newSessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
-                setActiveSessionId(sorted.length > 0 ? sorted[0].id : null);
-            }
-            if (newSessions.length === 0) {
-                localStorage.removeItem('chatSessions');
-                setTimeout(createNewChat, 0);
-            } else {
-                 localStorage.setItem('chatSessions', JSON.stringify(newSessions));
-            }
-            return newSessions;
-        });
+    const handleDeleteSession = (sessionIdToDelete: string) => {
+        const remainingSessions = sessions.filter(s => s.id !== sessionIdToDelete);
+        
+        if (activeSessionId === sessionIdToDelete) {
+            const sortedRemaining = [...remainingSessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+            const nextActiveId = sortedRemaining.length > 0 ? sortedRemaining[0].id : null;
+            setActiveSessionId(nextActiveId);
+        }
+
+        setSessions(remainingSessions);
+        
+        if (remainingSessions.length === 0) {
+            setTimeout(createNewChat, 0); // Use timeout to ensure state update completes
+        }
     };
     
     const startRenameSession = (session: ChatSession) => {
