@@ -297,7 +297,7 @@ export default function ChatbotPage() {
                     </Button>
                 </form>
                 <p className="text-xs text-muted-foreground text-center w-full">
-                    Zenith Mind is just an AI assistant and the Chatbot is there to provide 24/7 support. However, this is not a replacement for professional therapy. In case you are experiencing serious mental health issues contact a professional.
+                    Zenith Mind is not a replacement for professional therapy. In case you experience serious mental issues. Consider consulting a professional.
                 </p>
             </CardFooter>
         </Card>
