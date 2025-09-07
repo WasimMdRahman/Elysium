@@ -1,3 +1,4 @@
+
 import { Logo } from "@/components/logo";
 import {
   Sidebar,
@@ -16,6 +17,7 @@ import {
   Shield,
   FileText,
   CreditCard,
+  Flame,
 } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,9 +25,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 const menuItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", tooltip: "Dashboard" },
-];
-
-const secondaryMenuItems = [
+    { href: "/streak-tracker", icon: Flame, label: "Streak Tracker", tooltip: "Streak Tracker" },
     { href: "/settings", icon: Settings, label: "Settings", tooltip: "Settings" },
     { href: "/pricing", icon: CreditCard, label: "Pricing", tooltip: "Pricing" },
     { href: "/privacy", icon: Shield, label: "Privacy Policy", tooltip: "Privacy Policy" },
@@ -43,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </SidebarHeader>
 
-        <SidebarMenu>
+        <SidebarMenu className="flex-1">
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton asChild variant="default" size="default" tooltip={item.tooltip}>
@@ -56,21 +56,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           ))}
         </SidebarMenu>
         
-        <div className="mt-auto">
-          <SidebarMenu>
-            {secondaryMenuItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton asChild variant="default" size="default" tooltip={item.tooltip}>
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </div>
-
         <SidebarFooter>
            <div className="flex items-center gap-3">
              <Avatar className="size-8">
