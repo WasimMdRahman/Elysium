@@ -35,8 +35,11 @@ const prompt = ai.definePrompt({
   prompt: `You are an AI that generates thoughts for a CBT based game called Thought Quest.
 
   The user will provide you with a topic and you will generate a new thought related to that topic.
-  The thought can be helpful (e.g. 'I can learn from my mistakes') or unhelpful (e.g. 'I'm a complete failure').
-  You must also determine if the thought you generated is helpful or not and set the isHelpful boolean field.
+  You should generate a mix of helpful and unhelpful thoughts.
+  A helpful thought is positive and empowering (e.g., 'I am capable and strong', 'Today is a new opportunity').
+  An unhelpful thought is often negative or a cognitive distortion (e.g., 'I'll never succeed', 'Everyone is better than me').
+  
+  You must also determine if the thought you generated is helpful (true) or unhelpful (false) and set the isHelpful boolean field accordingly.
 
   Topic: {{{topic}}}
   `,
