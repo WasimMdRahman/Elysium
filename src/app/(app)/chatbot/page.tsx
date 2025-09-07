@@ -39,6 +39,19 @@ export default function ChatbotPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   const activeMessages = sessions.find(s => s.id === activeSessionId)?.messages || [];
+  
+  const createNewChat = () => {
+      const newSession: ChatSession = {
+          id: `chat-${new Date().getTime()}-${Math.random()}`,
+          title: "New Chat",
+          timestamp: new Date(),
+          messages: [
+            { role: 'bot', text: 'Hello! I am your Zenith Mind assistant. How can I support you today?' }
+          ]
+      };
+      setSessions(prev => [newSession, ...prev]);
+      setActiveSessionId(newSession.id);
+  }
 
   // Load sessions from localStorage on initial render
   useEffect(() => {
@@ -50,19 +63,28 @@ export default function ChatbotPage() {
                 timestamp: new Date(s.timestamp)
             }));
             setSessions(parsedSessions);
+            
+            if (parsedSessions.length > 0) {
+              const sortedSessions = [...parsedSessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+              setActiveSessionId(sortedSessions[0].id);
+            } else {
+              createNewChat();
+            }
+        } else {
+            createNewChat();
         }
     } catch (error) {
         console.error("Failed to load chat sessions from localStorage", error);
+        createNewChat(); // Create a new chat if loading fails
     }
   }, []);
 
   // Save sessions to localStorage whenever they change
   useEffect(() => {
     try {
-        if (sessions.length > 0) {
+        // Prevent saving the initial empty array or the initial "New Chat" before user interacts
+        if (sessions.length > 0 && (sessions[0].messages.length > 1 || sessions.length > 1)) {
             localStorage.setItem('chatSessions', JSON.stringify(sessions));
-        } else {
-            localStorage.removeItem('chatSessions');
         }
     } catch (error) {
         console.error("Failed to save chat sessions to localStorage", error);
@@ -78,28 +100,6 @@ export default function ChatbotPage() {
       });
     }
   }, [activeMessages]);
-  
-  const createNewChat = () => {
-      const newSession: ChatSession = {
-          id: `chat-${Date.now()}`,
-          title: "New Chat",
-          timestamp: new Date(),
-          messages: [
-            { role: 'bot', text: 'Hello! I am your Zenith Mind assistant. How can I support you today?' }
-          ]
-      };
-      setSessions(prev => [newSession, ...prev]);
-      setActiveSessionId(newSession.id);
-  }
-  
-  useEffect(() => {
-      if(sessions.length === 0) {
-          createNewChat();
-      } else if (!activeSessionId && sessions.length > 0) {
-        const sortedSessions = [...sessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
-        setActiveSessionId(sortedSessions[0].id);
-      }
-  }, [sessions, activeSessionId]);
 
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -108,18 +108,25 @@ export default function ChatbotPage() {
 
     const userMessage: Message = { role: 'user', text: input };
     
-    setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, userMessage] } : s));
+    setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, userMessage], timestamp: new Date() } : s));
     setInput('');
     setIsLoading(true);
 
     try {
-      const currentMessages = sessions.find(s => s.id === activeSessionId)?.messages || [];
+      const currentSession = sessions.find(s => s.id === activeSessionId);
+      const currentMessages = currentSession?.messages || [];
       const chatHistory: ChatHistoryItem[] = currentMessages
-        .filter(m => m.role === 'bot')
-        .map((m, i) => ({
-          bot: m.text,
-          user: currentMessages.filter(um => um.role === 'user')[i]?.text || ''
-        })).filter(item => item.user);
+        .filter((_, i) => i < currentMessages.length) // process all but the last user message
+        .reduce((acc, msg, i, arr) => {
+            if (msg.role === 'user' && arr[i+1]?.role === 'bot') {
+                acc.push({ user: msg.text, bot: arr[i+1].text });
+            } else if (msg.role === 'user' && i === arr.length - 1) {
+                // handles the case where there is no bot message for the last user message yet
+            } else if (msg.role === 'bot' && arr[i-1]?.role !== 'user') {
+                 // handle initial bot message
+            }
+            return acc;
+        }, [] as ChatHistoryItem[]);
 
 
       const response = await aiChatbotMentalHealthSupport({
@@ -144,12 +151,14 @@ export default function ChatbotPage() {
         setSessions(prev => {
             const newSessions = prev.filter(s => s.id !== sessionId);
             if (activeSessionId === sessionId) {
-                const sorted = newSessions.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+                const sorted = [...newSessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
                 setActiveSessionId(sorted.length > 0 ? sorted[0].id : null);
             }
             if (newSessions.length === 0) {
                 localStorage.removeItem('chatSessions');
-                createNewChat();
+                setTimeout(createNewChat, 0);
+            } else {
+                 localStorage.setItem('chatSessions', JSON.stringify(newSessions));
             }
             return newSessions;
         });
@@ -188,7 +197,7 @@ export default function ChatbotPage() {
             <CardContent className="flex-1 p-0">
                  <ScrollArea className="h-full">
                     <div className="space-y-2 p-2">
-                    {sessions.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()).map(session => (
+                    {[...sessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()).map(session => (
                         <div key={session.id} onClick={() => renamingId !== session.id && setActiveSessionId(session.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeSessionId === session.id && !renamingId ? 'bg-muted' : 'hover:bg-muted'}`}>
                             {renamingId === session.id ? (
                                 <div className="flex w-full items-center gap-2">
