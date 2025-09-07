@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,33 @@ const moodLabels: { [key: number]: string } = {
 export default function MoodTrackerPage() {
   const [mood, setMood] = useState([8]);
   const [moodData, setMoodData] = useState<MoodEntry[]>([]);
+
+  // Load mood data from localStorage
+  useEffect(() => {
+    try {
+        const savedMoodData = localStorage.getItem('moodTrackerData');
+        if (savedMoodData) {
+            const parsedData = JSON.parse(savedMoodData).map((d: any) => ({
+                ...d,
+                date: new Date(d.date)
+            }));
+            setMoodData(parsedData);
+        }
+    } catch (error) {
+        console.error("Failed to load mood data from localStorage", error);
+    }
+  }, []);
+
+  // Auto-save mood data to localStorage whenever it changes
+  useEffect(() => {
+    try {
+        if (moodData.length > 0) {
+            localStorage.setItem('moodTrackerData', JSON.stringify(moodData));
+        }
+    } catch (error) {
+        console.error("Failed to save mood data to localStorage", error);
+    }
+  }, [moodData]);
 
   const handleLogMood = () => {
     const newEntry: MoodEntry = { date: new Date(), mood: mood[0] };

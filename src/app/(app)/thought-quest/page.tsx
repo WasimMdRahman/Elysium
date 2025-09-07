@@ -17,6 +17,29 @@ export default function ThoughtQuestPage() {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [answered, setAnswered] = useState(false);
 
+  // Load score from localStorage
+  useEffect(() => {
+    try {
+      const savedScore = localStorage.getItem('thoughtQuestScore');
+      if (savedScore) {
+        setScore(JSON.parse(savedScore));
+      }
+    } catch (error) {
+      console.error("Failed to load score from localStorage", error);
+    }
+    fetchNewThought();
+  }, []);
+
+  // Auto-save score to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('thoughtQuestScore', JSON.stringify(score));
+    } catch (error) {
+      console.error("Failed to save score to localStorage", error);
+    }
+  }, [score]);
+
+
   const fetchNewThought = async () => {
     setIsLoading(true);
     setAnswered(false);
@@ -36,10 +59,6 @@ export default function ThoughtQuestPage() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchNewThought();
-  }, []);
 
   const handleAnswer = (userChoice: boolean) => {
     if (answered) return;
@@ -104,7 +123,7 @@ export default function ThoughtQuestPage() {
         <div className="flex gap-4">
           <Button
             size="lg"
-            variant={answered && feedback === 'incorrect' ? 'destructive' : 'outline'}
+            variant={answered && isHelpful === true ? 'outline' : answered && isHelpful === false ? 'destructive' : 'outline'}
             onClick={() => handleAnswer(false)}
             disabled={answered}
           >
@@ -112,8 +131,8 @@ export default function ThoughtQuestPage() {
           </Button>
           <Button
             size="lg"
-            variant={answered && feedback === 'correct' && isHelpful === true ? 'default' : 'outline'}
-            className="bg-green-500 hover:bg-green-600 text-white data-[answered=true]:bg-green-500"
+            variant={answered && isHelpful === true ? 'default' : 'outline'}
+            className={answered && isHelpful ? "bg-green-500 hover:bg-green-600 text-white" : ""}
             onClick={() => handleAnswer(true)}
             disabled={answered}
           >

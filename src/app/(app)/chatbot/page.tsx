@@ -38,6 +38,36 @@ export default function ChatbotPage() {
   
   const activeMessages = sessions.find(s => s.id === activeSessionId)?.messages || [];
 
+  // Load sessions from localStorage on initial render
+  useEffect(() => {
+    try {
+        const savedSessions = localStorage.getItem('chatSessions');
+        if (savedSessions) {
+            const parsedSessions = JSON.parse(savedSessions).map((s: any) => ({
+                ...s,
+                timestamp: new Date(s.timestamp)
+            }));
+            setSessions(parsedSessions);
+        }
+    } catch (error) {
+        console.error("Failed to load chat sessions from localStorage", error);
+    }
+  }, []);
+
+  // Save sessions to localStorage whenever they change
+  useEffect(() => {
+    try {
+        if (sessions.length > 0) {
+            localStorage.setItem('chatSessions', JSON.stringify(sessions));
+        } else {
+            localStorage.removeItem('chatSessions');
+        }
+    } catch (error) {
+        console.error("Failed to save chat sessions to localStorage", error);
+    }
+  }, [sessions]);
+
+
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({
@@ -108,10 +138,16 @@ export default function ChatbotPage() {
   };
   
     const handleDeleteSession = (sessionId: string) => {
-        setSessions(prev => prev.filter(s => s.id !== sessionId));
-        if (activeSessionId === sessionId) {
-            setActiveSessionId(sessions.length > 1 ? sessions.filter(s => s.id !== sessionId)[0].id : null);
-        }
+        setSessions(prev => {
+            const newSessions = prev.filter(s => s.id !== sessionId);
+            if (activeSessionId === sessionId) {
+                setActiveSessionId(newSessions.length > 0 ? newSessions.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())[0].id : null);
+            }
+            if (newSessions.length === 0) {
+                localStorage.removeItem('chatSessions');
+            }
+            return newSessions;
+        });
     };
     
     const handleRenameSession = (sessionId: string) => {
@@ -141,17 +177,17 @@ export default function ChatbotPage() {
                         <div key={session.id} onClick={() => setActiveSessionId(session.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeSessionId === session.id ? 'bg-muted' : 'hover:bg-muted'}`}>
                             <div className="overflow-hidden">
                                 <p className="font-medium truncate">{session.title}</p>
-                                <p className="text-xs text-muted-foreground">{session.timestamp.toLocaleDateString()}</p>
+                                <p className="text-xs text-muted-foreground">{new Date(session.timestamp).toLocaleDateString()}</p>
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                                         <MoreVertical className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => handleRenameSession(session.id)}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDeleteSession(session.id)} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleRenameSession(session.id)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteSession(session.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -231,9 +267,6 @@ export default function ChatbotPage() {
                 className="flex-1"
                 disabled={isLoading || !activeSessionId}
             />
-            <Button type="button" variant="ghost" size="icon" disabled={isLoading}>
-                <Send className="h-4 w-4" />
-            </Button>
             <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !activeSessionId}>
                 <Send className="h-4 w-4" />
             </Button>

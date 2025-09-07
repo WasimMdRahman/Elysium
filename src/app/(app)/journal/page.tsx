@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FilePlus, MoreVertical, Trash, Edit } from "lucide-react";
+import { FilePlus, MoreVertical, Trash, Edit, Save } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+
 
 interface JournalEntry {
     id: string;
@@ -19,6 +20,26 @@ interface JournalEntry {
 export default function JournalPage() {
     const [entries, setEntries] = useState<JournalEntry[]>([]);
     const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+    const { toast } = useToast();
+
+    // Load entries from localStorage
+    useEffect(() => {
+        try {
+            const savedEntries = localStorage.getItem('journalEntries');
+            if (savedEntries) {
+                const parsedEntries = JSON.parse(savedEntries).map((e: any) => ({
+                    ...e,
+                    date: new Date(e.date)
+                }));
+                setEntries(parsedEntries);
+                if (parsedEntries.length > 0) {
+                    setActiveEntryId(parsedEntries.sort((a:any,b:any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].id);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load journal entries from localStorage", error);
+        }
+    }, []);
 
     const activeEntry = entries.find(e => e.id === activeEntryId);
 
@@ -34,10 +55,19 @@ export default function JournalPage() {
     };
 
     const deleteEntry = (id: string) => {
-        setEntries(prev => prev.filter(e => e.id !== id));
-        if (activeEntryId === id) {
-            setActiveEntryId(null);
-        }
+        setEntries(prev => {
+            const newEntries = prev.filter(e => e.id !== id);
+             if (activeEntryId === id) {
+                const sortedEntries = newEntries.sort((a,b) => b.date.getTime() - a.date.getTime());
+                setActiveEntryId(sortedEntries.length > 0 ? sortedEntries[0].id : null);
+            }
+            if (newEntries.length === 0) {
+                localStorage.removeItem('journalEntries');
+            }
+            return newEntries;
+        });
+        toast({ title: "Entry deleted." });
+
     };
     
     const renameEntry = (id: string) => {
@@ -52,6 +82,23 @@ export default function JournalPage() {
             setEntries(prev => prev.map(e => e.id === activeEntryId ? { ...e, content } : e));
         }
     };
+
+    const saveEntries = () => {
+        try {
+            localStorage.setItem('journalEntries', JSON.stringify(entries));
+            toast({
+                title: "Journal Saved!",
+                description: "Your entries have been successfully saved.",
+            });
+        } catch (error) {
+             console.error("Failed to save journal entries to localStorage", error);
+             toast({
+                title: "Error",
+                description: "Could not save your journal entries.",
+                variant: "destructive"
+             })
+        }
+    }
 
     return (
         <div className="grid h-[calc(100vh-8rem)] grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4">
@@ -72,17 +119,17 @@ export default function JournalPage() {
                                 <div key={entry.id} onClick={() => setActiveEntryId(entry.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeEntryId === entry.id ? 'bg-muted' : 'hover:bg-muted'}`}>
                                     <div className="overflow-hidden">
                                         <p className="font-medium truncate">{entry.title}</p>
-                                        <p className="text-xs text-muted-foreground">{entry.date.toLocaleDateString()}</p>
+                                        <p className="text-xs text-muted-foreground">{new Date(entry.date).toLocaleDateString()}</p>
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                                                 <MoreVertical className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuItem onClick={() => renameEntry(entry.id)}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => deleteEntry(entry.id)} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); renameEntry(entry.id)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); deleteEntry(entry.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
@@ -94,9 +141,14 @@ export default function JournalPage() {
             <Card className="md:col-span-2 lg:col-span-3 flex flex-col">
                 {activeEntry ? (
                     <>
-                        <CardHeader>
-                            <CardTitle className="font-headline text-2xl">{activeEntry.title}</CardTitle>
-                            <CardDescription>{activeEntry.date.toLocaleString()}</CardDescription>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="font-headline text-2xl">{activeEntry.title}</CardTitle>
+                                <CardDescription>{new Date(activeEntry.date).toLocaleString()}</CardDescription>
+                            </div>
+                             <Button onClick={saveEntries}>
+                                <Save className="mr-2 h-4 w-4" /> Save Journal
+                            </Button>
                         </CardHeader>
                         <CardContent className="flex-1">
                             <Textarea

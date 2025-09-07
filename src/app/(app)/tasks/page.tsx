@@ -1,10 +1,11 @@
 'use client';
-import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Save } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Task {
   id: number;
@@ -15,6 +16,19 @@ interface Task {
 export default function TasksPage() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [newTask, setNewTask] = useState('');
+    const { toast } = useToast();
+
+    // Load tasks from localStorage
+    useEffect(() => {
+        try {
+            const savedTasks = localStorage.getItem('tasks');
+            if (savedTasks) {
+                setTasks(JSON.parse(savedTasks));
+            }
+        } catch (error) {
+            console.error("Failed to load tasks from localStorage", error);
+        }
+    }, []);
 
     const handleAddTask = (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,6 +45,23 @@ export default function TasksPage() {
     const deleteTask = (id: number) => {
         setTasks(tasks.filter(task => task.id !== id));
     }
+
+    const saveTasks = () => {
+        try {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            toast({
+                title: "Tasks Saved!",
+                description: "Your task list has been updated.",
+            });
+        } catch (error) {
+            console.error("Failed to save tasks to localStorage", error);
+            toast({
+                title: "Error",
+                description: "Could not save your tasks.",
+                variant: "destructive"
+            });
+        }
+    };
     
     const completedTasks = tasks.filter(t => t.completed).length;
     const totalTasks = tasks.length;
@@ -82,6 +113,11 @@ export default function TasksPage() {
             )}
         </div>
       </CardContent>
+      <CardFooter>
+          <Button onClick={saveTasks} className="w-full">
+              <Save className="mr-2 h-4 w-4" /> Save Tasks
+          </Button>
+      </CardFooter>
     </Card>
   );
 }
