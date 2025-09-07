@@ -20,6 +20,7 @@ export type GenerateThoughtInput = z.infer<typeof GenerateThoughtInputSchema>;
 
 const GenerateThoughtOutputSchema = z.object({
   thought: z.string().describe('The AI generated thought.'),
+  isHelpful: z.boolean().describe('Whether the generated thought is helpful (true) or unhelpful (false).'),
 });
 export type GenerateThoughtOutput = z.infer<typeof GenerateThoughtOutputSchema>;
 
@@ -34,10 +35,11 @@ const prompt = ai.definePrompt({
   prompt: `You are an AI that generates thoughts for a CBT based game called Thought Quest.
 
   The user will provide you with a topic and you will generate a new thought related to that topic.
+  The thought can be helpful (e.g. 'I can learn from my mistakes') or unhelpful (e.g. 'I'm a complete failure').
+  You must also determine if the thought you generated is helpful or not and set the isHelpful boolean field.
 
   Topic: {{{topic}}}
-
-  Thought:`,
+  `,
 });
 
 const generateThoughtFlow = ai.defineFlow(

@@ -50,7 +50,7 @@ export default function ThoughtQuestPage() {
 
       const result = await generateThought({ topic: randomTopic });
       setThought(result.thought);
-      setIsHelpful(Math.random() > 0.5); 
+      setIsHelpful(result.isHelpful); 
     } catch (error) {
       console.error("Failed to generate thought:", error);
       setThought("I can't seem to think of anything right now. Please try again.");
