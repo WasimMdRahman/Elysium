@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare } from 'lucide-react';
+import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type Message = {
@@ -34,6 +34,8 @@ export default function ChatbotPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [tone, setTone] = useState<'professional' | 'friendly' | 'empathetic' | 'humorous'>('professional');
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingTitle, setRenamingTitle] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   const activeMessages = sessions.find(s => s.id === activeSessionId)?.messages || [];
@@ -93,8 +95,9 @@ export default function ChatbotPage() {
   useEffect(() => {
       if(sessions.length === 0) {
           createNewChat();
-      } else if (!activeSessionId) {
-          setActiveSessionId(sessions[0].id);
+      } else if (!activeSessionId && sessions.length > 0) {
+        const sortedSessions = [...sessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+        setActiveSessionId(sortedSessions[0].id);
       }
   }, [sessions, activeSessionId]);
 
@@ -141,21 +144,33 @@ export default function ChatbotPage() {
         setSessions(prev => {
             const newSessions = prev.filter(s => s.id !== sessionId);
             if (activeSessionId === sessionId) {
-                setActiveSessionId(newSessions.length > 0 ? newSessions.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())[0].id : null);
+                const sorted = newSessions.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+                setActiveSessionId(sorted.length > 0 ? sorted[0].id : null);
             }
             if (newSessions.length === 0) {
                 localStorage.removeItem('chatSessions');
+                createNewChat();
             }
             return newSessions;
         });
     };
     
-    const handleRenameSession = (sessionId: string) => {
-        const newTitle = prompt("Enter new chat title:");
-        if (newTitle) {
-            setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, title: newTitle } : s));
-        }
+    const startRenameSession = (session: ChatSession) => {
+        setRenamingId(session.id);
+        setRenamingTitle(session.title);
     };
+
+    const confirmRenameSession = (sessionId: string) => {
+        if (!renamingTitle.trim()) return;
+        setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, title: renamingTitle } : s));
+        setRenamingId(null);
+        setRenamingTitle('');
+    };
+
+    const cancelRename = () => {
+        setRenamingId(null);
+        setRenamingTitle('');
+    }
 
 
   return (
@@ -174,22 +189,32 @@ export default function ChatbotPage() {
                  <ScrollArea className="h-full">
                     <div className="space-y-2 p-2">
                     {sessions.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()).map(session => (
-                        <div key={session.id} onClick={() => setActiveSessionId(session.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeSessionId === session.id ? 'bg-muted' : 'hover:bg-muted'}`}>
-                            <div className="overflow-hidden">
-                                <p className="font-medium truncate">{session.title}</p>
-                                <p className="text-xs text-muted-foreground">{new Date(session.timestamp).toLocaleDateString()}</p>
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
-                                        <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleRenameSession(session.id)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteSession(session.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                        <div key={session.id} onClick={() => renamingId !== session.id && setActiveSessionId(session.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeSessionId === session.id && !renamingId ? 'bg-muted' : 'hover:bg-muted'}`}>
+                            {renamingId === session.id ? (
+                                <div className="flex w-full items-center gap-2">
+                                    <Input value={renamingTitle} onChange={(e) => setRenamingTitle(e.target.value)} className="h-8" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmRenameSession(session.id)} />
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => confirmRenameSession(session.id)}><Check className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={cancelRename}><X className="h-4 w-4" /></Button>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="overflow-hidden">
+                                        <p className="font-medium truncate">{session.title}</p>
+                                        <p className="text-xs text-muted-foreground">{new Date(session.timestamp).toLocaleDateString()}</p>
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); startRenameSession(session)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteSession(session.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </>
+                            )}
                         </div>
                     ))}
                     </div>
@@ -215,7 +240,7 @@ export default function ChatbotPage() {
             </Select>
         </CardHeader>
         <CardContent className="flex-1 p-0">
-            <ScrollArea className="h-full" ref={scrollAreaRef}>
+            <ScrollArea className="h-[calc(100%-140px)]" ref={scrollAreaRef}>
             <div className="p-6 space-y-6">
                 {activeMessages.map((message, index) => (
                 <div

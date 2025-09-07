@@ -5,9 +5,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FilePlus, MoreVertical, Trash, Edit, Save } from "lucide-react";
+import { FilePlus, MoreVertical, Trash, Edit, Save, Check, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 
 interface JournalEntry {
@@ -20,6 +21,8 @@ interface JournalEntry {
 export default function JournalPage() {
     const [entries, setEntries] = useState<JournalEntry[]>([]);
     const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+    const [renamingId, setRenamingId] = useState<string | null>(null);
+    const [renamingTitle, setRenamingTitle] = useState('');
     const { toast } = useToast();
 
     // Load entries from localStorage
@@ -70,12 +73,22 @@ export default function JournalPage() {
 
     };
     
-    const renameEntry = (id: string) => {
-        const newTitle = prompt("Enter new title:");
-        if (newTitle) {
-            setEntries(prev => prev.map(e => e.id === id ? { ...e, title: newTitle } : e));
-        }
+    const startRenameEntry = (entry: JournalEntry) => {
+        setRenamingId(entry.id);
+        setRenamingTitle(entry.title);
     };
+    
+    const confirmRenameEntry = (id: string) => {
+        if (!renamingTitle.trim()) return;
+        setEntries(prev => prev.map(e => e.id === id ? { ...e, title: renamingTitle } : e));
+        setRenamingId(null);
+        setRenamingTitle('');
+    }
+
+    const cancelRename = () => {
+        setRenamingId(null);
+        setRenamingTitle('');
+    }
     
     const updateContent = (content: string) => {
         if(activeEntryId) {
@@ -116,22 +129,32 @@ export default function JournalPage() {
                     <ScrollArea className="h-full">
                         <div className="space-y-2 p-2">
                             {entries.sort((a,b) => b.date.getTime() - a.date.getTime()).map(entry => (
-                                <div key={entry.id} onClick={() => setActiveEntryId(entry.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeEntryId === entry.id ? 'bg-muted' : 'hover:bg-muted'}`}>
-                                    <div className="overflow-hidden">
-                                        <p className="font-medium truncate">{entry.title}</p>
-                                        <p className="text-xs text-muted-foreground">{new Date(entry.date).toLocaleDateString()}</p>
-                                    </div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); renameEntry(entry.id)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); deleteEntry(entry.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                <div key={entry.id} onClick={() => renamingId !== entry.id && setActiveEntryId(entry.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeEntryId === entry.id && !renamingId ? 'bg-muted' : 'hover:bg-muted'}`}>
+                                    {renamingId === entry.id ? (
+                                        <div className="flex w-full items-center gap-2">
+                                            <Input value={renamingTitle} onChange={(e) => setRenamingTitle(e.target.value)} className="h-8" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmRenameEntry(entry.id)} />
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => confirmRenameEntry(entry.id)}><Check className="h-4 w-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={cancelRename}><X className="h-4 w-4" /></Button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="overflow-hidden">
+                                                <p className="font-medium truncate">{entry.title}</p>
+                                                <p className="text-xs text-muted-foreground">{new Date(entry.date).toLocaleDateString()}</p>
+                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuItem onClick={(e) => {e.stopPropagation(); startRenameEntry(entry)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={(e) => {e.stopPropagation(); deleteEntry(entry.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </>
+                                    )}
                                 </div>
                             ))}
                         </div>
