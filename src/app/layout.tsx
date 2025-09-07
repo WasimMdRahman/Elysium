@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "Zenith Mind",
@@ -23,8 +24,15 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        {children}
-        <Toaster />
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
+            {children}
+            <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

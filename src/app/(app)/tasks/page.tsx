@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus } from 'lucide-react';
+import { Plus, Trash } from 'lucide-react';
 
 interface Task {
   id: number;
@@ -12,16 +12,8 @@ interface Task {
   completed: boolean;
 }
 
-const initialTasks: Task[] = [
-  { id: 1, text: 'Complete morning meditation', completed: true },
-  { id: 2, text: 'Log mood in Mood Tracker', completed: true },
-  { id: 3, text: 'Go for a 20-minute walk', completed: false },
-  { id: 4, text: 'Write in the AI Journal', completed: false },
-  { id: 5, text: 'Practice one breathing exercise', completed: false },
-];
-
 export default function TasksPage() {
-    const [tasks, setTasks] = useState<Task[]>(initialTasks);
+    const [tasks, setTasks] = useState<Task[]>([]);
     const [newTask, setNewTask] = useState('');
 
     const handleAddTask = (e: React.FormEvent) => {
@@ -35,6 +27,10 @@ export default function TasksPage() {
     const toggleTask = (id: number) => {
         setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
     };
+
+    const deleteTask = (id: number) => {
+        setTasks(tasks.filter(task => task.id !== id));
+    }
     
     const completedTasks = tasks.filter(t => t.completed).length;
     const totalTasks = tasks.length;
@@ -43,7 +39,12 @@ export default function TasksPage() {
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="font-headline">Daily Task Manager</CardTitle>
-        <CardDescription>Stay on track with your mental wellness goals. You've completed {completedTasks} of {totalTasks} tasks.</CardDescription>
+        <CardDescription>
+            {totalTasks > 0 
+                ? `Stay on track with your mental wellness goals. You've completed ${completedTasks} of ${totalTasks} tasks.`
+                : "Add a task to get started on your wellness goals."
+            }
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleAddTask} className="flex gap-2 mb-4">
@@ -57,8 +58,8 @@ export default function TasksPage() {
             </Button>
         </form>
         <div className="space-y-4">
-            {tasks.map(task => (
-                <div key={task.id} className="flex items-center space-x-3 p-3 rounded-md hover:bg-muted transition-colors">
+            {tasks.length > 0 ? tasks.map(task => (
+                <div key={task.id} className="flex items-center space-x-3 p-3 rounded-md hover:bg-muted transition-colors group">
                     <Checkbox 
                         id={`task-${task.id}`}
                         checked={task.completed}
@@ -70,8 +71,15 @@ export default function TasksPage() {
                     >
                         {task.text}
                     </label>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => deleteTask(task.id)}>
+                        <Trash className="h-4 w-4 text-destructive" />
+                    </Button>
                 </div>
-            ))}
+            )) : (
+                <div className="text-center text-muted-foreground py-8">
+                    <p>No tasks yet. Add one above to begin!</p>
+                </div>
+            )}
         </div>
       </CardContent>
     </Card>

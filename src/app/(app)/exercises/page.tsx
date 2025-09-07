@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Wind, Zap, Smile } from "lucide-react";
+import { Brain, Wind, Zap, Smile, Heart, Users, Shield, BookOpen } from "lucide-react";
 
 const exercises = {
     anxiety: [
@@ -18,6 +18,22 @@ const exercises = {
     ],
     focus: [
         { title: 'Mindful Breathing', description: 'Anchor your attention to your breath.', duration: '5 min' },
+    ],
+    selfEsteem: [
+        { title: 'Positive Affirmations', description: 'Repeat positive statements about yourself.', duration: '2 min' },
+        { title: 'Strengths Exploration', description: 'List your personal strengths and accomplishments.', duration: '10 min' },
+    ],
+    relationships: [
+        { title: 'Active Listening', description: 'Practice fully hearing your partner or friend.', duration: '10 min' },
+        { title: 'Expressing Appreciation', description: 'Share what you appreciate about someone.', duration: '5 min' },
+    ],
+    trauma: [
+        { title: 'Container Exercise', description: 'Visualize a container to hold distressing thoughts.', duration: '10 min' },
+        { title: 'Self-Compassion Break', description: 'Offer yourself kindness in moments of pain.', duration: '5 min' },
+    ],
+    learning: [
+        { title: 'Pomodoro Technique', description: 'Work in focused 25-minute intervals.', duration: '25 min' },
+        { title: 'Feynman Technique', description: 'Explain a concept simply to test your understanding.', duration: '15 min' },
     ]
 }
 
@@ -28,6 +44,10 @@ const categoryInfo = {
     stress: { icon: Zap, label: "Stress" },
     "low-mood": { icon: Smile, label: "Low Mood" },
     focus: { icon: Brain, label: "Focus" },
+    selfEsteem: { icon: Heart, label: "Self-Esteem" },
+    relationships: { icon: Users, label: "Relationships" },
+    trauma: { icon: Shield, label: "Trauma" },
+    learning: { icon: BookOpen, label: "Learning" }
 }
 
 export default function ExercisesPage() {
@@ -41,11 +61,14 @@ export default function ExercisesPage() {
         </div>
 
         <Tabs defaultValue="anxiety" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">
                 {(Object.keys(exercises) as Category[]).map(cat => {
                     const Info = categoryInfo[cat];
                     return (
-                        <TabsTrigger key={cat} value={cat}><Info.icon className="mr-2 h-4 w-4" />{Info.label}</TabsTrigger>
+                        <TabsTrigger key={cat} value={cat} className="transition-transform duration-200 hover:scale-105">
+                            <Info.icon className="mr-2 h-4 w-4" />
+                            {Info.label}
+                        </TabsTrigger>
                     );
                 })}
             </TabsList>

@@ -22,14 +22,12 @@ export default function ThoughtQuestPage() {
     setAnswered(false);
     setFeedback(null);
     try {
-      // In a real scenario, the AI would also determine if the thought is helpful or not.
-      // For this simulation, we'll randomize it.
       const topics = ['social situations', 'work stress', 'self-esteem', 'the future', 'making mistakes'];
       const randomTopic = topics[Math.floor(Math.random() * topics.length)];
 
       const result = await generateThought({ topic: randomTopic });
       setThought(result.thought);
-      setIsHelpful(Math.random() > 0.5); // 50% chance of being helpful
+      setIsHelpful(Math.random() > 0.5); 
     } catch (error) {
       console.error("Failed to generate thought:", error);
       setThought("I can't seem to think of anything right now. Please try again.");
@@ -51,7 +49,7 @@ export default function ThoughtQuestPage() {
       setScore(s => s + 10);
       setFeedback('correct');
     } else {
-      setScore(s => Math.max(0, s - 5));
+      setScore(s => s + 0); // No negative marking
       setFeedback('incorrect');
     }
 
@@ -106,7 +104,7 @@ export default function ThoughtQuestPage() {
         <div className="flex gap-4">
           <Button
             size="lg"
-            className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white"
+            variant={answered && feedback === 'incorrect' ? 'destructive' : 'outline'}
             onClick={() => handleAnswer(false)}
             disabled={answered}
           >
@@ -114,7 +112,8 @@ export default function ThoughtQuestPage() {
           </Button>
           <Button
             size="lg"
-            className="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white"
+            variant={answered && feedback === 'correct' && isHelpful === true ? 'default' : 'outline'}
+            className="bg-green-500 hover:bg-green-600 text-white data-[answered=true]:bg-green-500"
             onClick={() => handleAnswer(true)}
             disabled={answered}
           >

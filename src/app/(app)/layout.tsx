@@ -12,30 +12,17 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
-  Flame,
   Settings,
   Shield,
   FileText,
   CreditCard,
-  Bot,
-  HeartPulse,
-  BookText,
-  ListTodo,
-  BrainCircuit,
-  Waves,
 } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const menuItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", tooltip: "Dashboard" },
-    { href: "/chatbot", icon: Bot, label: "AI Chatbot", tooltip: "AI Chatbot" },
-    { href: "/mood-tracker", icon: HeartPulse, label: "Mood Tracker", tooltip: "Mood Tracker" },
-    { href: "/journal", icon: BookText, label: "AI Journal", tooltip: "AI Journal" },
-    { href: "/tasks", icon: ListTodo, label: "Task Manager", tooltip: "Task Manager" },
-    { href: "/thought-quest", icon: BrainCircuit, label: "Thought Quest", tooltip: "Thought Quest" },
-    { href: "/exercises", icon: Waves, label: "Exercises", tooltip: "Exercises" },
-    { href: "/streak-tracker", icon: Flame, label: "Streak Tracker", tooltip: "Streak Tracker" },
 ];
 
 const secondaryMenuItems = [
@@ -103,6 +90,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex-1">
                 {/* Add search or other header items here */}
             </div>
+            <ThemeToggle />
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
       </SidebarInset>

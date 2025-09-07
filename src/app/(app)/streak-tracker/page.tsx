@@ -1,22 +1,36 @@
+'use client';
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Flame, Star, Award, Zap } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 
-const activities = [
-    { name: 'Mood Logged', icon: Flame, currentStreak: 14, longestStreak: 25 },
-    { name: 'Journal Entry', icon: Flame, currentStreak: 8, longestStreak: 12 },
-    { name: 'Task Completed', icon: Flame, currentStreak: 21, longestStreak: 21 },
-    { name: 'Exercise Done', icon: Flame, currentStreak: 3, longestStreak: 10 },
+// In a real app, this data would come from a backend and be managed by user state.
+const initialActivities = [
+    { name: 'Mood Logged', icon: Flame, currentStreak: 0, longestStreak: 0 },
+    { name: 'Journal Entry', icon: Flame, currentStreak: 0, longestStreak: 0 },
+    { name: 'Task Completed', icon: Flame, currentStreak: 0, longestStreak: 0 },
+    { name: 'Exercise Done', icon: Flame, currentStreak: 0, longestStreak: 0 },
 ];
 
-const achievements = [
-    { name: '7-Day Streak', icon: Award, unlocked: true },
-    { name: '30-Day Streak', icon: Award, unlocked: false },
-    { name: 'First Journal Entry', icon: Award, unlocked: true },
-    { name: 'Mindful Master', icon: Award, unlocked: false },
-]
+const initialAchievements = [
+    { name: '7-Day Streak', icon: Award, unlocked: false, description: "Maintain a 7-day streak in any activity." },
+    { name: '30-Day Streak', icon: Award, unlocked: false, description: "Maintain a 30-day streak." },
+    { name: 'First Journal Entry', icon: Award, unlocked: false, description: "Write your first journal entry." },
+    { name: 'Mindful Master', icon: Award, unlocked: false, description: "Complete 10 exercises." },
+];
 
 export default function StreakTrackerPage() {
+    const [activities, setActivities] = useState(initialActivities);
+    const [achievements, setAchievements] = useState(initialAchievements);
+    const [xp, setXp] = useState(0);
+    const [ap, setAp] = useState(0);
+
+    const level = Math.floor(xp / 1000) + 1;
+    const xpForNextLevel = 1000;
+    const currentLevelXp = xp % 1000;
+    const progressToNextLevel = (currentLevelXp / xpForNextLevel) * 100;
+
+
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="lg:col-span-3">
@@ -33,16 +47,16 @@ export default function StreakTrackerPage() {
             <CardContent className="text-center space-y-4">
                 <div className="flex items-center justify-center gap-2">
                     <Zap className="h-6 w-6 text-yellow-500" />
-                    <span className="text-3xl font-bold">1,250 XP</span>
+                    <span className="text-3xl font-bold">{xp} XP</span>
                 </div>
                  <div className="flex items-center justify-center gap-2">
                     <Star className="h-6 w-6 text-amber-500" />
-                    <span className="text-3xl font-bold">300 AP</span>
+                    <span className="text-3xl font-bold">{ap} AP</span>
                 </div>
                 <div className="w-full pt-4">
-                    <p className="text-sm font-medium">Level 5</p>
-                    <Progress value={60} className="w-full"/>
-                    <p className="text-xs text-muted-foreground mt-1">450 XP to Level 6</p>
+                    <p className="text-sm font-medium">Level {level}</p>
+                    <Progress value={progressToNextLevel} className="w-full"/>
+                    <p className="text-xs text-muted-foreground mt-1">{xpForNextLevel - currentLevelXp} XP to Level {level + 1}</p>
                 </div>
             </CardContent>
         </Card>
@@ -56,7 +70,7 @@ export default function StreakTrackerPage() {
                 {activities.map(activity => (
                     <div key={activity.name} className="p-4 bg-muted/50 rounded-lg flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <activity.icon className="h-6 w-6 text-orange-500" />
+                            <activity.icon className={`h-6 w-6 ${activity.currentStreak > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} />
                             <span className="font-medium">{activity.name}</span>
                         </div>
                         <div className="text-right">
@@ -75,7 +89,7 @@ export default function StreakTrackerPage() {
             </CardHeader>
             <CardContent className="flex flex-wrap gap-4">
                 {achievements.map(ach => (
-                    <div key={ach.name} className={`flex flex-col items-center gap-2 p-4 rounded-lg w-32 text-center ${ach.unlocked ? 'bg-amber-100 dark:bg-amber-900/50' : 'bg-muted'}`}>
+                    <div key={ach.name} title={ach.description} className={`flex flex-col items-center gap-2 p-4 rounded-lg w-32 text-center ${ach.unlocked ? 'bg-amber-100 dark:bg-amber-900/50' : 'bg-muted'}`}>
                         <ach.icon className={`h-8 w-8 ${ach.unlocked ? 'text-amber-500' : 'text-muted-foreground'}`}/>
                         <p className={`text-sm font-medium ${ach.unlocked ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>{ach.name}</p>
                     </div>

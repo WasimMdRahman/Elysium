@@ -6,17 +6,12 @@ import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
 
-const moodData = [
-  { date: subDays(new Date(), 6), mood: 7 },
-  { date: subDays(new Date(), 5), mood: 5 },
-  { date: subDays(new Date(), 4), mood: 6 },
-  { date: subDays(new Date(), 3), mood: 8 },
-  { date: subDays(new Date(), 2), mood: 7 },
-  { date: subDays(new Date(), 1), mood: 9 },
-  { date: new Date(), mood: 8 },
-];
+type MoodEntry = {
+    date: Date;
+    mood: number;
+};
 
 const chartConfig = {
   mood: {
@@ -40,6 +35,12 @@ const moodLabels: { [key: number]: string } = {
 
 export default function MoodTrackerPage() {
   const [mood, setMood] = useState([8]);
+  const [moodData, setMoodData] = useState<MoodEntry[]>([]);
+
+  const handleLogMood = () => {
+    const newEntry: MoodEntry = { date: new Date(), mood: mood[0] };
+    setMoodData(prevData => [...prevData, newEntry].sort((a,b) => a.date.getTime() - b.date.getTime()));
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -61,56 +62,62 @@ export default function MoodTrackerPage() {
             step={1}
             aria-label={`Mood: ${moodLabels[mood[0]]}`}
           />
-          <Button className="w-full" size="lg">Log Mood</Button>
+          <Button className="w-full" size="lg" onClick={handleLogMood}>Log Mood</Button>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Your Week in a Glance</CardTitle>
-          <CardDescription>A look at your mood fluctuations over the past 7 days.</CardDescription>
+          <CardTitle className="font-headline">Your Mood History</CardTitle>
+          <CardDescription>A look at your mood fluctuations over time.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={moodData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(value) => format(new Date(value), 'EEE')}
-                  stroke="hsl(var(--muted-foreground))"
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis domain={[1, 10]} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false}/>
-                <ChartTooltip
-                  cursor={false}
-                  content={
-                    <ChartTooltipContent
-                      indicator="line"
-                      labelFormatter={(value, payload) => {
-                        if (payload && payload.length) {
-                           return format(new Date(payload[0].payload.date), 'eeee, MMM d');
-                        }
-                        return value;
-                      }}
+            {moodData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={moodData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis
+                    dataKey="date"
+                    tickFormatter={(value) => format(new Date(value), 'MMM d')}
+                    stroke="hsl(var(--muted-foreground))"
+                    tickLine={false}
+                    axisLine={false}
                     />
-                  }
-                />
-                <Line
-                  dataKey="mood"
-                  type="monotone"
-                  stroke="var(--color-mood)"
-                  strokeWidth={2}
-                  dot={{
-                    fill: 'var(--color-mood)',
-                    r: 4
-                  }}
-                  activeDot={{
-                    r: 6
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+                    <YAxis domain={[1, 10]} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false}/>
+                    <ChartTooltip
+                    cursor={false}
+                    content={
+                        <ChartTooltipContent
+                        indicator="line"
+                        labelFormatter={(value, payload) => {
+                            if (payload && payload.length) {
+                            return format(new Date(payload[0].payload.date), 'eeee, MMM d');
+                            }
+                            return value;
+                        }}
+                        />
+                    }
+                    />
+                    <Line
+                    dataKey="mood"
+                    type="monotone"
+                    stroke="var(--color-mood)"
+                    strokeWidth={2}
+                    dot={{
+                        fill: 'var(--color-mood)',
+                        r: 4
+                    }}
+                    activeDot={{
+                        r: 6
+                    }}
+                    />
+                </LineChart>
+                </ResponsiveContainer>
+            ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                    <p className="text-muted-foreground">Log your mood to see your history here.</p>
+                </div>
+            )}
           </ChartContainer>
         </CardContent>
       </Card>

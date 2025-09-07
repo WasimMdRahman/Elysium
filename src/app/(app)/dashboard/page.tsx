@@ -6,6 +6,11 @@ import {
   ListTodo,
   BrainCircuit,
   Waves,
+  Flame,
+  Settings,
+  CreditCard,
+  Shield,
+  FileText
 } from "lucide-react";
 
 const features = [
@@ -45,6 +50,11 @@ const features = [
     description: "Guided practices for wellness",
     icon: Waves,
   },
+    { href: "/streak-tracker", icon: Flame, label: "Streak Tracker", description: "Track your progress and build habits" },
+    { href: "/settings", icon: Settings, label: "Settings", description: "Manage your account settings"},
+    { href: "/pricing", icon: CreditCard, label: "Pricing", description: "View our pricing plans"},
+    { href: "/privacy", icon: Shield, label: "Privacy Policy", description: "Read our privacy policy"},
+    { href: "/terms", icon: FileText, label: "Terms of Service", description: "Read our terms of service" },
 ];
 
 export default function DashboardPage() {
@@ -63,7 +73,7 @@ export default function DashboardPage() {
             key={feature.href}
             href={feature.href}
             icon={feature.icon}
-            title={feature.title}
+            title={feature.title || feature.label}
             description={feature.description}
           />
         ))}
