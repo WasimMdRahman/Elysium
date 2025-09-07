@@ -57,12 +57,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarMenu>
         
         <SidebarFooter>
-           <div className="flex items-center gap-3">
-             <Avatar className="size-8">
-                <AvatarImage src="https://picsum.photos/100" alt="User avatar" data-ai-hint="profile picture" />
-                <AvatarFallback>UM</AvatarFallback>
-             </Avatar>
-           </div>
+           
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
