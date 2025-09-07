@@ -9,6 +9,7 @@ import { FilePlus, MoreVertical, Trash, Edit, Save, Check, X } from "lucide-reac
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
+import { format } from 'date-fns';
 
 
 interface JournalEntry {
@@ -140,7 +141,7 @@ export default function JournalPage() {
                                         <>
                                             <div className="overflow-hidden">
                                                 <p className="font-medium truncate">{entry.title}</p>
-                                                <p className="text-xs text-muted-foreground">{new Date(entry.date).toLocaleDateString()}</p>
+                                                <p className="text-xs text-muted-foreground">{format(new Date(entry.date), 'dd-MM-yyyy')}</p>
                                             </div>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -167,7 +168,7 @@ export default function JournalPage() {
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle className="font-headline text-2xl">{activeEntry.title}</CardTitle>
-                                <CardDescription>{new Date(activeEntry.date).toLocaleString()}</CardDescription>
+                                <CardDescription>{format(new Date(activeEntry.date), 'dd-MM-yyyy p')}</CardDescription>
                             </div>
                              <Button onClick={saveEntries}>
                                 <Save className="mr-2 h-4 w-4" /> Save Journal

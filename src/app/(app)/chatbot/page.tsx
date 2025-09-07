@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { format } from 'date-fns';
 
 type Message = {
   role: 'user' | 'bot';
@@ -210,7 +211,7 @@ export default function ChatbotPage() {
                                 <>
                                     <div className="overflow-hidden">
                                         <p className="font-medium truncate">{session.title}</p>
-                                        <p className="text-xs text-muted-foreground">{new Date(session.timestamp).toLocaleDateString()}</p>
+                                        <p className="text-xs text-muted-foreground">{format(new Date(session.timestamp), 'dd-MM-yyyy')}</p>
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
