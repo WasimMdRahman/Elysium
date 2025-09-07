@@ -7,7 +7,6 @@ import {
   ListTodo,
   BrainCircuit,
   Waves,
-  Flame,
 } from "lucide-react";
 
 const features = [
@@ -47,14 +46,13 @@ const features = [
     description: "Guided practices for wellness",
     icon: Waves,
   },
-    { href: "/streak-tracker", icon: Flame, title: "Streak Tracker", description: "Track your progress and build habits" },
 ];
 
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-bold font-headline">Good Morning, Alex!</h1>
+        <h1 className="text-3xl font-bold font-headline">Good Morning!</h1>
         <p className="text-muted-foreground">
           Here are your tools for a mindful day.
         </p>

@@ -60,12 +60,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
            <div className="flex items-center gap-3">
              <Avatar className="size-8">
                 <AvatarImage src="https://picsum.photos/100" alt="User avatar" data-ai-hint="profile picture" />
-                <AvatarFallback>AM</AvatarFallback>
+                <AvatarFallback>UM</AvatarFallback>
              </Avatar>
-             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                <span className="text-sm font-medium">Alex Miller</span>
-                <span className="text-xs text-muted-foreground">alex@example.com</span>
-             </div>
            </div>
         </SidebarFooter>
       </Sidebar>
