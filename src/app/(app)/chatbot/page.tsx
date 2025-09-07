@@ -222,81 +222,84 @@ export default function ChatbotPage() {
             </CardContent>
         </Card>
         <Card className="md:col-span-2 lg:col-span-3 flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between border-b">
-            <div>
-                <CardTitle className="font-headline">AI Assistant</CardTitle>
-                <CardDescription>Your 24/7 mental health support chatbot</CardDescription>
-            </div>
-            <Select value={tone} onValueChange={(value) => setTone(value as any)}>
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select a tone" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="friendly">Friendly</SelectItem>
-                    <SelectItem value="empathetic">Empathetic</SelectItem>
-                    <SelectItem value="humorous">Humorous</SelectItem>
-                </SelectContent>
-            </Select>
-        </CardHeader>
-        <CardContent className="flex-1 p-0">
-            <ScrollArea className="h-[calc(100%-140px)]" ref={scrollAreaRef}>
-            <div className="p-6 space-y-6">
-                {activeMessages.map((message, index) => (
-                <div
-                    key={index}
-                    className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
-                >
-                    {message.role === 'bot' && (
-                    <Avatar className="h-8 w-8 border">
+            <CardHeader className="flex flex-row items-center justify-between border-b">
+                <div>
+                    <CardTitle className="font-headline">AI Assistant</CardTitle>
+                    <CardDescription>Your 24/7 mental health support chatbot</CardDescription>
+                </div>
+                <Select value={tone} onValueChange={(value) => setTone(value as any)}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a tone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="friendly">Friendly</SelectItem>
+                        <SelectItem value="empathetic">Empathetic</SelectItem>
+                        <SelectItem value="humorous">Humorous</SelectItem>
+                    </SelectContent>
+                </Select>
+            </CardHeader>
+            <CardContent className="flex-1 p-0">
+                <ScrollArea className="h-[calc(100%-140px)]" ref={scrollAreaRef}>
+                <div className="p-6 space-y-6">
+                    {activeMessages.map((message, index) => (
+                    <div
+                        key={index}
+                        className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
+                    >
+                        {message.role === 'bot' && (
+                        <Avatar className="h-8 w-8 border">
+                            <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
+                        </Avatar>
+                        )}
+                        <div className={`max-w-[75%] rounded-lg p-3 ${
+                        message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        }`}>
+                        <p className="text-sm">{message.text}</p>
+                        </div>
+                        {message.role === 'user' && (
+                        <Avatar className="h-8 w-8 border">
+                            <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                        </Avatar>
+                        )}
+                    </div>
+                    ))}
+                    {isLoading && (
+                    <div className="flex items-start gap-4">
+                        <Avatar className="h-8 w-8 border">
                         <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
-                    </Avatar>
-                    )}
-                    <div className={`max-w-[75%] rounded-lg p-3 ${
-                    message.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    }`}>
-                    <p className="text-sm">{message.text}</p>
+                        </Avatar>
+                        <div className="max-w-[75%] rounded-lg bg-muted p-3">
+                        <div className="flex items-center space-x-2">
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
+                        </div>
+                        </div>
                     </div>
-                    {message.role === 'user' && (
-                    <Avatar className="h-8 w-8 border">
-                        <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                    </Avatar>
                     )}
                 </div>
-                ))}
-                {isLoading && (
-                <div className="flex items-start gap-4">
-                    <Avatar className="h-8 w-8 border">
-                    <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
-                    </Avatar>
-                    <div className="max-w-[75%] rounded-lg bg-muted p-3">
-                    <div className="flex items-center space-x-2">
-                        <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
-                        <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
-                        <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
-                    </div>
-                    </div>
-                </div>
-                )}
-            </div>
-            </ScrollArea>
-        </CardContent>
-        <CardFooter className="border-t p-4">
-            <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
-            <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1"
-                disabled={isLoading || !activeSessionId}
-            />
-            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !activeSessionId}>
-                <Send className="h-4 w-4" />
-            </Button>
-            </form>
-        </CardFooter>
+                </ScrollArea>
+            </CardContent>
+            <CardFooter className="flex-col items-start border-t p-4 gap-4">
+                <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
+                    <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="Type your message..."
+                        className="flex-1"
+                        disabled={isLoading || !activeSessionId}
+                    />
+                    <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !activeSessionId}>
+                        <Send className="h-4 w-4" />
+                    </Button>
+                </form>
+                <p className="text-xs text-muted-foreground text-center w-full">
+                    Zenith Mind is just an AI assistant and the Chatbot is there to provide 24/7 support. However, this is not a replacement for professional therapy. In case you are experiencing serious mental health issues contact a professional.
+                </p>
+            </CardFooter>
         </Card>
     </div>
   );
