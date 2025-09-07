@@ -18,6 +18,7 @@ export default function ThoughtQuestPage() {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [answered, setAnswered] = useState(false);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
+  const [previousThoughts, setPreviousThoughts] = useState<string[]>([]);
 
   const isGameComplete = questionsAnswered >= TOTAL_QUESTIONS;
 
@@ -26,16 +27,18 @@ export default function ThoughtQuestPage() {
     try {
       const savedState = localStorage.getItem('thoughtQuestState');
       if (savedState) {
-        const { score: savedScore, questions: savedQuestions, date } = JSON.parse(savedState);
+        const { score: savedScore, questions: savedQuestions, date, thoughts: savedThoughts } = JSON.parse(savedState);
         const today = new Date().toDateString();
         // Reset if it's a new day
         if(date !== today) {
           localStorage.removeItem('thoughtQuestState');
           setScore(0);
           setQuestionsAnswered(0);
+          setPreviousThoughts([]);
         } else {
             setScore(savedScore);
             setQuestionsAnswered(savedQuestions);
+            setPreviousThoughts(savedThoughts || []);
         }
       }
     } catch (error) {
@@ -52,12 +55,12 @@ export default function ThoughtQuestPage() {
   useEffect(() => {
     try {
         const today = new Date().toDateString();
-        const stateToSave = { score, questions: questionsAnswered, date: today };
+        const stateToSave = { score, questions: questionsAnswered, date: today, thoughts: previousThoughts };
         localStorage.setItem('thoughtQuestState', JSON.stringify(stateToSave));
     } catch (error) {
       console.error("Failed to save state to localStorage", error);
     }
-  }, [score, questionsAnswered]);
+  }, [score, questionsAnswered, previousThoughts]);
 
 
   const fetchNewThought = async () => {
@@ -68,9 +71,10 @@ export default function ThoughtQuestPage() {
       const topics = ['social situations', 'work stress', 'self-esteem', 'the future', 'making mistakes', 'personal growth', 'daily life'];
       const randomTopic = topics[Math.floor(Math.random() * topics.length)];
 
-      const result = await generateThought({ topic: randomTopic });
+      const result = await generateThought({ topic: randomTopic, previousThoughts });
       setThought(result.thought);
       setIsHelpful(result.isHelpful); 
+      setPreviousThoughts(prev => [...prev, result.thought]);
     } catch (error) {
       console.error("Failed to generate thought:", error);
       setThought("I can't seem to think of anything right now. Please try again.");
@@ -103,6 +107,7 @@ export default function ThoughtQuestPage() {
   const resetGame = () => {
       setScore(0);
       setQuestionsAnswered(0);
+      setPreviousThoughts([]);
       localStorage.removeItem('thoughtQuestState');
       fetchNewThought();
   }

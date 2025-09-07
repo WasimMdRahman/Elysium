@@ -15,6 +15,7 @@ const GenerateThoughtInputSchema = z.object({
   topic: z
     .string()
     .describe('The topic for the thought, which can be anything.'),
+  previousThoughts: z.array(z.string()).optional().describe('A list of thoughts that have already been generated in the current session to avoid repetition.'),
 });
 export type GenerateThoughtInput = z.infer<typeof GenerateThoughtInputSchema>;
 
@@ -35,10 +36,17 @@ const prompt = ai.definePrompt({
   prompt: `You are an AI that generates thoughts for a CBT based game called Thought Quest.
 
   The user will provide you with a topic and you will generate a new thought related to that topic.
-  You should generate a mix of helpful and unhelpful thoughts.
+  
+  **Critically, you must generate a balanced mix of helpful and unhelpful thoughts. Do not only generate unhelpful thoughts.**
+  
   A helpful thought is positive and empowering (e.g., 'I am capable and strong', 'Today is a new opportunity').
   An unhelpful thought is often negative or a cognitive distortion (e.g., 'I'll never succeed', 'Everyone is better than me').
   
+  **To ensure variety, do not generate any of the following thoughts which have already been used:**
+  {{#each previousThoughts}}
+  - "{{this}}"
+  {{/each}}
+
   You must also determine if the thought you generated is helpful (true) or unhelpful (false) and set the isHelpful boolean field accordingly.
 
   Topic: {{{topic}}}
