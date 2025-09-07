@@ -19,8 +19,8 @@ import {
   Flame,
 } from "lucide-react";
 import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-toggle";
-import dynamic from "next/dynamic";
+import { ClientThemeToggle } from "./client-theme-toggle";
+
 
 const menuItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", tooltip: "Dashboard" },
@@ -29,8 +29,6 @@ const menuItems = [
     { href: "/privacy", icon: Shield, label: "Privacy Policy", tooltip: "Privacy Policy" },
     { href: "/terms", icon: FileText, label: "Terms of Service", tooltip: "Terms of Service" },
 ];
-
-const ClientThemeToggle = dynamic(() => import('@/components/theme-toggle').then(m => m.ThemeToggle), { ssr: false });
 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
