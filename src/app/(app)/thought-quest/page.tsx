@@ -139,7 +139,6 @@ export default function ThoughtQuestPage() {
                    <PartyPopper className="h-12 w-12 text-green-600 mb-4" />
                    <CardTitle className="font-headline">Quest Complete!</CardTitle>
                    <CardDescription>You've answered all thoughts for today. Your final score is {score}. Come back tomorrow for a new quest!</CardDescription>
-                   <Button onClick={resetGame} className="mt-4">Play Again</Button>
                 </Card>
             </motion.div>
          ) : !isLoading ? (
