@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { aiChatbotMentalHealthSupport } from '@/ai/flows/ai-chatbot-mental-health-support';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,9 +10,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, MessageSquarePlus } from 'lucide-react';
+import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, ArrowLeft, History } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { format } from 'date-fns';
+import { format, isToday, isYesterday, subDays, isAfter } from 'date-fns';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+
 
 type Message = {
   role: 'user' | 'bot';
@@ -30,6 +34,108 @@ type ChatHistoryItem = {
   bot: string;
 }
 
+
+const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, startRenameSession, confirmRenameSession, setRenamingTitle, renamingTitle, cancelRename, deleteSession, createNewChat }: {
+    sessions: ChatSession[];
+    activeSessionId: string | null;
+    renamingId: string | null;
+    renamingTitle: string;
+    setActiveSessionId: (id: string) => void;
+    startRenameSession: (session: ChatSession) => void;
+    confirmRenameSession: (id: string) => void;
+    setRenamingTitle: (title: string) => void;
+    cancelRename: () => void;
+    deleteSession: (id: string) => void;
+    createNewChat: () => void;
+}) => {
+    
+    const groupSessions = (sessions: ChatSession[]) => {
+        const today: ChatSession[] = [];
+        const yesterday: ChatSession[] = [];
+        const last7Days: ChatSession[] = [];
+        const earlier: ChatSession[] = [];
+
+        const now = new Date();
+        const sevenDaysAgo = subDays(now, 7);
+
+        sessions.forEach(session => {
+            const sessionDate = new Date(session.timestamp);
+            if (isToday(sessionDate)) {
+                today.push(session);
+            } else if (isYesterday(sessionDate)) {
+                yesterday.push(session);
+            } else if (isAfter(sessionDate, sevenDaysAgo)) {
+                last7Days.push(session);
+            } else {
+                earlier.push(session);
+            }
+        });
+        
+        return { today, yesterday, last7Days, earlier };
+    }
+    
+    const grouped = groupSessions(sessions.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+
+    const renderSession = (session: ChatSession) => (
+        <div key={session.id} onClick={() => renamingId !== session.id && setActiveSessionId(session.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeSessionId === session.id && !renamingId ? 'bg-muted' : 'hover:bg-muted'}`}>
+            {renamingId === session.id ? (
+                <div className="flex w-full items-center gap-2">
+                    <Input value={renamingTitle} onChange={(e) => setRenamingTitle(e.target.value)} className="h-8" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmRenameSession(session.id)} />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => confirmRenameSession(session.id)}><Check className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={cancelRename}><X className="h-4 w-4" /></Button>
+                </div>
+            ) : (
+                <>
+                    <div className="overflow-hidden">
+                        <p className="font-medium truncate">{session.title}</p>
+                        <p className="text-xs text-muted-foreground">{format(new Date(session.timestamp), 'dd-MM-yyyy p')}</p>
+                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); startRenameSession(session)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); deleteSession(session.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </>
+            )}
+        </div>
+    );
+    
+    return (
+        <Card className="md:col-span-1 lg:col-span-1 flex flex-col h-full border-0 md:border">
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="font-headline">Chat History</CardTitle>
+                    <CardDescription>Your past conversations</CardDescription>
+                </div>
+                <Button variant="ghost" size="icon" onClick={createNewChat}>
+                    <MessageSquare className="h-5 w-5" />
+                </Button>
+            </CardHeader>
+            <CardContent className="flex-1 p-0">
+                 <ScrollArea className="h-full">
+                    <div className="space-y-2 p-2">
+                        {grouped.today.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Today</p>}
+                        {grouped.today.map(renderSession)}
+                        {grouped.yesterday.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Yesterday</p>}
+                        {grouped.yesterday.map(renderSession)}
+                        {grouped.last7Days.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Previous 7 Days</p>}
+                        {grouped.last7Days.map(renderSession)}
+                        {grouped.earlier.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Earlier</p>}
+                        {grouped.earlier.map(renderSession)}
+                    </div>
+                 </ScrollArea>
+            </CardContent>
+        </Card>
+    );
+};
+
+
 export default function ChatbotPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -39,8 +145,12 @@ export default function ChatbotPage() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  const [sheetOpen, setSheetOpen] = useState(false);
+
   
-  const activeMessages = sessions.find(s => s.id === activeSessionId)?.messages || [];
+  const activeSession = sessions.find(s => s.id === activeSessionId);
+  const activeMessages = activeSession?.messages || [];
   
   const createNewChat = () => {
       const newSession: ChatSession = {
@@ -53,26 +163,29 @@ export default function ChatbotPage() {
       };
       setSessions(prev => [newSession, ...prev]);
       setActiveSessionId(newSession.id);
+      if (isMobile) setSheetOpen(false);
   }
 
   // Load sessions from localStorage on initial render
   useEffect(() => {
     try {
         const savedSessions = localStorage.getItem('chatSessions');
-        if (savedSessions) {
-            const parsedSessions = JSON.parse(savedSessions).map((s: any) => ({
-                ...s,
-                timestamp: new Date(s.timestamp)
-            }));
-            setSessions(parsedSessions);
-            
-            if (parsedSessions.length > 0) {
-              const sortedSessions = [...parsedSessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
-              setActiveSessionId(sortedSessions[0].id);
-            }
+        const parsedSessions = savedSessions ? JSON.parse(savedSessions).map((s: any) => ({
+            ...s,
+            timestamp: new Date(s.timestamp)
+        })) : [];
+
+        setSessions(parsedSessions);
+        
+        if (parsedSessions.length > 0) {
+          const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          setActiveSessionId(sortedSessions[0].id);
         }
+        createNewChat();
+
     } catch (error) {
         console.error("Failed to load chat sessions from localStorage", error);
+        createNewChat();
     }
   }, []);
 
@@ -80,7 +193,8 @@ export default function ChatbotPage() {
   useEffect(() => {
     try {
         if (sessions.length > 0) {
-            localStorage.setItem('chatSessions', JSON.stringify(sessions));
+            const sessionsToSave = sessions.filter(s => s.messages.length > 1 || s.title !== "New Chat");
+            localStorage.setItem('chatSessions', JSON.stringify(sessionsToSave));
         } else {
              localStorage.removeItem('chatSessions');
         }
@@ -150,9 +264,12 @@ export default function ChatbotPage() {
             const remainingSessions = prev.filter(s => s.id !== sessionIdToDelete);
             
             if (activeSessionId === sessionIdToDelete) {
-                const sortedRemaining = [...remainingSessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+                const sortedRemaining = [...remainingSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
                 const nextActiveId = sortedRemaining.length > 0 ? sortedRemaining[0].id : null;
                 setActiveSessionId(nextActiveId);
+            }
+            if (remainingSessions.length === 0) {
+                 localStorage.removeItem('chatSessions');
             }
             
             return remainingSessions;
@@ -176,74 +293,71 @@ export default function ChatbotPage() {
         setRenamingTitle('');
     }
 
+    const handleSetActiveSession = (id: string) => {
+        setActiveSessionId(id);
+        if (isMobile) setSheetOpen(false);
+    }
+
+    const chatListProps = {
+        sessions: sessions.filter(s => s.id !== activeSessionId && (s.messages.length > 1 || s.title !== "New Chat")),
+        activeSessionId,
+        setActiveSessionId: handleSetActiveSession,
+        renamingId,
+        startRenameSession,
+        confirmRenameSession,
+        renamingTitle,
+        setRenamingTitle,
+        cancelRename,
+        deleteSession: handleDeleteSession,
+        createNewChat
+    };
 
   return (
-    <div className="grid h-[calc(100vh-8rem)] grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4">
-        <Card className="md:col-span-1 lg:col-span-1 flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle className="font-headline">Chat History</CardTitle>
-                    <CardDescription>Your past conversations</CardDescription>
-                </div>
-                <Button variant="ghost" size="icon" onClick={createNewChat}>
-                    <MessageSquare className="h-5 w-5" />
-                </Button>
-            </CardHeader>
-            <CardContent className="flex-1 p-0">
-                 <ScrollArea className="h-full">
-                    <div className="space-y-2 p-2">
-                    {[...sessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()).map(session => (
-                        <div key={session.id} onClick={() => renamingId !== session.id && setActiveSessionId(session.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeSessionId === session.id && !renamingId ? 'bg-muted' : 'hover:bg-muted'}`}>
-                            {renamingId === session.id ? (
-                                <div className="flex w-full items-center gap-2">
-                                    <Input value={renamingTitle} onChange={(e) => setRenamingTitle(e.target.value)} className="h-8" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmRenameSession(session.id)} />
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => confirmRenameSession(session.id)}><Check className="h-4 w-4" /></Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={cancelRename}><X className="h-4 w-4" /></Button>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="overflow-hidden">
-                                        <p className="font-medium truncate">{session.title}</p>
-                                        <p className="text-xs text-muted-foreground">{format(new Date(session.timestamp), 'dd-MM-yyyy')}</p>
-                                    </div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); startRenameSession(session)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteSession(session.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </>
-                            )}
-                        </div>
-                    ))}
-                    </div>
-                 </ScrollArea>
-            </CardContent>
-        </Card>
-        <Card className="md:col-span-2 lg:col-span-3 flex flex-col">
-            {activeSessionId ? (
+    <div className="grid h-[calc(100vh-5rem)] md:h-[calc(100vh-8rem)] grid-cols-1 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+        
+        {/* Desktop Sidebar */}
+        <div className="hidden md:flex md:col-span-1 lg:col-span-1">
+            <ChatList {...chatListProps} />
+        </div>
+
+        <Card className="md:col-span-2 lg:col-span-3 flex flex-col border-0 md:border">
+            {activeSession ? (
                 <>
                     <CardHeader className="flex flex-row items-center justify-between border-b">
-                        <div>
-                            <CardTitle className="font-headline">AI Assistant</CardTitle>
-                            <CardDescription>Your 24/7 mental health support chatbot</CardDescription>
+                        <div className="flex items-center gap-2">
+                             <Button asChild variant="ghost" size="icon" className="md:hidden">
+                                 <Link href="/dashboard"><ArrowLeft/></Link>
+                            </Button>
+                            <div>
+                                <CardTitle className="font-headline">{activeSession.title}</CardTitle>
+                                <CardDescription>Your 24/7 mental health support</CardDescription>
+                            </div>
                         </div>
-                        <Select value={tone} onValueChange={(value) => setTone(value as any)}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Select a tone" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="professional">Professional</SelectItem>
-                                <SelectItem value="friendly">Friendly</SelectItem>
-                                <SelectItem value="empathetic">Empathetic</SelectItem>
-                                <SelectItem value="humorous">Humorous</SelectItem>
-                            </SelectContent>
-                        </Select>
+
+                         <div className="flex items-center gap-2">
+                            {/* Mobile History Button */}
+                            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                                <SheetTrigger asChild>
+                                    <Button variant="outline" className="md:hidden">
+                                        <History className="mr-2 h-4 w-4" /> History
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent side="left" className="p-0">
+                                     <ChatList {...chatListProps} />
+                                </SheetContent>
+                            </Sheet>
+                            <Select value={tone} onValueChange={(value) => setTone(value as any)}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select a tone" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="professional">Professional</SelectItem>
+                                    <SelectItem value="friendly">Friendly</SelectItem>
+                                    <SelectItem value="empathetic">Empathetic</SelectItem>
+                                    <SelectItem value="humorous">Humorous</SelectItem>
+                                </SelectContent>
+                            </Select>
+                         </div>
                     </CardHeader>
                     <CardContent className="flex-1 p-0">
                         <ScrollArea className="h-[calc(100%-140px)]" ref={scrollAreaRef}>
@@ -309,15 +423,12 @@ export default function ChatbotPage() {
                 </>
             ) : (
                 <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                    <MessageSquarePlus className="h-16 w-16 text-muted-foreground" />
-                    <CardTitle className="font-headline">Start a new conversation</CardTitle>
-                    <CardDescription>Click the new chat button in the sidebar to begin.</CardDescription>
+                    <p>Loading...</p>
                 </div>
             )}
         </Card>
     </div>
   );
 }
-
 
     
