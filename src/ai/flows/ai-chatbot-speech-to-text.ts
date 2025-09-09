@@ -39,12 +39,10 @@ const transcribeAudioFlow = ai.defineFlow(
     const {text} = await ai.generate({
       model: 'googleai/gemini-2.5-flash',
       prompt: [
-        {text: 'Transcribe the following audio:'},
+        {text: 'Transcribe the following audio. Only return the spoken words. Do not include any other annotations or environmental sounds like [SOUND] or [MUSIC].'},
         {media: {url: input.audioDataUri}},
       ],
     });
     return {transcription: text};
   }
 );
-
-    

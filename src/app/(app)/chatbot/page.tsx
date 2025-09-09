@@ -144,6 +144,7 @@ export default function ChatbotPage() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
   const [tone, setTone] = useState<'professional' | 'friendly' | 'empathetic' | 'humorous'>('professional');
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState('');
@@ -221,7 +222,7 @@ export default function ChatbotPage() {
         behavior: 'smooth',
       });
     }
-  }, [activeMessages]);
+  }, [activeMessages, isLoading]);
   
   const playAudio = (audioDataUri: string) => {
     if (audioPlayerRef.current) {
@@ -239,6 +240,7 @@ export default function ChatbotPage() {
     setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, userMessage], timestamp: new Date() } : s));
     setInput('');
     setIsLoading(true);
+    setLoadingMessage(null);
 
     try {
       const currentSession = sessions.find(s => s.id === activeSessionId);
@@ -260,10 +262,17 @@ export default function ChatbotPage() {
       });
 
       const botMessage: Message = { role: 'bot', text: response.response };
+      
+      let audioPromise;
+      if (playResponse) {
+        setLoadingMessage('Generating audio...');
+        audioPromise = textToSpeech(response.response);
+      }
+
       setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, botMessage] } : s));
 
-      if (playResponse) {
-        const audioResponse = await textToSpeech(response.response);
+      if (audioPromise) {
+        const audioResponse = await audioPromise;
         if (audioResponse.media) {
             playAudio(audioResponse.media);
         }
@@ -275,6 +284,7 @@ export default function ChatbotPage() {
       setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, errorMessage] } : s));
     } finally {
       setIsLoading(false);
+      setLoadingMessage(null);
     }
   }
 
@@ -349,14 +359,18 @@ export default function ChatbotPage() {
                         const base64Audio = reader.result as string;
                         try {
                             setIsLoading(true);
+                            setLoadingMessage('Transcribing...');
                             const { transcription } = await transcribeAudio({ audioDataUri: base64Audio });
                             if(transcription) {
                                await processAndSendMessage(transcription, true);
+                            } else {
+                                setIsLoading(false);
+                                setLoadingMessage(null);
                             }
                         } catch (error) {
                             console.error("Error transcribing audio:", error);
-                        } finally {
-                            setIsLoading(false);
+                             setIsLoading(false);
+                             setLoadingMessage(null);
                         }
                     };
                      // Stop all media tracks to turn off the recording indicator
@@ -472,11 +486,15 @@ export default function ChatbotPage() {
                                 <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
                                 </Avatar>
                                 <div className="max-w-[75%] rounded-lg bg-muted p-3">
-                                <div className="flex items-center space-x-2">
-                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
-                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
-                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
-                                </div>
+                                {loadingMessage ? (
+                                    <p className="text-sm text-muted-foreground italic">{loadingMessage}</p>
+                                ) : (
+                                    <div className="flex items-center space-x-2">
+                                        <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
+                                        <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
+                                        <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
+                                    </div>
+                                )}
                                 </div>
                             </div>
                             )}
@@ -484,7 +502,7 @@ export default function ChatbotPage() {
                         </ScrollArea>
                     </CardContent>
                     <CardFooter className="border-t p-2 md:p-4">
-                      <div className="w-full flex flex-col items-center">
+                      <div className="w-full flex flex-col items-center gap-2">
                         <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
                             <Input
                                 value={input}
@@ -521,5 +539,3 @@ export default function ChatbotPage() {
     </div>
   );
 }
-
-    
