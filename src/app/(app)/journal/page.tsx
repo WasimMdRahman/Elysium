@@ -11,7 +11,7 @@ import { FilePlus, MoreVertical, Trash, Edit, Save, Check, X, ArrowLeft, History
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
-import { format } from 'date-fns';
+import { format, isToday, isYesterday, isAfter, subDays } from 'date-fns';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -35,54 +35,92 @@ const JournalList = ({ entries, activeEntryId, setActiveEntryId, renamingId, sta
     cancelRename: () => void;
     deleteEntry: (id: string) => void;
     createNewEntry: () => void;
-}) => (
-    <Card className="md:col-span-1 lg:col-span-1 flex flex-col h-full border-0 md:border">
-        <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle className="font-headline">My Entries</CardTitle>
-                <CardDescription>Your journal history</CardDescription>
-            </div>
-            <Button variant="ghost" size="icon" onClick={createNewEntry}>
-                <FilePlus className="h-5 w-5" />
-            </Button>
-        </CardHeader>
-        <CardContent className="flex-1 p-0">
-            <ScrollArea className="h-full">
-                <div className="space-y-2 p-2">
-                    {entries.sort((a,b) => b.date.getTime() - a.date.getTime()).map(entry => (
-                        <div key={entry.id} onClick={() => renamingId !== entry.id && setActiveEntryId(entry.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeEntryId === entry.id && !renamingId ? 'bg-muted' : 'hover:bg-muted'}`}>
-                            {renamingId === entry.id ? (
-                                <div className="flex w-full items-center gap-2">
-                                    <Input value={renamingTitle} onChange={(e) => setRenamingTitle(e.target.value)} className="h-8" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmRenameEntry(entry.id)} />
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => confirmRenameEntry(entry.id)}><Check className="h-4 w-4" /></Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={cancelRename}><X className="h-4 w-4" /></Button>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="overflow-hidden">
-                                        <p className="font-medium truncate">{entry.title}</p>
-                                        <p className="text-xs text-muted-foreground">{format(new Date(entry.date), 'dd-MM-yyyy')}</p>
-                                    </div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); startRenameEntry(entry)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); deleteEntry(entry.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </>
-                            )}
-                        </div>
-                    ))}
+}) => {
+    
+    const groupEntries = (entries: JournalEntry[]) => {
+        const today: JournalEntry[] = [];
+        const yesterday: JournalEntry[] = [];
+        const last7Days: JournalEntry[] = [];
+        const earlier: JournalEntry[] = [];
+
+        const now = new Date();
+        const sevenDaysAgo = subDays(now, 7);
+
+        entries.forEach(entry => {
+            if (isToday(entry.date)) {
+                today.push(entry);
+            } else if (isYesterday(entry.date)) {
+                yesterday.push(entry);
+            } else if (isAfter(entry.date, sevenDaysAgo)) {
+                last7Days.push(entry);
+            } else {
+                earlier.push(entry);
+            }
+        });
+        
+        return { today, yesterday, last7Days, earlier };
+    }
+    
+    const grouped = groupEntries(entries.sort((a,b) => b.date.getTime() - a.date.getTime()));
+
+    const renderEntry = (entry: JournalEntry) => (
+        <div key={entry.id} onClick={() => renamingId !== entry.id && setActiveEntryId(entry.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeEntryId === entry.id && !renamingId ? 'bg-muted' : 'hover:bg-muted'}`}>
+            {renamingId === entry.id ? (
+                <div className="flex w-full items-center gap-2">
+                    <Input value={renamingTitle} onChange={(e) => setRenamingTitle(e.target.value)} className="h-8" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmRenameEntry(entry.id)} />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => confirmRenameEntry(entry.id)}><Check className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={cancelRename}><X className="h-4 w-4" /></Button>
                 </div>
-            </ScrollArea>
-        </CardContent>
-    </Card>
-);
+            ) : (
+                <>
+                    <div className="overflow-hidden">
+                        <p className="font-medium truncate">{entry.title}</p>
+                        <p className="text-xs text-muted-foreground">{format(new Date(entry.date), 'dd-MM-yyyy p')}</p>
+                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); startRenameEntry(entry)}}><Edit className="mr-2 h-4 w-4" /> Rename</DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => {e.stopPropagation(); deleteEntry(entry.id)}} className="text-destructive"><Trash className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </>
+            )}
+        </div>
+    );
+    
+    return (
+        <Card className="md:col-span-1 lg:col-span-1 flex flex-col h-full border-0 md:border">
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="font-headline">My Entries</CardTitle>
+                    <CardDescription>Your journal history</CardDescription>
+                </div>
+                <Button variant="ghost" size="icon" onClick={createNewEntry}>
+                    <FilePlus className="h-5 w-5" />
+                </Button>
+            </CardHeader>
+            <CardContent className="flex-1 p-0">
+                <ScrollArea className="h-full">
+                    <div className="space-y-2 p-2">
+                        {grouped.today.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Today</p>}
+                        {grouped.today.map(renderEntry)}
+                        {grouped.yesterday.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Yesterday</p>}
+                        {grouped.yesterday.map(renderEntry)}
+                        {grouped.last7Days.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Previous 7 Days</p>}
+                        {grouped.last7Days.map(renderEntry)}
+                        {grouped.earlier.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Earlier</p>}
+                        {grouped.earlier.map(renderEntry)}
+                    </div>
+                </ScrollArea>
+            </CardContent>
+        </Card>
+    );
+};
 
 
 export default function JournalPage() {
@@ -93,8 +131,20 @@ export default function JournalPage() {
     const { toast } = useToast();
     const isMobile = useIsMobile();
     const [sheetOpen, setSheetOpen] = useState(false);
+    
+    const createNewEntry = () => {
+        const newEntry: JournalEntry = {
+            id: `entry-${Date.now()}`,
+            title: "New Entry",
+            content: "",
+            date: new Date(),
+        };
+        setEntries(prev => [newEntry, ...prev]);
+        setActiveEntryId(newEntry.id);
+        if (isMobile) setSheetOpen(false);
+    };
 
-    // Load entries from localStorage
+    // Load entries from localStorage and create a new one
     useEffect(() => {
         try {
             const savedEntries = localStorage.getItem('journalEntries');
@@ -104,13 +154,11 @@ export default function JournalPage() {
                     date: new Date(e.date)
                 }));
                 setEntries(parsedEntries);
-                if (parsedEntries.length > 0) {
-                    setActiveEntryId(parsedEntries.sort((a:any,b:any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].id);
-                }
             }
         } catch (error) {
             console.error("Failed to load journal entries from localStorage", error);
         }
+        createNewEntry();
     }, []);
     
     // Auto-save on change
@@ -126,17 +174,6 @@ export default function JournalPage() {
 
     const activeEntry = entries.find(e => e.id === activeEntryId);
 
-    const createNewEntry = () => {
-        const newEntry: JournalEntry = {
-            id: `entry-${Date.now()}`,
-            title: "New Entry",
-            content: "",
-            date: new Date(),
-        };
-        setEntries(prev => [newEntry, ...prev]);
-        setActiveEntryId(newEntry.id);
-        if (isMobile) setSheetOpen(false);
-    };
 
     const deleteEntry = (id: string) => {
         setEntries(prev => {
@@ -151,7 +188,6 @@ export default function JournalPage() {
             return newEntries;
         });
         toast({ title: "Entry deleted." });
-
     };
     
     const startRenameEntry = (entry: JournalEntry) => {
@@ -184,7 +220,9 @@ export default function JournalPage() {
 
     const saveEntries = () => {
         try {
-            localStorage.setItem('journalEntries', JSON.stringify(entries));
+            // Filter out empty new entries before saving
+            const entriesToSave = entries.filter(entry => entry.content.trim() !== '' || entry.title !== 'New Entry');
+            localStorage.setItem('journalEntries', JSON.stringify(entriesToSave));
             toast({
                 title: "Journal Saved!",
                 description: "Your entries have been successfully saved.",
@@ -247,6 +285,7 @@ export default function JournalPage() {
                                 <Button onClick={saveEntries}>
                                     <Save className="mr-2 h-4 w-4" />
                                     <span className="hidden md:inline">Save Journal</span>
+                                    <span className="md:hidden">Save</span>
                                 </Button>
                             </div>
                         </CardHeader>
@@ -273,6 +312,3 @@ export default function JournalPage() {
         </div>
     );
 }
-
-
-    
