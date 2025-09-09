@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Converts text to speech for the AI Chatbot.
@@ -67,7 +68,7 @@ const textToSpeechFlow = ai.defineFlow(
         responseModalities: ['AUDIO'],
         speechConfig: {
           voiceConfig: {
-            prebuiltVoiceConfig: {voiceName: 'Alloy'}, // Female-sounding voice
+            prebuiltVoiceConfig: {voiceName: 'vindemiatrix'}, // Female-sounding voice
           },
         },
       },
