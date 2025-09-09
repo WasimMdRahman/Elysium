@@ -1,4 +1,7 @@
 
+'use client';
+
+import { useState } from 'react';
 import { DashboardCard } from "@/components/dashboard-card";
 import {
   Bot,
@@ -8,6 +11,7 @@ import {
   BrainCircuit,
   Waves,
 } from "lucide-react";
+import { useRouter } from 'next/navigation';
 
 const features = [
   {
@@ -49,6 +53,14 @@ const features = [
 ];
 
 export default function DashboardPage() {
+  const [loadingCard, setLoadingCard] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleCardClick = (href: string) => {
+    setLoadingCard(href);
+    router.push(href);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -66,6 +78,8 @@ export default function DashboardPage() {
             icon={feature.icon}
             title={feature.title}
             description={feature.description}
+            isLoading={loadingCard === feature.href}
+            onClick={() => handleCardClick(feature.href)}
           />
         ))}
       </div>
