@@ -4,17 +4,20 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { aiChatbotMentalHealthSupport } from '@/ai/flows/ai-chatbot-mental-health-support';
+import { transcribeAudio } from '@/ai/flows/ai-chatbot-speech-to-text';
+import { textToSpeech } from '@/ai/flows/ai-chatbot-text-to-speech';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, ArrowLeft, History } from 'lucide-react';
+import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, ArrowLeft, History, Mic, MicOff } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format, isToday, isYesterday, subDays, isAfter } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 
 
 type Message = {
@@ -148,7 +151,13 @@ export default function ChatbotPage() {
   const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  
+  // Voice state
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioPlayerRef = useRef<HTMLAudioElement>(null);
+
+
   const activeSession = sessions.find(s => s.id === activeSessionId);
   const activeMessages = activeSession?.messages || [];
   
@@ -180,13 +189,10 @@ export default function ChatbotPage() {
         if (parsedSessions.length > 0) {
           const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           setActiveSessionId(sortedSessions[0].id);
-        } else {
-            createNewChat();
         }
 
     } catch (error) {
         console.error("Failed to load chat sessions from localStorage", error);
-        createNewChat();
     }
   }, []);
 
@@ -213,13 +219,19 @@ export default function ChatbotPage() {
       });
     }
   }, [activeMessages]);
+  
+  const playAudio = (audioDataUri: string) => {
+    if (audioPlayerRef.current) {
+        audioPlayerRef.current.src = audioDataUri;
+        audioPlayerRef.current.play().catch(e => console.error("Audio playback failed:", e));
+    }
+  }
 
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading || !activeSessionId) return;
+  const processAndSendMessage = async (messageText: string, playResponse: boolean = false) => {
+    if (!messageText.trim() || isLoading || !activeSessionId) return;
 
-    const userMessage: Message = { role: 'user', text: input };
+    const userMessage: Message = { role: 'user', text: messageText };
     
     setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, userMessage], timestamp: new Date() } : s));
     setInput('');
@@ -229,27 +241,30 @@ export default function ChatbotPage() {
       const currentSession = sessions.find(s => s.id === activeSessionId);
       const currentMessages = currentSession?.messages || [];
       const chatHistory: ChatHistoryItem[] = currentMessages
-        .filter((_, i) => i < currentMessages.length) // process all but the last user message
+        .filter((_, i) => i < currentMessages.length) 
         .reduce((acc, msg, i, arr) => {
             if (msg.role === 'user' && arr[i+1]?.role === 'bot') {
                 acc.push({ user: msg.text, bot: arr[i+1].text });
-            } else if (msg.role === 'user' && i === arr.length - 1) {
-                // handles the case where there is no bot message for the last user message yet
-            } else if (msg.role === 'bot' && arr[i-1]?.role !== 'user') {
-                 // handle initial bot message
             }
             return acc;
         }, [] as ChatHistoryItem[]);
 
 
       const response = await aiChatbotMentalHealthSupport({
-        message: input,
+        message: messageText,
         tone: tone,
         chatHistory: chatHistory
       });
 
       const botMessage: Message = { role: 'bot', text: response.response };
       setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, botMessage] } : s));
+
+      if (playResponse) {
+        const audioResponse = await textToSpeech(response.response);
+        if (audioResponse.media) {
+            playAudio(audioResponse.media);
+        }
+      }
 
     } catch (error) {
       console.error('Error fetching AI response:', error);
@@ -258,6 +273,11 @@ export default function ChatbotPage() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    processAndSendMessage(input, false);
   };
   
     const handleDeleteSession = (sessionIdToDelete: string) => {
@@ -270,7 +290,6 @@ export default function ChatbotPage() {
                     setActiveSessionId(sortedRemaining[0].id);
                 } else {
                     setActiveSessionId(null);
-                    createNewChat();
                 }
             }
             
@@ -303,6 +322,51 @@ export default function ChatbotPage() {
         setActiveSessionId(id);
         if (isMobile) setSheetOpen(false);
     }
+    
+    const handleVoiceRecording = async () => {
+        if (isRecording) {
+            mediaRecorderRef.current?.stop();
+            setIsRecording(false);
+        } else {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorderRef.current = new MediaRecorder(stream);
+                audioChunksRef.current = [];
+
+                mediaRecorderRef.current.ondataavailable = (event) => {
+                    audioChunksRef.current.push(event.data);
+                };
+
+                mediaRecorderRef.current.onstop = async () => {
+                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = async () => {
+                        const base64Audio = reader.result as string;
+                        try {
+                            setIsLoading(true);
+                            const { transcription } = await transcribeAudio({ audioDataUri: base64Audio });
+                            if(transcription) {
+                               await processAndSendMessage(transcription, true);
+                            }
+                        } catch (error) {
+                            console.error("Error transcribing audio:", error);
+                        } finally {
+                            setIsLoading(false);
+                        }
+                    };
+                     // Stop all media tracks to turn off the recording indicator
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorderRef.current.start();
+                setIsRecording(true);
+            } catch (error) {
+                console.error("Error accessing microphone:", error);
+            }
+        }
+    };
+
 
     const chatListProps = {
         sessions,
@@ -331,7 +395,6 @@ export default function ChatbotPage() {
                 <>
                     <CardHeader className="flex flex-row items-center justify-between border-b">
                         <div className="flex items-center gap-2">
-                             {/* Mobile History Button */}
                             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                                 <SheetTrigger asChild>
                                     <Button variant="ghost" size="icon" className="md:hidden">
@@ -343,8 +406,7 @@ export default function ChatbotPage() {
                                 </SheetContent>
                             </Sheet>
                             <div className="md:hidden text-center w-full">
-                                <p className="font-semibold text-sm truncate">{activeSession.title}</p>
-                                <p className="text-xs text-muted-foreground truncate">24/7 mental health support</p>
+                                <p className="font-semibold text-sm truncate">{activeSession.title} - 24/7 mental health support</p>
                             </div>
                             <div className="hidden md:block">
                                 <CardTitle className="font-headline">{activeSession.title}</CardTitle>
@@ -413,37 +475,43 @@ export default function ChatbotPage() {
                         </div>
                         </ScrollArea>
                     </CardContent>
-                    <CardFooter className="flex-col items-start border-t p-4 gap-4">
+                    <CardFooter className="flex flex-col items-start border-t p-2 md:p-4">
                         <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
                             <Input
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder="Type your message..."
+                                placeholder="Type or record your message..."
                                 className="flex-1"
-                                disabled={isLoading || !activeSessionId}
+                                disabled={isLoading || !activeSessionId || isRecording}
                             />
-                            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !activeSessionId}>
+                             <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || !activeSessionId} className={cn(isRecording && "bg-destructive hover:bg-destructive/90")}>
+                                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                            </Button>
+                            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !activeSessionId || isRecording}>
                                 <Send className="h-4 w-4" />
                             </Button>
                         </form>
-                        <p className="text-xs text-muted-foreground text-center w-full">
+                        <p className="text-xs text-muted-foreground text-center w-full pt-2">
                             Zenith Mind is not a replacement for professional therapy. In case you experience serious mental issues. Consider consulting a professional.
                         </p>
                     </CardFooter>
                 </>
             ) : (
-                <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+                <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-4">
                     <MessageSquare className="w-12 h-12 text-muted-foreground" />
                     <h2 className="text-xl font-semibold">Start a conversation</h2>
-                    <p className="text-muted-foreground">Click the "New Chat" button to begin.</p>
+                    <p className="text-muted-foreground">Click the "New Chat" button to begin your conversation with Zenith Mind.</p>
                     <Button onClick={createNewChat}>
                         <MessageSquare className="mr-2 h-4 w-4" /> New Chat
                     </Button>
                 </div>
             )}
         </Card>
+        <audio ref={audioPlayerRef} className="hidden" />
     </div>
   );
 }
+
+    
 
     
