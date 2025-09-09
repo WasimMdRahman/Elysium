@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X } from 'lucide-react';
+import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, MessageSquarePlus } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from 'date-fns';
 
@@ -68,25 +69,19 @@ export default function ChatbotPage() {
             if (parsedSessions.length > 0) {
               const sortedSessions = [...parsedSessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
               setActiveSessionId(sortedSessions[0].id);
-            } else {
-              createNewChat();
             }
-        } else {
-            createNewChat();
         }
     } catch (error) {
         console.error("Failed to load chat sessions from localStorage", error);
-        createNewChat(); // Create a new chat if loading fails
     }
   }, []);
 
   // Save sessions to localStorage whenever they change
   useEffect(() => {
     try {
-        // Prevent saving the initial empty array or the initial "New Chat" before user interacts
-        if (sessions.length > 0 && (sessions[0].messages.length > 1 || sessions.length > 1)) {
+        if (sessions.length > 0) {
             localStorage.setItem('chatSessions', JSON.stringify(sessions));
-        } else if (sessions.length === 0) {
+        } else {
              localStorage.removeItem('chatSessions');
         }
     } catch (error) {
@@ -151,19 +146,17 @@ export default function ChatbotPage() {
   };
   
     const handleDeleteSession = (sessionIdToDelete: string) => {
-        const remainingSessions = sessions.filter(s => s.id !== sessionIdToDelete);
-        
-        if (activeSessionId === sessionIdToDelete) {
-            const sortedRemaining = [...remainingSessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
-            const nextActiveId = sortedRemaining.length > 0 ? sortedRemaining[0].id : null;
-            setActiveSessionId(nextActiveId);
-        }
-
-        setSessions(remainingSessions);
-        
-        if (remainingSessions.length === 0) {
-            setTimeout(createNewChat, 0); // Use timeout to ensure state update completes
-        }
+        setSessions(prev => {
+            const remainingSessions = prev.filter(s => s.id !== sessionIdToDelete);
+            
+            if (activeSessionId === sessionIdToDelete) {
+                const sortedRemaining = [...remainingSessions].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+                const nextActiveId = sortedRemaining.length > 0 ? sortedRemaining[0].id : null;
+                setActiveSessionId(nextActiveId);
+            }
+            
+            return remainingSessions;
+        });
     };
     
     const startRenameSession = (session: ChatSession) => {
@@ -233,85 +226,98 @@ export default function ChatbotPage() {
             </CardContent>
         </Card>
         <Card className="md:col-span-2 lg:col-span-3 flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between border-b">
-                <div>
-                    <CardTitle className="font-headline">AI Assistant</CardTitle>
-                    <CardDescription>Your 24/7 mental health support chatbot</CardDescription>
+            {activeSessionId ? (
+                <>
+                    <CardHeader className="flex flex-row items-center justify-between border-b">
+                        <div>
+                            <CardTitle className="font-headline">AI Assistant</CardTitle>
+                            <CardDescription>Your 24/7 mental health support chatbot</CardDescription>
+                        </div>
+                        <Select value={tone} onValueChange={(value) => setTone(value as any)}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select a tone" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="professional">Professional</SelectItem>
+                                <SelectItem value="friendly">Friendly</SelectItem>
+                                <SelectItem value="empathetic">Empathetic</SelectItem>
+                                <SelectItem value="humorous">Humorous</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </CardHeader>
+                    <CardContent className="flex-1 p-0">
+                        <ScrollArea className="h-[calc(100%-140px)]" ref={scrollAreaRef}>
+                        <div className="p-6 space-y-6">
+                            {activeMessages.map((message, index) => (
+                            <div
+                                key={index}
+                                className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
+                            >
+                                {message.role === 'bot' && (
+                                <Avatar className="h-8 w-8 border">
+                                    <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
+                                </Avatar>
+                                )}
+                                <div className={`max-w-[75%] rounded-lg p-3 ${
+                                message.role === 'user'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted'
+                                }`}>
+                                <p className="text-sm">{message.text}</p>
+                                </div>
+                                {message.role === 'user' && (
+                                <Avatar className="h-8 w-8 border">
+                                    <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                                </Avatar>
+                                )}
+                            </div>
+                            ))}
+                            {isLoading && (
+                            <div className="flex items-start gap-4">
+                                <Avatar className="h-8 w-8 border">
+                                <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
+                                </Avatar>
+                                <div className="max-w-[75%] rounded-lg bg-muted p-3">
+                                <div className="flex items-center space-x-2">
+                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
+                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
+                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
+                                </div>
+                                </div>
+                            </div>
+                            )}
+                        </div>
+                        </ScrollArea>
+                    </CardContent>
+                    <CardFooter className="flex-col items-start border-t p-4 gap-4">
+                        <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
+                            <Input
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="Type your message..."
+                                className="flex-1"
+                                disabled={isLoading || !activeSessionId}
+                            />
+                            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !activeSessionId}>
+                                <Send className="h-4 w-4" />
+                            </Button>
+                        </form>
+                        <p className="text-xs text-muted-foreground text-center w-full">
+                            Zenith Mind is not a replacement for professional therapy. In case you experience serious mental issues. Consider consulting a professional.
+                        </p>
+                    </CardFooter>
+                </>
+            ) : (
+                <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+                    <MessageSquarePlus className="h-16 w-16 text-muted-foreground" />
+                    <CardTitle className="font-headline">Start a new conversation</CardTitle>
+                    <CardDescription>Click the new chat button in the sidebar to begin.</CardDescription>
                 </div>
-                <Select value={tone} onValueChange={(value) => setTone(value as any)}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select a tone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="professional">Professional</SelectItem>
-                        <SelectItem value="friendly">Friendly</SelectItem>
-                        <SelectItem value="empathetic">Empathetic</SelectItem>
-                        <SelectItem value="humorous">Humorous</SelectItem>
-                    </SelectContent>
-                </Select>
-            </CardHeader>
-            <CardContent className="flex-1 p-0">
-                <ScrollArea className="h-[calc(100%-140px)]" ref={scrollAreaRef}>
-                <div className="p-6 space-y-6">
-                    {activeMessages.map((message, index) => (
-                    <div
-                        key={index}
-                        className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
-                    >
-                        {message.role === 'bot' && (
-                        <Avatar className="h-8 w-8 border">
-                            <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
-                        </Avatar>
-                        )}
-                        <div className={`max-w-[75%] rounded-lg p-3 ${
-                        message.role === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                        }`}>
-                        <p className="text-sm">{message.text}</p>
-                        </div>
-                        {message.role === 'user' && (
-                        <Avatar className="h-8 w-8 border">
-                            <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                        </Avatar>
-                        )}
-                    </div>
-                    ))}
-                    {isLoading && (
-                    <div className="flex items-start gap-4">
-                        <Avatar className="h-8 w-8 border">
-                        <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
-                        </Avatar>
-                        <div className="max-w-[75%] rounded-lg bg-muted p-3">
-                        <div className="flex items-center space-x-2">
-                            <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
-                            <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
-                            <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
-                        </div>
-                        </div>
-                    </div>
-                    )}
-                </div>
-                </ScrollArea>
-            </CardContent>
-            <CardFooter className="flex-col items-start border-t p-4 gap-4">
-                <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
-                    <Input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Type your message..."
-                        className="flex-1"
-                        disabled={isLoading || !activeSessionId}
-                    />
-                    <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !activeSessionId}>
-                        <Send className="h-4 w-4" />
-                    </Button>
-                </form>
-                <p className="text-xs text-muted-foreground text-center w-full">
-                    Zenith Mind is not a replacement for professional therapy. In case you experience serious mental issues. Consider consulting a professional.
-                </p>
-            </CardFooter>
+            )}
         </Card>
     </div>
   );
 }
+
+
+    
