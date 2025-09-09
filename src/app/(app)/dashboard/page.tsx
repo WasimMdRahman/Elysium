@@ -51,12 +51,6 @@ const features = [
     description: "Guided practices for wellness",
     icon: Waves,
   },
-  {
-    href: "/streak-tracker",
-    title: "Streak Tracker",
-    description: "Build habits and track consistency",
-    icon: Flame,
-  },
 ];
 
 export default function DashboardPage() {
