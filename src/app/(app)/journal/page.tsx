@@ -144,33 +144,62 @@ export default function JournalPage() {
         if (isMobile) setSheetOpen(false);
     };
 
-    // Load entries from localStorage and create a new one
+    // Load entries from localStorage and create a new one for the session
     useEffect(() => {
         try {
             const savedEntries = localStorage.getItem('journalEntries');
+            let parsedEntries: JournalEntry[] = [];
             if (savedEntries) {
-                const parsedEntries = JSON.parse(savedEntries).map((e: any) => ({
+                parsedEntries = JSON.parse(savedEntries).map((e: any) => ({
                     ...e,
                     date: new Date(e.date)
                 }));
-                setEntries(parsedEntries);
             }
+            
+            const newEntry: JournalEntry = {
+                id: `entry-${Date.now()}`,
+                title: "New Entry",
+                content: "",
+                date: new Date(),
+            };
+            
+            setEntries([newEntry, ...parsedEntries]);
+            setActiveEntryId(newEntry.id);
+
         } catch (error) {
             console.error("Failed to load journal entries from localStorage", error);
+             const newEntry: JournalEntry = {
+                id: `entry-${Date.now()}`,
+                title: "New Entry",
+                content: "",
+                date: new Date(),
+            };
+            setEntries([newEntry]);
+            setActiveEntryId(newEntry.id);
         }
-        createNewEntry();
     }, []);
     
     // Auto-save on change
     useEffect(() => {
         if(entries.length > 0) {
             try {
-                localStorage.setItem('journalEntries', JSON.stringify(entries));
+                // Filter out the initial blank new entry if it's untouched
+                const entriesToSave = entries.filter(entry => {
+                    const isNewUntouched = entry.id === activeEntryId && entry.title === "New Entry" && entry.content === "";
+                    const isOldNewUntouched = entry.title === "New Entry" && entry.content === "";
+                    // This logic is tricky, we want to save if it's the active one and has content
+                    // or if it's not the active one (old blank entry)
+                    if (entry.id === activeEntryId) {
+                        return entry.content.trim() !== '' || entry.title !== 'New Entry';
+                    }
+                    return entry.content.trim() !== '' || entry.title !== 'New Entry';
+                });
+                localStorage.setItem('journalEntries', JSON.stringify(entriesToSave));
             } catch (error) {
                  console.error("Failed to save journal entries to localStorage", error);
             }
         }
-    }, [entries]);
+    }, [entries, activeEntryId]);
 
     const activeEntry = entries.find(e => e.id === activeEntryId);
 
@@ -214,7 +243,7 @@ export default function JournalPage() {
     
     const updateContent = (content: string) => {
         if(activeEntryId) {
-            setEntries(prev => prev.map(e => e.id === activeEntryId ? { ...e, content } : e));
+            setEntries(prev => prev.map(e => e.id === activeEntryId ? { ...e, content, date: new Date() } : e));
         }
     };
 
@@ -238,7 +267,8 @@ export default function JournalPage() {
     }
     
     const journalListProps = {
-        entries, activeEntryId, renamingId, renamingTitle,
+        entries: entries.filter(e => e.id !== activeEntryId), // Don't show current entry in history
+        activeEntryId, renamingId, renamingTitle,
         setActiveEntryId: handleSetActiveEntryId,
         startRenameEntry,
         confirmRenameEntry,
@@ -300,12 +330,7 @@ export default function JournalPage() {
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                         <Button asChild variant="ghost" size="icon" className="absolute top-4 left-4 md:hidden">
-                             <Link href="/dashboard"><ArrowLeft/></Link>
-                        </Button>
-                        <CardTitle className="font-headline">Journal</CardTitle>
-                        <CardDescription>Your space to reflect and grow.</CardDescription>
-                        <Button onClick={createNewEntry} className="mt-4">Create Your First Entry</Button>
+                        <p>Loading Journal...</p>
                     </div>
                 )}
             </Card>
