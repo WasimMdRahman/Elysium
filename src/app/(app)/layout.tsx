@@ -1,4 +1,6 @@
 
+'use client';
+
 import { Logo } from "@/components/logo";
 import {
   Sidebar,
@@ -20,6 +22,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ClientThemeToggle } from "./client-theme-toggle";
+import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 
 const menuItems = [
@@ -32,6 +36,7 @@ const menuItems = [
 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   return (
     <SidebarProvider>
       <Sidebar>
@@ -45,7 +50,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarMenu className="flex-1">
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton asChild variant="default" size="default" tooltip={item.tooltip}>
+              <SidebarMenuButton asChild variant="default" size="default" tooltip={item.tooltip} isActive={pathname === item.href}>
                 <Link href={item.href}>
                   <item.icon />
                   <span>{item.label}</span>
@@ -64,7 +69,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             <ClientThemeToggle />
         </header>
-        <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
+        <motion.main
+          key={pathname}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="flex-1 overflow-auto p-4 md:p-6"
+        >
+            {children}
+        </motion.main>
       </SidebarInset>
     </SidebarProvider>
   );
