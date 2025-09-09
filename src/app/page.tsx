@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -11,7 +12,7 @@ import { Logo } from '@/components/logo';
 const walkthroughSteps = [
   {
     icon: Sparkles,
-    title: 'Welcome to Zenith Mind',
+    title: 'Welcome to Elysium',
     description: 'Your personal companion for mental clarity and well-being. Let\'s take a quick tour of the features designed to support you on your journey.',
   },
   {
@@ -32,7 +33,7 @@ const walkthroughSteps = [
   {
     icon: CheckCircle,
     title: 'Ready to Begin?',
-    description: 'You\'ve seen what Zenith Mind has to offer. Take the next step towards a healthier, more balanced mind by creating your account.',
+    description: 'You\'ve seen what Elysium has to offer. Take the next step towards a healthier, more balanced mind by creating your account.',
   },
 ];
 
@@ -53,7 +54,7 @@ export default function WalkthroughPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="absolute top-8 left-8 flex items-center gap-2 text-lg font-bold text-foreground">
         <Logo className="h-6 w-6" />
-        <h1 className="font-headline">Zenith Mind</h1>
+        <h1 className="font-headline">Elysium</h1>
       </div>
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="items-center text-center">
@@ -106,3 +107,5 @@ export default function WalkthroughPage() {
     </div>
   );
 }
+
+    

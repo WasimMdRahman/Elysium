@@ -1,3 +1,4 @@
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 export default function PrivacyPage() {
@@ -9,7 +10,7 @@ export default function PrivacyPage() {
       </CardHeader>
       <CardContent className="prose dark:prose-invert">
         <h2>Introduction</h2>
-        <p>Welcome to Zenith Mind. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application.</p>
+        <p>Welcome to Elysium. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application.</p>
         
         <h2>Information We Collect</h2>
         <p>We may collect information about you in a variety of ways. The information we may collect via the Application includes personal data, such as your name and email address, and derivative data, such as your IP address, browser type, and operating system, which our servers automatically collect when you access the Application.</p>
@@ -23,3 +24,5 @@ export default function PrivacyPage() {
     </Card>
   );
 }
+
+    

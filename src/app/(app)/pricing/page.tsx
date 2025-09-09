@@ -1,3 +1,4 @@
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
@@ -13,7 +14,7 @@ const tiers = [
     {
         name: 'Zenith Plus',
         price: '$9.99',
-        description: 'Unlock the full potential of Zenith Mind.',
+        description: 'Unlock the full potential of Elysium.',
         features: ['All Free features', 'Unlimited AI Chatbot', 'AI Journal', 'Thought Quest Game', 'Full Exercise Library', 'Advanced Analytics'],
         isPrimary: true,
     },
@@ -64,3 +65,5 @@ export default function PricingPage() {
      </div>
   );
 }
+
+    

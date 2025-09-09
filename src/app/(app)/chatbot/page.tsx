@@ -168,7 +168,7 @@ export default function ChatbotPage() {
           title: "New Chat",
           timestamp: new Date(),
           messages: [
-            { role: 'bot', text: 'Hello! I am your Zenith Mind assistant. How can I support you today?' }
+            { role: 'bot', text: 'Hello! I am your Elysium assistant. How can I support you today?' }
           ]
       };
       setSessions(prev => [newSession, ...prev]);
@@ -519,7 +519,7 @@ export default function ChatbotPage() {
                             </Button>
                         </form>
                         <p className="text-xs text-muted-foreground text-center w-full pt-2">
-                            Zenith Mind is not a replacement for professional therapy. In case you experience serious mental issues. Consider consulting a professional.
+                            Elysium is not a replacement for professional therapy. In case you experience serious mental issues. Consider consulting a professional.
                         </p>
                       </div>
                     </CardFooter>
@@ -528,7 +528,7 @@ export default function ChatbotPage() {
                 <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-4">
                     <MessageSquare className="w-12 h-12 text-muted-foreground" />
                     <h2 className="text-xl font-semibold">Start a conversation</h2>
-                    <p className="text-muted-foreground">Click the "New Chat" button to begin your conversation with Zenith Mind.</p>
+                    <p className="text-muted-foreground">Click the "New Chat" button to begin your conversation with Elysium.</p>
                     <Button onClick={createNewChat}>
                         <MessageSquare className="mr-2 h-4 w-4" /> New Chat
                     </Button>
@@ -539,3 +539,5 @@ export default function ChatbotPage() {
     </div>
   );
 }
+
+    
