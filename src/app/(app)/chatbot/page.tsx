@@ -180,8 +180,9 @@ export default function ChatbotPage() {
         if (parsedSessions.length > 0) {
           const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           setActiveSessionId(sortedSessions[0].id);
+        } else {
+            createNewChat();
         }
-        createNewChat();
 
     } catch (error) {
         console.error("Failed to load chat sessions from localStorage", error);
@@ -264,10 +265,15 @@ export default function ChatbotPage() {
             const remainingSessions = prev.filter(s => s.id !== sessionIdToDelete);
             
             if (activeSessionId === sessionIdToDelete) {
-                const sortedRemaining = [...remainingSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-                const nextActiveId = sortedRemaining.length > 0 ? sortedRemaining[0].id : null;
-                setActiveSessionId(nextActiveId);
+                if (remainingSessions.length > 0) {
+                    const sortedRemaining = [...remainingSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                    setActiveSessionId(sortedRemaining[0].id);
+                } else {
+                    setActiveSessionId(null);
+                    createNewChat();
+                }
             }
+            
             if (remainingSessions.length === 0) {
                  localStorage.removeItem('chatSessions');
             }
@@ -299,7 +305,7 @@ export default function ChatbotPage() {
     }
 
     const chatListProps = {
-        sessions: sessions.filter(s => s.id !== activeSessionId && (s.messages.length > 1 || s.title !== "New Chat")),
+        sessions,
         activeSessionId,
         setActiveSessionId: handleSetActiveSession,
         renamingId,
@@ -325,29 +331,33 @@ export default function ChatbotPage() {
                 <>
                     <CardHeader className="flex flex-row items-center justify-between border-b">
                         <div className="flex items-center gap-2">
-                             <Button asChild variant="ghost" size="icon" className="md:hidden">
-                                 <Link href="/dashboard"><ArrowLeft/></Link>
-                            </Button>
-                            <div>
-                                <CardTitle className="font-headline">{activeSession.title}</CardTitle>
-                                <CardDescription>Your 24/7 mental health support</CardDescription>
-                            </div>
-                        </div>
-
-                         <div className="flex items-center gap-2">
-                            {/* Mobile History Button */}
+                             {/* Mobile History Button */}
                             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                                 <SheetTrigger asChild>
-                                    <Button variant="outline" className="md:hidden">
-                                        <History className="mr-2 h-4 w-4" /> History
+                                    <Button variant="ghost" size="icon" className="md:hidden">
+                                        <History className="h-5 w-5" />
                                     </Button>
                                 </SheetTrigger>
                                 <SheetContent side="left" className="p-0">
                                      <ChatList {...chatListProps} />
                                 </SheetContent>
                             </Sheet>
+                            <div className="md:hidden text-center w-full">
+                                <p className="font-semibold text-sm truncate">{activeSession.title}</p>
+                                <p className="text-xs text-muted-foreground truncate">24/7 mental health support</p>
+                            </div>
+                            <div className="hidden md:block">
+                                <CardTitle className="font-headline">{activeSession.title}</CardTitle>
+                                <CardDescription>Your 24/7 mental health support</CardDescription>
+                            </div>
+                        </div>
+
+                         <div className="flex items-center gap-2">
+                            <Button variant="outline" onClick={createNewChat} className="hidden md:flex">
+                                <MessageSquare className="mr-2 h-4 w-4" /> New Chat
+                            </Button>
                             <Select value={tone} onValueChange={(value) => setTone(value as any)}>
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger className="w-full md:w-[180px]">
                                     <SelectValue placeholder="Select a tone" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -423,7 +433,12 @@ export default function ChatbotPage() {
                 </>
             ) : (
                 <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                    <p>Loading...</p>
+                    <MessageSquare className="w-12 h-12 text-muted-foreground" />
+                    <h2 className="text-xl font-semibold">Start a conversation</h2>
+                    <p className="text-muted-foreground">Click the "New Chat" button to begin.</p>
+                    <Button onClick={createNewChat}>
+                        <MessageSquare className="mr-2 h-4 w-4" /> New Chat
+                    </Button>
                 </div>
             )}
         </Card>
