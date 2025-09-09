@@ -262,19 +262,19 @@ export default function ChatbotPage() {
       });
 
       const botMessage: Message = { role: 'bot', text: response.response };
+      setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, botMessage] } : s));
       
-      let audioPromise;
       if (playResponse) {
         setLoadingMessage('Generating audio...');
-        audioPromise = textToSpeech(response.response);
-      }
-
-      setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, botMessage] } : s));
-
-      if (audioPromise) {
-        const audioResponse = await audioPromise;
-        if (audioResponse.media) {
-            playAudio(audioResponse.media);
+        try {
+            const audioResponse = await textToSpeech(response.response);
+            if (audioResponse.media) {
+                playAudio(audioResponse.media);
+            }
+        } catch (audioError) {
+            console.error("Failed to generate or play audio:", audioError);
+            // Optionally, you can inform the user that audio failed
+            // For now, we just log it and the text message is already displayed.
         }
       }
 
