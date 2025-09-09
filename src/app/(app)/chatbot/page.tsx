@@ -189,10 +189,13 @@ export default function ChatbotPage() {
         if (parsedSessions.length > 0) {
           const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           setActiveSessionId(sortedSessions[0].id);
+        } else {
+            createNewChat();
         }
 
     } catch (error) {
         console.error("Failed to load chat sessions from localStorage", error);
+        createNewChat();
     }
   }, []);
 
@@ -290,6 +293,7 @@ export default function ChatbotPage() {
                     setActiveSessionId(sortedRemaining[0].id);
                 } else {
                     setActiveSessionId(null);
+                    createNewChat();
                 }
             }
             
@@ -393,9 +397,9 @@ export default function ChatbotPage() {
         <Card className="md:col-span-2 lg:col-span-3 flex flex-col border-0 md:border">
             {activeSession ? (
                 <>
-                    <CardHeader className="flex flex-row items-center justify-between border-b">
+                    <CardHeader className="flex flex-row items-center justify-between border-b p-2 md:p-6">
                         <div className="flex items-center gap-2">
-                            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                                 <SheetTrigger asChild>
                                     <Button variant="ghost" size="icon" className="md:hidden">
                                         <History className="h-5 w-5" />
@@ -405,21 +409,25 @@ export default function ChatbotPage() {
                                      <ChatList {...chatListProps} />
                                 </SheetContent>
                             </Sheet>
-                            <div className="md:hidden text-center w-full">
-                                <p className="font-semibold text-sm truncate">{activeSession.title} - 24/7 mental health support</p>
-                            </div>
-                            <div className="hidden md:block">
-                                <CardTitle className="font-headline">{activeSession.title}</CardTitle>
-                                <CardDescription>Your 24/7 mental health support</CardDescription>
-                            </div>
                         </div>
+
+                        <div className="flex flex-col items-center text-center">
+                            <p className="font-semibold truncate text-base md:hidden">{activeSession.title}</p>
+                            <p className="text-xs text-muted-foreground md:hidden">24/7 mental health support</p>
+                        </div>
+                        
+                        <div className="hidden md:block">
+                            <CardTitle className="font-headline">{activeSession.title}</CardTitle>
+                            <CardDescription>Your 24/7 mental health support</CardDescription>
+                        </div>
+                        
 
                          <div className="flex items-center gap-2">
                             <Button variant="outline" onClick={createNewChat} className="hidden md:flex">
                                 <MessageSquare className="mr-2 h-4 w-4" /> New Chat
                             </Button>
                             <Select value={tone} onValueChange={(value) => setTone(value as any)}>
-                                <SelectTrigger className="w-full md:w-[180px]">
+                                <SelectTrigger className="w-[90px] md:w-[180px]">
                                     <SelectValue placeholder="Select a tone" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -431,8 +439,8 @@ export default function ChatbotPage() {
                             </Select>
                          </div>
                     </CardHeader>
-                    <CardContent className="flex-1 p-0">
-                        <ScrollArea className="h-[calc(100%-140px)]" ref={scrollAreaRef}>
+                    <CardContent className="flex-1 overflow-hidden p-0">
+                        <ScrollArea className="h-full" ref={scrollAreaRef}>
                         <div className="p-6 space-y-6">
                             {activeMessages.map((message, index) => (
                             <div
@@ -475,7 +483,8 @@ export default function ChatbotPage() {
                         </div>
                         </ScrollArea>
                     </CardContent>
-                    <CardFooter className="flex flex-col items-start border-t p-2 md:p-4">
+                    <CardFooter className="border-t p-2 md:p-4">
+                      <div className="w-full flex flex-col items-center">
                         <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
                             <Input
                                 value={input}
@@ -494,6 +503,7 @@ export default function ChatbotPage() {
                         <p className="text-xs text-muted-foreground text-center w-full pt-2">
                             Zenith Mind is not a replacement for professional therapy. In case you experience serious mental issues. Consider consulting a professional.
                         </p>
+                      </div>
                     </CardFooter>
                 </>
             ) : (
@@ -511,7 +521,5 @@ export default function ChatbotPage() {
     </div>
   );
 }
-
-    
 
     
