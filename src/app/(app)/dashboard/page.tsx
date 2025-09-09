@@ -10,6 +10,7 @@ import {
   ListTodo,
   BrainCircuit,
   Waves,
+  Flame,
 } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
@@ -49,6 +50,12 @@ const features = [
     title: "Mental Health Exercises",
     description: "Guided practices for wellness",
     icon: Waves,
+  },
+  {
+    href: "/streak-tracker",
+    title: "Streak Tracker",
+    description: "Build habits and track consistency",
+    icon: Flame,
   },
 ];
 

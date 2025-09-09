@@ -28,6 +28,7 @@ import { usePathname } from "next/navigation";
 
 const menuItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", tooltip: "Dashboard" },
+    { href: "/streak-tracker", icon: Flame, label: "Streaks", tooltip: "Streaks" },
     { href: "/settings", icon: Settings, label: "Settings", tooltip: "Settings" },
     { href: "/pricing", icon: CreditCard, label: "Pricing", tooltip: "Pricing" },
     { href: "/privacy", icon: Shield, label: "Privacy Policy", tooltip: "Privacy Policy" },
@@ -82,5 +83,3 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    
