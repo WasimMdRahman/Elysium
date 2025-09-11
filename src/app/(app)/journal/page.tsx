@@ -108,6 +108,9 @@ const JournalList = ({ entries, activeEntryId, setActiveEntryId, renamingId, sta
             <CardContent className="flex-1 p-0">
                  <ScrollArea className="h-full">
                     <div className="space-y-2 p-2">
+                        {entries.length === 0 && (
+                             <div className="p-4 text-center text-sm text-muted-foreground">No entries yet.</div>
+                        )}
                         {grouped.today.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Today</p>}
                         {grouped.today.map(renderEntry)}
                         {grouped.yesterday.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Yesterday</p>}
@@ -155,8 +158,9 @@ export default function JournalPage() {
                 })) : [];
             
             if (parsedEntries.length > 0) {
-                setEntries(parsedEntries.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-                setActiveEntryId(parsedEntries[0].id);
+                const sortedEntries = parsedEntries.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                setEntries(sortedEntries);
+                setActiveEntryId(sortedEntries[0].id);
             } else {
                 createNewEntry();
             }
@@ -181,6 +185,8 @@ export default function JournalPage() {
             } catch (error) {
                  console.error("Failed to save journal entries to localStorage", error);
             }
+        } else if (entries.length === 0) {
+            localStorage.removeItem('journalEntries');
         }
     }, [entries]);
 
@@ -195,12 +201,11 @@ export default function JournalPage() {
                     const sortedRemaining = [...remainingEntries].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     setActiveEntryId(sortedRemaining[0].id);
                 } else {
-                    setActiveEntryId(null);
-                    createNewEntry();
+                    setActiveEntryId(null); // This will trigger the empty state view
                 }
             }
             if (remainingEntries.length === 0) {
-                localStorage.removeItem('journalEntries');
+                setActiveEntryId(null);
             }
             return remainingEntries;
         });
@@ -231,7 +236,19 @@ export default function JournalPage() {
     
     const updateContent = (content: string) => {
         if(activeEntryId) {
-            setEntries(prev => prev.map(e => e.id === activeEntryId ? { ...e, content, date: new Date() } : e));
+            setEntries(prev => prev.map(e => {
+                if (e.id === activeEntryId) {
+                    const isNewUntouchedEntry = e.title === 'New Entry' && e.content === '';
+                    return { 
+                        ...e, 
+                        content, 
+                        // Set title from first line of content if it's a new entry
+                        title: isNewUntouchedEntry && content.trim() ? content.substring(0, 30) + (content.length > 30 ? '...' : '') : e.title,
+                        date: new Date() 
+                    };
+                }
+                return e;
+            }));
         }
     };
 
@@ -255,7 +272,7 @@ export default function JournalPage() {
     }
     
     const journalListProps = {
-        entries: entries,
+        entries: entries.filter(e => e.content.trim() !== '' || e.title !== 'New Entry' || e.id === activeEntryId),
         activeEntryId, renamingId, renamingTitle,
         setActiveEntryId: handleSetActiveEntryId,
         startRenameEntry,
@@ -297,13 +314,17 @@ export default function JournalPage() {
                                         </Button>
                                     </SheetTrigger>
                                     <SheetContent side="left" className="p-0">
+                                         <SheetHeader><SheetTitle className="sr-only">Journal History</SheetTitle></SheetHeader>
                                          <JournalList {...journalListProps} />
                                     </SheetContent>
                                 </Sheet>
+                                <Button onClick={createNewEntry} variant="outline">
+                                    <FilePlus className="mr-2 h-4 w-4" />
+                                    <span className="hidden md:inline">New Entry</span>
+                                </Button>
                                 <Button onClick={saveEntries}>
                                     <Save className="mr-2 h-4 w-4" />
-                                    <span className="hidden md:inline">Save Journal</span>
-                                    <span className="md:hidden">Save</span>
+                                    <span className="hidden md:inline">Save</span>
                                 </Button>
                             </div>
                         </CardHeader>
@@ -330,3 +351,5 @@ export default function JournalPage() {
         </div>
     );
 }
+
+    
