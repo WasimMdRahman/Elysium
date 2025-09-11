@@ -79,9 +79,9 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+       <div className="bg-accent text-accent-foreground p-6 rounded-lg">
         <h1 className="text-3xl font-bold font-headline">{greeting}</h1>
-        <p className="text-muted-foreground">
+        <p className="text-accent-foreground/80">
           Here are your tools for a mindful day.
         </p>
       </div>
