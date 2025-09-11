@@ -29,13 +29,13 @@
     --chart-4: 43 96% 56%;
     --chart-5: 210 40% 96.1%;
     --radius: 0.5rem;
-    --sidebar-background: 145 60% 25%; /* dark green */
-    --sidebar-foreground: 145 20% 95%; /* very light green/white */
+    --sidebar-background: 0 0% 3.9%; /* black */
+    --sidebar-foreground: 0 0% 98%; /* white */
     --sidebar-primary: 217 91% 60%; /* blue */
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 145 60% 30%; /* slightly lighter dark green */
+    --sidebar-accent: 0 0% 14.9%; /* slightly lighter black */
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 145 60% 30%;
+    --sidebar-border: 0 0% 14.9%;
     --sidebar-ring: 217 91% 60%;
   }
  

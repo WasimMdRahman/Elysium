@@ -35,7 +35,7 @@ export function DashboardCard({ href, icon: Icon, title, description, isLoading,
           {isLoading ? (
             <Loader className="h-5 w-5 text-muted-foreground animate-spin" />
           ) : (
-            <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1" />
+            <ArrowRight className="h-5 w-5 text-green-800 transition-transform duration-200 group-hover:translate-x-1 dark:text-muted-foreground" />
           )}
         </CardHeader>
       </Card>
