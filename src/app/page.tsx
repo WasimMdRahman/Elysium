@@ -1,8 +1,9 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -39,6 +40,22 @@ const walkthroughSteps = [
 
 export default function WalkthroughPage() {
   const [currentStep, setCurrentStep] = useState(0);
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const hasSeenWalkthrough = localStorage.getItem('hasSeenWalkthrough');
+      if (hasSeenWalkthrough) {
+        router.replace('/dashboard');
+      } else {
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Failed to access localStorage', error);
+      setIsLoading(false);
+    }
+  }, [router]);
 
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, walkthroughSteps.length - 1));
@@ -47,6 +64,23 @@ export default function WalkthroughPage() {
   const handlePrev = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
+  
+  const handleGetStarted = () => {
+    try {
+        localStorage.setItem('hasSeenWalkthrough', 'true');
+    } catch (error) {
+        console.error('Failed to set localStorage item', error);
+    }
+    router.push('/dashboard');
+  }
+
+  if (isLoading) {
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background">
+            {/* You can add a loading spinner here if you want */}
+        </div>
+    );
+  }
 
   const { icon: Icon, title, description } = walkthroughSteps[currentStep];
 
@@ -95,11 +129,9 @@ export default function WalkthroughPage() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-              <Link href="/dashboard">
+            <Button onClick={handleGetStarted} className="bg-accent text-accent-foreground hover:bg-accent/90">
                 Get Started
                 <Sparkles className="ml-2 h-4 w-4" />
-              </Link>
             </Button>
           )}
         </CardFooter>
@@ -107,5 +139,3 @@ export default function WalkthroughPage() {
     </div>
   );
 }
-
-    
