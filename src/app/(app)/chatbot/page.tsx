@@ -123,6 +123,9 @@ const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, s
             <CardContent className="flex-1 p-0">
                  <ScrollArea className="h-full">
                     <div className="space-y-2 p-2">
+                        {sessions.length === 0 && (
+                            <div className="p-4 text-center text-sm text-muted-foreground">No chats yet.</div>
+                        )}
                         {grouped.today.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Today</p>}
                         {grouped.today.map(renderSession)}
                         {grouped.yesterday.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Yesterday</p>}
@@ -189,13 +192,9 @@ export default function ChatbotPage() {
           const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           setSessions(sortedSessions);
           setActiveSessionId(sortedSessions[0].id);
-        } else {
-            createNewChat();
         }
-
     } catch (error) {
         console.error("Failed to load chat sessions from localStorage", error);
-        createNewChat();
     }
   }, []);
 
@@ -237,13 +236,30 @@ export default function ChatbotPage() {
 
 
   const processAndSendMessage = async (messageText: string, playResponse: boolean = false) => {
-    if (!messageText.trim() || isLoading || !activeSessionId) return;
+    if (!messageText.trim() || isLoading) return;
+
+    // Create a new chat if there's no active one
+    let currentActiveSessionId = activeSessionId;
+    if (!currentActiveSessionId) {
+        const newSession: ChatSession = {
+          id: `chat-${new Date().getTime()}-${Math.random().toString(36).substring(7)}`,
+          title: "New Chat",
+          timestamp: new Date(),
+          messages: [
+            { role: 'bot', text: 'Hello! I am your Elysium assistant. How can I support you today?' }
+          ]
+        };
+        setSessions(prev => [newSession, ...prev]);
+        setActiveSessionId(newSession.id);
+        currentActiveSessionId = newSession.id;
+    }
+
 
     const userMessage: Message = { role: 'user', text: messageText };
     
     // Optimistically update UI
     setSessions(prev => prev.map(s => {
-        if (s.id === activeSessionId) {
+        if (s.id === currentActiveSessionId) {
             const isNewChat = s.title === "New Chat" && s.messages.length === 1;
             return { 
                 ...s, 
@@ -262,7 +278,7 @@ export default function ChatbotPage() {
 
     try {
       // Find the updated session to get the latest messages for history
-      const currentSession = sessions.find(s => s.id === activeSessionId);
+      const currentSession = sessions.find(s => s.id === currentActiveSessionId);
       const historyMessages = (currentSession?.messages || []).concat(userMessage);
 
       const chatHistory: ChatHistoryItem[] = historyMessages
@@ -283,7 +299,7 @@ export default function ChatbotPage() {
 
       const botMessage: Message = { role: 'bot', text: response.response };
       
-      setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, botMessage] } : s));
+      setSessions(prev => prev.map(s => s.id === currentActiveSessionId ? { ...s, messages: [...s.messages, botMessage] } : s));
       
       if (playResponse) {
         setLoadingMessage('Generating audio...');
@@ -301,7 +317,7 @@ export default function ChatbotPage() {
     } catch (error) {
       console.error('Error fetching AI response:', error);
       const errorMessage: Message = { role: 'bot', text: 'Sorry, I am having trouble connecting right now.' };
-      setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, errorMessage] } : s));
+      setSessions(prev => prev.map(s => s.id === currentActiveSessionId ? { ...s, messages: [...s.messages, errorMessage] } : s));
     } finally {
       setIsLoading(false);
       setLoadingMessage(null);
@@ -328,19 +344,11 @@ export default function ChatbotPage() {
             
             if (remainingSessions.length === 0) {
                  localStorage.removeItem('chatSessions');
-                 // Will trigger useEffect to create a new chat
             }
             
             return remainingSessions;
         });
     };
-    
-    // Check if there are no sessions and create one
-    useEffect(() => {
-        if (sessions.length === 0 && !activeSessionId) {
-            createNewChat();
-        }
-    }, [sessions, activeSessionId]);
     
     const startRenameSession = (session: ChatSession) => {
         setRenamingId(session.id);
@@ -535,12 +543,12 @@ export default function ChatbotPage() {
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Type or record your message..."
                                 className="flex-1"
-                                disabled={isLoading || !activeSessionId || isRecording}
+                                disabled={isLoading || isRecording}
                             />
-                             <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || !activeSessionId} className={cn(isRecording && "bg-destructive hover:bg-destructive/90")}>
+                             <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading} className={cn(isRecording && "bg-destructive hover:bg-destructive/90")}>
                                 {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                             </Button>
-                            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !activeSessionId || isRecording}>
+                            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording}>
                                 <Send className="h-4 w-4" />
                             </Button>
                         </form>
@@ -565,3 +573,5 @@ export default function ChatbotPage() {
     </div>
   );
 }
+
+    
