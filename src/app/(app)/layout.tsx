@@ -1,7 +1,6 @@
 
 'use client';
 
-import { Logo } from "@/components/logo";
 import {
   Sidebar,
   SidebarProvider,
@@ -28,7 +27,6 @@ import { usePathname } from "next/navigation";
 
 const menuItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", tooltip: "Dashboard" },
-    { href: "/streak-tracker", icon: Flame, label: "Streak Tracker", tooltip: "Streak Tracker" },
     { href: "/settings", icon: Settings, label: "Settings", tooltip: "Settings" },
     { href: "/privacy", icon: Shield, label: "Privacy Policy", tooltip: "Privacy Policy" },
     { href: "/terms", icon: FileText, label: "Terms of Service", tooltip: "Terms of Service" },
@@ -45,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar>
         <SidebarHeader>
             <div className="flex items-center gap-2">
-                <Logo />
+                
                 <span className="text-lg font-semibold font-headline group-data-[collapsible=icon]:hidden">Zenith Mind</span>
             </div>
         </SidebarHeader>
