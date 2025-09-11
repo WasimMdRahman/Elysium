@@ -252,7 +252,7 @@ export default function JournalPage() {
         }
     };
 
-    const saveEntries = () => {
+    const saveTasks = () => {
         try {
             // Filter out empty new entries before saving
             const entriesToSave = entries.filter(entry => entry.content.trim() !== '' || entry.title !== 'New Entry');
@@ -322,7 +322,7 @@ export default function JournalPage() {
                                     <FilePlus className="mr-2 h-4 w-4" />
                                     <span className="hidden md:inline">New Entry</span>
                                 </Button>
-                                <Button onClick={saveEntries}>
+                                <Button onClick={saveTasks}>
                                     <Save className="mr-2 h-4 w-4" />
                                     <span className="hidden md:inline">Save</span>
                                 </Button>
@@ -351,5 +351,3 @@ export default function JournalPage() {
         </div>
     );
 }
-
-    
