@@ -24,7 +24,7 @@ import { ClientThemeToggle } from "./client-theme-toggle";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { SplashScreen } from './splash-screen';
-import './logo-animation.css';
+import '../logo-animation.css';
 
 
 const menuItems = [
