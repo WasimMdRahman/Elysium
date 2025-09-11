@@ -2,12 +2,10 @@
 'use client';
 
 import { useState } from "react";
-import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Wind, Zap, Smile, Heart, Users, Shield, BookOpen, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import placeholderImages from '@/lib/placeholder-images.json';
 
 
 const exercises = {
@@ -72,14 +70,14 @@ const exercises = {
 type Category = keyof typeof exercises;
 
 const categoryInfo = {
-    anxiety: { icon: Wind, label: "Anxiety", description: "Find calm and peace.", image: placeholderImages.exercises.anxiety },
-    stress: { icon: Zap, label: "Stress", description: "Melt away tension.", image: placeholderImages.exercises.stress },
-    "low-mood": { icon: Smile, label: "Low Mood", description: "Lift your spirits.", image: placeholderImages.exercises["low-mood"] },
-    focus: { icon: Brain, label: "Focus", description: "Sharpen your concentration.", image: placeholderImages.exercises.focus },
-    selfEsteem: { icon: Heart, label: "Self-Esteem", description: "Build your confidence.", image: placeholderImages.exercises.selfEsteem },
-    relationships: { icon: Users, label: "Relationships", description: "Improve your connections.", image: placeholderImages.exercises.relationships },
-    trauma: { icon: Shield, label: "Trauma", description: "Gentle healing practices.", image: placeholderImages.exercises.trauma },
-    learning: { icon: BookOpen, label: "Learning", description: "Enhance your cognitive skills.", image: placeholderImages.exercises.learning }
+    anxiety: { emoji: "🌬️", label: "Anxiety", description: "Find calm and peace." },
+    stress: { emoji: "⚡️", label: "Stress", description: "Melt away tension." },
+    "low-mood": { emoji: "😊", label: "Low Mood", description: "Lift your spirits." },
+    focus: { emoji: "🧠", label: "Focus", description: "Sharpen your concentration." },
+    selfEsteem: { emoji: "❤️", label: "Self-Esteem", description: "Build your confidence." },
+    relationships: { emoji: "👥", label: "Relationships", description: "Improve your connections." },
+    trauma: { emoji: "🛡️", label: "Trauma", description: "Gentle healing practices." },
+    learning: { emoji: "📚", label: "Learning", description: "Enhance your cognitive skills." }
 }
 
 export default function ExercisesPage() {
@@ -100,8 +98,8 @@ export default function ExercisesPage() {
                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Categories
                     </Button>
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <Info.icon className="h-6 w-6" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-3xl">
+                            {Info.emoji}
                         </div>
                         <div>
                              <h1 className="text-3xl font-bold font-headline">{Info.label} Exercises</h1>
@@ -148,19 +146,14 @@ export default function ExercisesPage() {
                     >
                         <Card 
                             onClick={() => setSelectedCategory(cat)}
-                            className="relative h-48 flex flex-col justify-end text-left cursor-pointer overflow-hidden group transition-shadow hover:shadow-xl rounded-lg"
+                            className="flex h-48 flex-col items-center justify-center text-center cursor-pointer transition-shadow hover:shadow-xl rounded-lg"
                         >
-                            <Image 
-                                src={Info.image.src} 
-                                alt={Info.label} 
-                                fill 
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                data-ai-hint={Info.image.hint}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                            <CardHeader className="relative z-10 text-white">
+                            <CardHeader className="items-center">
+                                <div className="mb-4 text-5xl">
+                                    {Info.emoji}
+                                </div>
                                 <CardTitle className="font-headline">{Info.label}</CardTitle>
-                                <CardDescription className="text-white/80">{Info.description}</CardDescription>
+                                <CardDescription>{Info.description}</CardDescription>
                             </CardHeader>
                         </Card>
                     </motion.div>
