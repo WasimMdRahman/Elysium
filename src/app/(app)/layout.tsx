@@ -36,7 +36,7 @@ const menuItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const currentPage = menuItems.find(item => pathname.startsWith(item.href));
-  const pageTitle = currentPage ? currentPage.label : "Zenith Mind";
+  const pageTitle = currentPage ? currentPage.label : "Elysium";
   
   return (
     <SidebarProvider>
@@ -44,7 +44,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarHeader>
             <div className="flex items-center gap-2">
                 
-                <span className="text-lg font-semibold font-headline group-data-[collapsible=icon]:hidden">Zenith Mind</span>
+                <span className="text-lg font-semibold font-headline group-data-[collapsible=icon]:hidden">Elysium</span>
             </div>
         </SidebarHeader>
 

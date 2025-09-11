@@ -87,7 +87,7 @@ export default function WalkthroughPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="absolute top-8 left-8 flex items-center gap-2 text-lg font-bold text-foreground">
-        <Logo className="h-6 w-6" />
+        
         <h1 className="font-headline">Elysium</h1>
       </div>
       <Card className="w-full max-w-md shadow-2xl">
