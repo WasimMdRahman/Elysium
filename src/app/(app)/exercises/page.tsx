@@ -156,8 +156,6 @@ export default function ExercisesPage() {
                                 fill 
                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                                 data-ai-hint={Info.image.hint}
-                                width={400}
-                                height={300}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                             <CardHeader className="relative z-10 text-white">
