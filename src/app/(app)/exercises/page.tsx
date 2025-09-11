@@ -70,9 +70,9 @@ const exercises = {
 type Category = keyof typeof exercises;
 
 const categoryInfo = {
-    anxiety: { emoji: "🌬️", label: "Anxiety", description: "Find calm and peace." },
-    stress: { emoji: "⚡️", label: "Stress", description: "Melt away tension." },
-    "low-mood": { emoji: "😊", label: "Low Mood", description: "Lift your spirits." },
+    anxiety: { emoji: "😰", label: "Anxiety", description: "Find calm and peace." },
+    stress: { emoji: "😖", label: "Stress", description: "Melt away tension." },
+    "low-mood": { emoji: "😔", label: "Low Mood", description: "Lift your spirits." },
     focus: { emoji: "🧠", label: "Focus", description: "Sharpen your concentration." },
     selfEsteem: { emoji: "❤️", label: "Self-Esteem", description: "Build your confidence." },
     relationships: { emoji: "👥", label: "Relationships", description: "Improve your connections." },
