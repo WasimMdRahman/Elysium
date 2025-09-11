@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { usePathname } from "next/navigation";
+
 
 export const metadata: Metadata = {
   title: "Elysium",
@@ -14,6 +16,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -38,5 +41,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
