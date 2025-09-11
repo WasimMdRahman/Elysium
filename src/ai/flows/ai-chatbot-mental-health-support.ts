@@ -41,7 +41,8 @@ const prompt = ai.definePrompt({
   name: 'aiChatbotMentalHealthSupportPrompt',
   input: {schema: AIChatbotMentalHealthSupportInputSchema},
   output: {schema: AIChatbotMentalHealthSupportOutputSchema},
-  prompt: `You are a 24/7 mental health support chatbot. Respond to the user message in a {{tone}} tone.
+  prompt: `You are a 24/7 mental health support chatbot. Respond to the user’s message in a {{tone}} tone. Always be respectful, empathetic, and consoling. Gently ask questions to understand the user’s feelings and mental state. Encourage them to talk more and offer possible solutions. Ask how you can help and guide them towards sharing their thoughts and emotions.
+
 
 Chat History:
 {{#each chatHistory}}

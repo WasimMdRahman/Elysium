@@ -47,11 +47,12 @@ const JournalList = ({ entries, activeEntryId, setActiveEntryId, renamingId, sta
         const sevenDaysAgo = subDays(now, 7);
 
         entries.forEach(entry => {
-            if (isToday(entry.date)) {
+            const entryDate = new Date(entry.date);
+            if (isToday(entryDate)) {
                 today.push(entry);
-            } else if (isYesterday(entry.date)) {
+            } else if (isYesterday(entryDate)) {
                 yesterday.push(entry);
-            } else if (isAfter(entry.date, sevenDaysAgo)) {
+            } else if (isAfter(entryDate, sevenDaysAgo)) {
                 last7Days.push(entry);
             } else {
                 earlier.push(entry);
@@ -61,7 +62,7 @@ const JournalList = ({ entries, activeEntryId, setActiveEntryId, renamingId, sta
         return { today, yesterday, last7Days, earlier };
     }
     
-    const grouped = groupEntries(entries.sort((a,b) => b.date.getTime() - a.date.getTime()));
+    const grouped = groupEntries(entries.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
 
     const renderEntry = (entry: JournalEntry) => (
         <div key={entry.id} onClick={() => renamingId !== entry.id && setActiveEntryId(entry.id)} className={`group flex justify-between items-center rounded-md p-3 cursor-pointer ${activeEntryId === entry.id && !renamingId ? 'bg-muted' : 'hover:bg-muted'}`}>
@@ -105,7 +106,7 @@ const JournalList = ({ entries, activeEntryId, setActiveEntryId, renamingId, sta
                 </Button>
             </CardHeader>
             <CardContent className="flex-1 p-0">
-                <ScrollArea className="h-full">
+                 <ScrollArea className="h-full">
                     <div className="space-y-2 p-2">
                         {grouped.today.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Today</p>}
                         {grouped.today.map(renderEntry)}
@@ -134,7 +135,7 @@ export default function JournalPage() {
     
     const createNewEntry = () => {
         const newEntry: JournalEntry = {
-            id: `entry-${Date.now()}`,
+            id: `entry-${new Date().getTime()}-${Math.random().toString(36).substring(7)}`,
             title: "New Entry",
             content: "",
             date: new Date(),
@@ -144,38 +145,25 @@ export default function JournalPage() {
         if (isMobile) setSheetOpen(false);
     };
 
-    // Load entries from localStorage and create a new one for the session
+    // Load entries from localStorage
     useEffect(() => {
         try {
             const savedEntries = localStorage.getItem('journalEntries');
-            let parsedEntries: JournalEntry[] = [];
-            if (savedEntries) {
-                parsedEntries = JSON.parse(savedEntries).map((e: any) => ({
+            const parsedEntries: JournalEntry[] = savedEntries ? JSON.parse(savedEntries).map((e: any) => ({
                     ...e,
                     date: new Date(e.date)
-                }));
+                })) : [];
+            
+            if (parsedEntries.length > 0) {
+                setEntries(parsedEntries.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+                setActiveEntryId(parsedEntries[0].id);
+            } else {
+                createNewEntry();
             }
-            
-            const newEntry: JournalEntry = {
-                id: `entry-${Date.now()}`,
-                title: "New Entry",
-                content: "",
-                date: new Date(),
-            };
-            
-            setEntries([newEntry, ...parsedEntries]);
-            setActiveEntryId(newEntry.id);
 
         } catch (error) {
             console.error("Failed to load journal entries from localStorage", error);
-             const newEntry: JournalEntry = {
-                id: `entry-${Date.now()}`,
-                title: "New Entry",
-                content: "",
-                date: new Date(),
-            };
-            setEntries([newEntry]);
-            setActiveEntryId(newEntry.id);
+            createNewEntry();
         }
     }, []);
     
@@ -184,37 +172,37 @@ export default function JournalPage() {
         if(entries.length > 0) {
             try {
                 // Filter out the initial blank new entry if it's untouched
-                const entriesToSave = entries.filter(entry => {
-                    const isNewUntouched = entry.id === activeEntryId && entry.title === "New Entry" && entry.content === "";
-                    const isOldNewUntouched = entry.title === "New Entry" && entry.content === "";
-                    // This logic is tricky, we want to save if it's the active one and has content
-                    // or if it's not the active one (old blank entry)
-                    if (entry.id === activeEntryId) {
-                        return entry.content.trim() !== '' || entry.title !== 'New Entry';
-                    }
-                    return entry.content.trim() !== '' || entry.title !== 'New Entry';
-                });
-                localStorage.setItem('journalEntries', JSON.stringify(entriesToSave));
+                const entriesToSave = entries.filter(entry => entry.content.trim() !== '' || entry.title !== 'New Entry');
+                if (entriesToSave.length > 0) {
+                    localStorage.setItem('journalEntries', JSON.stringify(entriesToSave));
+                } else {
+                    localStorage.removeItem('journalEntries');
+                }
             } catch (error) {
                  console.error("Failed to save journal entries to localStorage", error);
             }
         }
-    }, [entries, activeEntryId]);
+    }, [entries]);
 
     const activeEntry = entries.find(e => e.id === activeEntryId);
 
 
     const deleteEntry = (id: string) => {
         setEntries(prev => {
-            const newEntries = prev.filter(e => e.id !== id);
+            const remainingEntries = prev.filter(e => e.id !== id);
              if (activeEntryId === id) {
-                const sortedEntries = newEntries.sort((a,b) => b.date.getTime() - a.date.getTime());
-                setActiveEntryId(sortedEntries.length > 0 ? sortedEntries[0].id : null);
+                if (remainingEntries.length > 0) {
+                    const sortedRemaining = [...remainingEntries].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    setActiveEntryId(sortedRemaining[0].id);
+                } else {
+                    setActiveEntryId(null);
+                    createNewEntry();
+                }
             }
-            if (newEntries.length === 0) {
+            if (remainingEntries.length === 0) {
                 localStorage.removeItem('journalEntries');
             }
-            return newEntries;
+            return remainingEntries;
         });
         toast({ title: "Entry deleted." });
     };
@@ -226,7 +214,7 @@ export default function JournalPage() {
     
     const confirmRenameEntry = (id: string) => {
         if (!renamingTitle.trim()) return;
-        setEntries(prev => prev.map(e => e.id === id ? { ...e, title: renamingTitle } : e));
+        setEntries(prev => prev.map(e => e.id === id ? { ...e, title: renamingTitle, date: new Date() } : e));
         setRenamingId(null);
         setRenamingTitle('');
     }
@@ -267,7 +255,7 @@ export default function JournalPage() {
     }
     
     const journalListProps = {
-        entries: entries.filter(e => e.id !== activeEntryId), // Don't show current entry in history
+        entries: entries,
         activeEntryId, renamingId, renamingTitle,
         setActiveEntryId: handleSetActiveEntryId,
         startRenameEntry,
@@ -330,7 +318,12 @@ export default function JournalPage() {
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                        <p>Loading Journal...</p>
+                        <FilePlus className="w-12 h-12 text-muted-foreground" />
+                        <h2 className="text-xl font-semibold">Start Writing</h2>
+                        <p className="text-muted-foreground">Click the "New Entry" button to begin your journal.</p>
+                        <Button onClick={createNewEntry}>
+                            <FilePlus className="mr-2 h-4 w-4" /> New Entry
+                        </Button>
                     </div>
                 )}
             </Card>

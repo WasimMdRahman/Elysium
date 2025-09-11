@@ -185,10 +185,9 @@ export default function ChatbotPage() {
             timestamp: new Date(s.timestamp)
         })) : [];
 
-        setSessions(parsedSessions);
-        
         if (parsedSessions.length > 0) {
           const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          setSessions(sortedSessions);
           setActiveSessionId(sortedSessions[0].id);
         } else {
             createNewChat();
@@ -204,8 +203,13 @@ export default function ChatbotPage() {
   useEffect(() => {
     try {
         if (sessions.length > 0) {
+            // Filter out empty new chats before saving
             const sessionsToSave = sessions.filter(s => s.messages.length > 1 || s.title !== "New Chat");
-            localStorage.setItem('chatSessions', JSON.stringify(sessionsToSave));
+            if (sessionsToSave.length > 0) {
+                localStorage.setItem('chatSessions', JSON.stringify(sessionsToSave));
+            } else {
+                 localStorage.removeItem('chatSessions');
+            }
         } else {
              localStorage.removeItem('chatSessions');
         }
@@ -237,16 +241,32 @@ export default function ChatbotPage() {
 
     const userMessage: Message = { role: 'user', text: messageText };
     
-    setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, userMessage], timestamp: new Date() } : s));
+    // Optimistically update UI
+    setSessions(prev => prev.map(s => {
+        if (s.id === activeSessionId) {
+            const isNewChat = s.title === "New Chat" && s.messages.length === 1;
+            return { 
+                ...s, 
+                // Set title to first user message if it's a new chat
+                title: isNewChat ? messageText.substring(0, 30) + (messageText.length > 30 ? '...' : '') : s.title,
+                messages: [...s.messages, userMessage], 
+                timestamp: new Date() 
+            };
+        }
+        return s;
+    }));
+
     setInput('');
     setIsLoading(true);
     setLoadingMessage(null);
 
     try {
+      // Find the updated session to get the latest messages for history
       const currentSession = sessions.find(s => s.id === activeSessionId);
-      const currentMessages = currentSession?.messages || [];
-      const chatHistory: ChatHistoryItem[] = currentMessages
-        .filter((_, i) => i < currentMessages.length) 
+      const historyMessages = (currentSession?.messages || []).concat(userMessage);
+
+      const chatHistory: ChatHistoryItem[] = historyMessages
+        .filter((_, i) => i < historyMessages.length - 1) // Exclude the latest user message
         .reduce((acc, msg, i, arr) => {
             if (msg.role === 'user' && arr[i+1]?.role === 'bot') {
                 acc.push({ user: msg.text, bot: arr[i+1].text });
@@ -262,6 +282,7 @@ export default function ChatbotPage() {
       });
 
       const botMessage: Message = { role: 'bot', text: response.response };
+      
       setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, botMessage] } : s));
       
       if (playResponse) {
@@ -273,8 +294,7 @@ export default function ChatbotPage() {
             }
         } catch (audioError) {
             console.error("Failed to generate or play audio:", audioError);
-            // Optionally, you can inform the user that audio failed
-            // For now, we just log it and the text message is already displayed.
+            // Audio fails, but the text message is already displayed.
         }
       }
 
@@ -302,18 +322,25 @@ export default function ChatbotPage() {
                     const sortedRemaining = [...remainingSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
                     setActiveSessionId(sortedRemaining[0].id);
                 } else {
-                    setActiveSessionId(null);
-                    createNewChat();
+                    setActiveSessionId(null); // No sessions left
                 }
             }
             
             if (remainingSessions.length === 0) {
                  localStorage.removeItem('chatSessions');
+                 // Will trigger useEffect to create a new chat
             }
             
             return remainingSessions;
         });
     };
+    
+    // Check if there are no sessions and create one
+    useEffect(() => {
+        if (sessions.length === 0 && !activeSessionId) {
+            createNewChat();
+        }
+    }, [sessions, activeSessionId]);
     
     const startRenameSession = (session: ChatSession) => {
         setRenamingId(session.id);
@@ -363,12 +390,10 @@ export default function ChatbotPage() {
                             const { transcription } = await transcribeAudio({ audioDataUri: base64Audio });
                             if(transcription) {
                                await processAndSendMessage(transcription, true);
-                            } else {
-                                setIsLoading(false);
-                                setLoadingMessage(null);
                             }
                         } catch (error) {
                             console.error("Error transcribing audio:", error);
+                        } finally {
                              setIsLoading(false);
                              setLoadingMessage(null);
                         }
@@ -381,6 +406,7 @@ export default function ChatbotPage() {
                 setIsRecording(true);
             } catch (error) {
                 console.error("Error accessing microphone:", error);
+                // You might want to show a toast here to the user
             }
         }
     };
@@ -539,5 +565,3 @@ export default function ChatbotPage() {
     </div>
   );
 }
-
-    
