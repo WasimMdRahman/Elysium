@@ -553,7 +553,7 @@ export default function ChatbotPage() {
                             </Button>
                         </form>
                         <p className="text-xs text-muted-foreground text-center w-full pt-2">
-                            Elysium is not a replacement for professional therapy. In case you experience serious mental issues. Consider consulting a professional.
+                            Elysium isn’t a therapy replacement, consult professionals for serious issues
                         </p>
                       </div>
                     </CardFooter>
@@ -573,5 +573,3 @@ export default function ChatbotPage() {
     </div>
   );
 }
-
-    
