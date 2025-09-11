@@ -1,3 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Kapanaka&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -28,7 +32,6 @@
     --chart-3: 0 72% 51%;
     --chart-4: 43 96% 56%;
     --chart-5: 210 40% 96.1%;
-    --radius: 0.5rem;
     --sidebar-background: 0 0% 3.9%; /* black */
     --sidebar-foreground: 0 0% 98%; /* white */
     --sidebar-primary: 217 91% 60%; /* blue */
