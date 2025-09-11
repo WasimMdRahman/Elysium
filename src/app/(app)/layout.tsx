@@ -23,8 +23,6 @@ import Link from "next/link";
 import { ClientThemeToggle } from "./client-theme-toggle";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { SplashScreen } from './splash-screen';
-import '../logo-animation.css';
 
 
 const menuItems = [
@@ -42,7 +40,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   
   return (
     <SidebarProvider>
-      <SplashScreen />
       <Sidebar>
         <SidebarHeader>
             <div className="flex items-center gap-2">
