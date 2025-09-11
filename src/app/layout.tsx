@@ -1,14 +1,10 @@
 
+'use client';
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
-
-export const metadata: Metadata = {
-  title: "Elysium",
-  description: "Your personal guide to mental wellness.",
-};
 
 export default function RootLayout({
   children,
@@ -25,6 +21,8 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap"
           rel="stylesheet"
         />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#F0F4F8" />
       </head>
       <body className="font-body antialiased">
         <ThemeProvider
