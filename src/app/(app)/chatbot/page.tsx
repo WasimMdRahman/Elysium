@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, ArrowLeft, History, Mic, MicOff } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import { format, isToday, isYesterday, subDays, isAfter } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -470,22 +470,39 @@ export default function ChatbotPage() {
                         </div>
                         
 
-                         <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                             <Button variant="outline" onClick={createNewChat} className="hidden md:flex">
                                 <MessageSquare className="mr-2 h-4 w-4" /> New Chat
                             </Button>
-                            <Select value={tone} onValueChange={(value) => setTone(value as any)}>
-                                <SelectTrigger className="w-[90px] md:w-[180px]">
-                                    <SelectValue placeholder="Select a tone" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="professional">Professional</SelectItem>
-                                    <SelectItem value="friendly">Friendly</SelectItem>
-                                    <SelectItem value="empathetic">Empathetic</SelectItem>
-                                    <SelectItem value="humorous">Humorous</SelectItem>
-                                </SelectContent>
-                            </Select>
-                         </div>
+                             <Button variant="ghost" size="icon" onClick={createNewChat} className="md:hidden">
+                                <MessageSquare className="h-5 w-5" />
+                            </Button>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <MoreVertical className="h-5 w-5" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuPortal>
+                                    <DropdownMenuContent align="end">
+                                         <DropdownMenuSub>
+                                            <DropdownMenuSubTrigger>
+                                                <span>Tone: {tone.charAt(0).toUpperCase() + tone.slice(1)}</span>
+                                            </DropdownMenuSubTrigger>
+                                            <DropdownMenuPortal>
+                                                <DropdownMenuSubContent>
+                                                    <DropdownMenuItem onSelect={() => setTone('professional')}>Professional</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => setTone('friendly')}>Friendly</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => setTone('empathetic')}>Empathetic</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => setTone('humorous')}>Humorous</DropdownMenuItem>
+                                                </DropdownMenuSubContent>
+                                            </DropdownMenuPortal>
+                                        </DropdownMenuSub>
+                                    </DropdownMenuContent>
+                                </DropdownMenuPortal>
+                            </DropdownMenu>
+                        </div>
                     </CardHeader>
                     <CardContent className="flex-1 overflow-hidden p-0">
                         <ScrollArea className="h-full" ref={scrollAreaRef}>
@@ -573,3 +590,5 @@ export default function ChatbotPage() {
     </div>
   );
 }
+
+    
