@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { usePathname } from "next/navigation";
 
 
 export const metadata: Metadata = {
