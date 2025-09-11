@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, ArrowLeft, History, Mic, MicOff } from 'lucide-react';
+import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, ArrowLeft, History, Mic, MicOff, WifiOff } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import { format, isToday, isYesterday, subDays, isAfter } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -154,6 +154,7 @@ export default function ChatbotPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
 
   // Voice state
   const [isRecording, setIsRecording] = useState(false);
@@ -227,6 +228,25 @@ export default function ChatbotPage() {
     }
   }, [activeMessages, isLoading]);
   
+  // Offline detection
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Set initial status
+    if (typeof navigator.onLine === 'boolean') {
+      setIsOffline(!navigator.onLine);
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const playAudio = (audioDataUri: string) => {
     if (audioPlayerRef.current) {
         audioPlayerRef.current.src = audioDataUri;
@@ -236,7 +256,7 @@ export default function ChatbotPage() {
 
 
   const processAndSendMessage = async (messageText: string, playResponse: boolean = false) => {
-    if (!messageText.trim() || isLoading) return;
+    if (!messageText.trim() || isLoading || isOffline) return;
 
     // Create a new chat if there's no active one
     let currentActiveSessionId = activeSessionId;
@@ -377,6 +397,7 @@ export default function ChatbotPage() {
             mediaRecorderRef.current?.stop();
             setIsRecording(false);
         } else {
+            if (isOffline) return;
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorderRef.current = new MediaRecorder(stream);
@@ -557,21 +578,28 @@ export default function ChatbotPage() {
                     </CardContent>
                     <CardFooter className="border-t p-2 md:p-4">
                       <div className="w-full flex flex-col items-center gap-2">
-                        <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
-                            <Input
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Type or record your message..."
-                                className="flex-1"
-                                disabled={isLoading || isRecording}
-                            />
-                             <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading} className={cn(isRecording && "bg-destructive hover:bg-destructive/90")}>
-                                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                            </Button>
-                            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording}>
-                                <Send className="h-4 w-4" />
-                            </Button>
-                        </form>
+                        {isOffline ? (
+                            <div className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed bg-muted p-3 text-muted-foreground">
+                                <WifiOff className="h-5 w-5" />
+                                <p className="text-sm">You are offline. Please check your internet connection.</p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
+                                <Input
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    placeholder="Type or record your message..."
+                                    className="flex-1"
+                                    disabled={isLoading || isRecording}
+                                />
+                                <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn(isRecording && "bg-destructive hover:bg-destructive/90")}>
+                                    {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                                </Button>
+                                <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording || isOffline}>
+                                    <Send className="h-4 w-4" />
+                                </Button>
+                            </form>
+                        )}
                         <p className="text-xs text-muted-foreground text-center w-full pt-2">
                             Elysium isn’t a therapy replacement, consult professionals for serious issues
                         </p>
