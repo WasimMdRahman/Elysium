@@ -25,7 +25,7 @@ const moodLabels: { [key: number]: { label: string, emoji: string } } = {
   1: { label: 'Awful', emoji: '😩' },
   2: { label: 'Very Bad', emoji: '😫' },
   3: { label: 'Bad', emoji: '😞' },
-  4_5: { label: 'Not Good', emoji: '😕' },
+  4: { label: 'Not Good', emoji: '😕' },
   5: { label: 'Okay', emoji: '😐' },
   6: { label: 'Fine', emoji: '🙂' },
   7: { label: 'Good', emoji: '😊' },
@@ -35,9 +35,7 @@ const moodLabels: { [key: number]: { label: string, emoji: string } } = {
 };
 
 const getMoodInfo = (moodValue: number) => {
-    if (moodValue <= 3) return moodLabels[moodValue as 1|2|3];
-    if (moodValue <= 5) return moodLabels['4_5'];
-    return moodLabels[moodValue as 5|6|7|8|9|10];
+    return moodLabels[moodValue] || moodLabels[5];
 }
 
 const CustomDot = (props: any) => {
