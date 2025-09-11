@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardCard } from "@/components/dashboard-card";
 import {
   Bot,
@@ -55,7 +55,22 @@ const features = [
 
 export default function DashboardPage() {
   const [loadingCard, setLoadingCard] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    const getGreeting = () => {
+        const currentHour = new Date().getHours();
+        if (currentHour < 12) {
+            return "Good Morning!";
+        } else if (currentHour < 18) {
+            return "Good Afternoon!";
+        } else {
+            return "Good Evening!";
+        }
+    }
+    setGreeting(getGreeting());
+  }, []);
 
   const handleCardClick = (href: string) => {
     setLoadingCard(href);
@@ -65,7 +80,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-bold font-headline">Good Morning!</h1>
+        <h1 className="text-3xl font-bold font-headline">{greeting}</h1>
         <p className="text-muted-foreground">
           Here are your tools for a mindful day.
         </p>
