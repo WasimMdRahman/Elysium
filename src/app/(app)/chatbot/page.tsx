@@ -16,7 +16,7 @@ import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, Ar
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import { format, isToday, isYesterday, subDays, isAfter } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
 
@@ -454,6 +454,9 @@ export default function ChatbotPage() {
                                     </Button>
                                 </SheetTrigger>
                                 <SheetContent side="left" className="p-0">
+                                     <SheetHeader>
+                                        <SheetTitle className="sr-only">Chat History</SheetTitle>
+                                     </SheetHeader>
                                      <ChatList {...chatListProps} />
                                 </SheetContent>
                             </Sheet>
