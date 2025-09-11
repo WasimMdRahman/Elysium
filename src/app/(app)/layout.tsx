@@ -17,7 +17,6 @@ import {
   Settings,
   Shield,
   FileText,
-  CreditCard,
 } from "lucide-react";
 import Link from "next/link";
 import { ClientThemeToggle } from "./client-theme-toggle";
@@ -28,7 +27,6 @@ import { usePathname } from "next/navigation";
 const menuItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", tooltip: "Dashboard" },
     { href: "/settings", icon: Settings, label: "Settings", tooltip: "Settings" },
-    { href: "/pricing", icon: CreditCard, label: "Pricing", tooltip: "Pricing" },
     { href: "/privacy", icon: Shield, label: "Privacy Policy", tooltip: "Privacy Policy" },
     { href: "/terms", icon: FileText, label: "Terms of Service", tooltip: "Terms of Service" },
 ];
