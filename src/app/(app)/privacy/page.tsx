@@ -8,7 +8,7 @@ export default function PrivacyPage() {
         <CardTitle className="font-headline">Privacy Policy for Elysium</CardTitle>
         <CardDescription>Last updated: September 5, 2025</CardDescription>
       </CardHeader>
-      <CardContent className="prose dark:prose-invert">
+      <CardContent className="prose dark:prose-invert text-justify">
         <p>Welcome to Elysium, your supportive companion in mental health and well-being. We are committed to creating a safe and empowering environment where you can track your emotions, thoughts, tasks, and personal growth—without worrying about your privacy. This policy explains how we handle your data, what information is collected, and how you can keep your experience secure.</p>
 
         <h2>1. Introduction</h2>

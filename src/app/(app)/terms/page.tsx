@@ -8,7 +8,7 @@ export default function TermsPage() {
         <CardTitle className="font-headline">Terms of Service for Elysium</CardTitle>
         <CardDescription>Last updated: September 5, 2025</CardDescription>
       </CardHeader>
-      <CardContent className="prose dark:prose-invert">
+      <CardContent className="prose dark:prose-invert text-justify">
         <p>Welcome to Elysium! By using this application, you agree to these Terms of Service. Please read them carefully to understand how Elysium operates and what your rights and responsibilities are when using this app.</p>
 
         <h2>1. Acceptance of Terms</h2>
