@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { generateThought } from '@/ai/flows/thought-quest-game-ai-thought-generation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, Zap, Loader, PartyPopper } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Zap, Loader, PartyPopper, CheckCircle, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Feedback = 'correct' | 'incorrect' | null;
@@ -35,35 +36,47 @@ export default function ThoughtQuestPage() {
           setScore(0);
           setQuestionsAnswered(0);
           setPreviousThoughts([]);
+          fetchNewThought([]); // pass empty array for a fresh start
         } else {
             setScore(savedScore);
             setQuestionsAnswered(savedQuestions);
             setPreviousThoughts(savedThoughts || []);
+            if (savedQuestions < TOTAL_QUESTIONS) {
+                fetchNewThought(savedThoughts || []);
+            } else {
+                 setIsLoading(false);
+            }
+        }
+      } else {
+        if (questionsAnswered < TOTAL_QUESTIONS) {
+            fetchNewThought([]);
+        } else {
+            setIsLoading(false);
         }
       }
     } catch (error) {
       console.error("Failed to load state from localStorage", error);
-    }
-    if (questionsAnswered < TOTAL_QUESTIONS) {
-        fetchNewThought();
-    } else {
-        setIsLoading(false);
+      if (questionsAnswered < TOTAL_QUESTIONS) {
+        fetchNewThought([]);
+      }
     }
   }, []);
 
   // Auto-save state to localStorage
   useEffect(() => {
-    try {
-        const today = new Date().toDateString();
-        const stateToSave = { score, questions: questionsAnswered, date: today, thoughts: previousThoughts };
-        localStorage.setItem('thoughtQuestState', JSON.stringify(stateToSave));
-    } catch (error) {
-      console.error("Failed to save state to localStorage", error);
+    if(questionsAnswered > 0 || score > 0) { // Only save if the game has started
+        try {
+            const today = new Date().toDateString();
+            const stateToSave = { score, questions: questionsAnswered, date: today, thoughts: previousThoughts };
+            localStorage.setItem('thoughtQuestState', JSON.stringify(stateToSave));
+        } catch (error) {
+          console.error("Failed to save state to localStorage", error);
+        }
     }
   }, [score, questionsAnswered, previousThoughts]);
 
 
-  const fetchNewThought = async () => {
+  const fetchNewThought = async (currentThoughts: string[]) => {
     setIsLoading(true);
     setAnswered(false);
     setFeedback(null);
@@ -71,10 +84,10 @@ export default function ThoughtQuestPage() {
       const topics = ['social situations', 'work stress', 'self-esteem', 'the future', 'making mistakes', 'personal growth', 'daily life'];
       const randomTopic = topics[Math.floor(Math.random() * topics.length)];
 
-      const result = await generateThought({ topic: randomTopic, previousThoughts });
+      const result = await generateThought({ topic: randomTopic, previousThoughts: currentThoughts });
       setThought(result.thought);
       setIsHelpful(result.isHelpful); 
-      setPreviousThoughts(prev => [...prev, result.thought]);
+      // We update the list of thoughts for the session in the handleAnswer function
     } catch (error) {
       console.error("Failed to generate thought:", error);
       setThought("I can't seem to think of anything right now. Please try again.");
@@ -86,10 +99,11 @@ export default function ThoughtQuestPage() {
 
   const handleAnswer = (userChoice: boolean) => {
     if (answered || isGameComplete) return;
+    
     setAnswered(true);
-    setQuestionsAnswered(q => q + 1);
-
-    if (userChoice === isHelpful) {
+    
+    const wasCorrect = userChoice === isHelpful;
+    if (wasCorrect) {
       setScore(s => s + 10);
       setFeedback('correct');
     } else {
@@ -97,9 +111,14 @@ export default function ThoughtQuestPage() {
       setFeedback('incorrect');
     }
 
+    // This ensures we update the question count and thought list *after* the feedback is processed.
+    setQuestionsAnswered(q => q + 1);
+    setPreviousThoughts(prev => [...prev, thought]);
+
+
     setTimeout(() => {
       if(questionsAnswered + 1 < TOTAL_QUESTIONS) {
-        fetchNewThought();
+        fetchNewThought([...previousThoughts, thought]);
       }
     }, 1500);
   };
@@ -109,8 +128,13 @@ export default function ThoughtQuestPage() {
       setQuestionsAnswered(0);
       setPreviousThoughts([]);
       localStorage.removeItem('thoughtQuestState');
-      fetchNewThought();
+      fetchNewThought([]);
   }
+
+  const feedbackVariants = {
+    hidden: { opacity: 0, scale: 0.5 },
+    visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 20 } },
+  };
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -139,6 +163,7 @@ export default function ThoughtQuestPage() {
                    <PartyPopper className="h-12 w-12 text-green-600 mb-4" />
                    <CardTitle className="font-headline">Quest Complete!</CardTitle>
                    <CardDescription>You've answered all thoughts for today. Your final score is {score}. Come back tomorrow for a new quest!</CardDescription>
+                   <Button onClick={resetGame} className="mt-4">Play Again</Button>
                 </Card>
             </motion.div>
          ) : !isLoading ? (
@@ -150,13 +175,35 @@ export default function ThoughtQuestPage() {
               transition={{ duration: 0.5 }}
               className="absolute inset-0"
             >
-              <Card className={`h-full flex flex-col justify-center items-center text-center transition-all duration-300 ${
-                feedback === 'correct' ? 'border-green-500 bg-green-500/10' :
-                feedback === 'incorrect' ? 'border-destructive bg-destructive/10' :
-                ''
-              }`}>
-                <CardContent className="p-6">
+              <Card className="h-full flex flex-col justify-center items-center text-center">
+                <CardContent className="p-6 relative w-full h-full flex justify-center items-center">
                   <p className="text-xl font-medium">"{thought}"</p>
+                  <AnimatePresence>
+                  {feedback === 'correct' && (
+                    <motion.div 
+                      key="correct"
+                      variants={feedbackVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      className="absolute inset-0 flex items-center justify-center bg-green-500/20"
+                    >
+                        <CheckCircle className="h-24 w-24 text-white" />
+                    </motion.div>
+                  )}
+                  {feedback === 'incorrect' && (
+                     <motion.div 
+                      key="incorrect"
+                      variants={feedbackVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      className="absolute inset-0 flex items-center justify-center bg-destructive/20"
+                    >
+                        <XCircle className="h-24 w-24 text-white" />
+                    </motion.div>
+                  )}
+                  </AnimatePresence>
                 </CardContent>
               </Card>
             </motion.div>
@@ -175,7 +222,7 @@ export default function ThoughtQuestPage() {
             <div className="flex gap-4">
             <Button
                 size="lg"
-                variant={answered && isHelpful === true ? 'outline' : answered && isHelpful === false ? 'destructive' : 'outline'}
+                variant="outline"
                 onClick={() => handleAnswer(false)}
                 disabled={answered}
             >
@@ -183,8 +230,7 @@ export default function ThoughtQuestPage() {
             </Button>
             <Button
                 size="lg"
-                variant={answered && isHelpful === true ? 'default' : 'outline'}
-                className={answered && isHelpful ? "bg-green-500 hover:bg-green-600 text-white" : ""}
+                variant="outline"
                 onClick={() => handleAnswer(true)}
                 disabled={answered}
             >
@@ -196,3 +242,5 @@ export default function ThoughtQuestPage() {
     </div>
   );
 }
+
+    
