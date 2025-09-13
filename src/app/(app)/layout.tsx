@@ -46,7 +46,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarHeader>
             <div className="flex items-center gap-2">
                 
-                <span className="text-2xl font-kapanaka text-blue-500 group-data-[collapsible=icon]:hidden">elysium</span>
+                <span className="text-3xl font-brand text-blue-500 group-data-[collapsible=icon]:hidden">elysium</span>
             </div>
         </SidebarHeader>
 
