@@ -29,7 +29,7 @@ const features = [
   },
   {
     href: "/journal",
-    title: "AI Journal",
+    title: "Journal",
     description: "Reflect with an intelligent journal",
     icon: BookText,
   },
