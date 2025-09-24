@@ -18,7 +18,7 @@ const features = [
   {
     href: "/chatbot",
     title: "AI Chatbot",
-    description: "24/7 mental health support",
+    description: "Your 24/7 mental health support",
     icon: Bot,
   },
   {
@@ -29,7 +29,7 @@ const features = [
   },
   {
     href: "/journal",
-    title: "AI Journal",
+    title: "Journal",
     description: "Reflect with an intelligent journal",
     icon: BookText,
   },
@@ -62,11 +62,11 @@ export default function DashboardPage() {
     const getGreeting = () => {
         const currentHour = new Date().getHours();
         if (currentHour < 12) {
-            return "Good Morning!";
+            return "Hey...Good Morning!";
         } else if (currentHour < 18) {
-            return "Good Afternoon!";
+            return "Hey...Good Afternoon!";
         } else {
-            return "Good Evening!";
+            return "Hey...Good Evening!";
         }
     }
     setGreeting(getGreeting());
