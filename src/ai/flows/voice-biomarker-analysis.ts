@@ -70,18 +70,17 @@ const analyzeVoiceEmotionFlow = ai.defineFlow(
   {
     name: 'analyzeVoiceEmotionFlow',
     inputSchema: AnalyzeVoiceEmotionInputSchema,
-    outputSchema: AnalyzeVoiceEmotionOutputSchema,
+    outputSchema: z.union([AnalyzeVoiceEmotionOutputSchema, z.object({ error: z.string() })]),
   },
   async input => {
     try {
       const {output} = await prompt(input);
       return output!;
     } catch (error: any) {
-      // Handle cases where the AI service might be temporarily unavailable
       if (error.message && error.message.includes('503')) {
-        throw new Error('503 Service Unavailable: The analysis service is currently busy. Please try again in a few moments.');
+        return { error: '503 Service Unavailable: The analysis service is currently busy. Please try again in a few moments.' };
       }
-      // Re-throw other errors
+      // Re-throw other unexpected errors
       throw error;
     }
   }
