@@ -43,7 +43,7 @@ const AnalyzeVoiceEmotionOutputSchema = z.object({
     }).describe('An object summarizing key acoustic indicators used for the decision.'),
     transcript: z.string().optional().describe('The transcribed text from the audio, if available.'),
     transcript_confidence: z.number().optional().describe('The confidence score of the transcription (0-1).'),
-    nl_response: z.array(z.string()).describe('A short, empathetic, context-aware natural-language reply for the user, presented as a list of points.'),
+    nl_response: z.string().describe('A short, empathetic, context-aware natural-language reply for the user.'),
     model_metadata: z.object({
         vocal_model: z.string(),
         nlp_model: z.string(),
@@ -94,72 +94,6 @@ Report confidence scores and intensity.
 
 Return structured data for each feature AND a human-friendly response.
 
-Input
-
-audio_url or audio_bytes
-
-sample_rate (Hz), channels
-
-user_id and session_id
-
-consent_voice_biometrics (boolean)
-
-context_text (optional last 1–3 user messages)
-
-timestamp
-
-Feature Extraction (Vocal Biomarkers)
-
-Convert to mono 16–24 kHz, normalize amplitude.
-
-Run Voice Activity Detection.
-
-Extract critical features:
-
-Tone classification: calm, happy, sad, stressed, anxious, excited.
-
-Pitch: mean, variance, contour.
-
-Pace / speech rate: words/sec, pauses, articulation rate.
-
-Tremor / jitter / shimmer: measure micro-variations indicating stress.
-
-Energy / volume dynamics.
-
-Spectral features: MFCCs, centroid, flux (for emotional timbre).
-
-Fusion Rules
-
-Compute vocal emotion probabilities and intensity.
-
-Compute text-based emotion probabilities.
-
-If vocal and text conflict, let vocal biomarkers override for dominant_emotion.
-
-Provide stress_score, anxiety_score, and intensity.
-
-Response Rules
-
-Always comment on vocal tone, pitch, pace, tremor, especially if transcript says something positive but vocal features indicate stress.
-
-Be empathetic, supportive, non-judgmental.
-
-Include clear next steps: breathing, grounding, or reflection prompts. Your natural language response (nl_response) should be a list of short, distinct points.
-
-If confidence <0.45, ask user to re-record gently.
-
-Stress-Test Scenario
-
-Input Script: Happy words: “I am feeling fantastic today!”
-
-Speak with slow, low, sad, or stressed tone.
-
-AI must detect stress from tone, pitch, pace, tremor despite positive transcript.
-
-JSON output must show high stress_score and override transcript sentiment.
-
-nl_response should acknowledge mismatch between words and voice: “Even though you said X, your voice shows Y.”
-
 Input for analysis:
 - audio: {{media url=audioDataUri}}
 
@@ -190,6 +124,6 @@ const analyzeVoiceEmotionFlow = ai.defineFlow(
       }
     }
     // If all retries fail, return the user-friendly error
-    return { error: '503 Service Unavailable: The analysis service is currently busy. Please try again in a few moments.' };
+    return { error: 'The analysis service is currently busy. Please try again in a few moments.' };
   }
 );

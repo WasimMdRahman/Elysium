@@ -207,14 +207,9 @@ export default function VoiceJournalPage() {
                             <CardContent className="space-y-4">
                                <div>
                                    <h4 className="font-semibold mb-2 flex items-center gap-2"><MessageCircle size={16}/> AI Response:</h4>
-                                   <ul className="space-y-2 text-sm text-muted-foreground p-3 bg-muted/50 rounded-md">
-                                     {analysisResult.nl_response.map((point, index) => (
-                                       <li key={index} className="flex items-start gap-2">
-                                         <ChevronRight className="h-4 w-4 mt-1 shrink-0 text-primary" />
-                                         <span>{point}</span>
-                                       </li>
-                                     ))}
-                                   </ul>
+                                   <div className="space-y-2 text-sm text-muted-foreground p-3 bg-muted/50 rounded-md">
+                                        <p>{analysisResult.nl_response}</p>
+                                   </div>
                                </div>
                             </CardContent>
                         </Card>
