@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Loader, Activity } from 'lucide-react';
+import { Mic, MicOff, Loader, Activity, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { analyzeVoiceEmotion, AnalyzeVoiceEmotionOutput } from '@/ai/flows/voice-biomarker-analysis';
 import { cn } from '@/lib/utils';
@@ -112,13 +112,21 @@ export default function VoiceJournalPage() {
     };
     
     const getEmotionEmoji = (emotion?: string) => {
-        switch (emotion) {
+        switch (emotion?.toLowerCase()) {
             case 'happy': return '😊';
             case 'joyful': return '😄';
+            case 'excited': return '🤩';
             case 'sad': return '😢';
             case 'anxious': return '😟';
             case 'stressed': return '😫';
-            case 'normal': return '😐';
+            case 'angry': return '😡';
+            case 'fear': return '😨';
+            case 'disgust': return '🤢';
+            case 'surprised': return '😮';
+            case 'bored': return '😒';
+            case 'calm': return '😌';
+            case 'neutral': return '😐';
+            case 'unknown': return '🤔';
             default: return '🤔';
         }
     };
@@ -184,23 +192,15 @@ export default function VoiceJournalPage() {
                     >
                         <Card>
                             <CardHeader className="text-center">
-                                <div className="text-6xl mx-auto mb-4">{getEmotionEmoji(analysisResult.emotion)}</div>
+                                <div className="text-6xl mx-auto mb-4">{getEmotionEmoji(analysisResult.dominant_emotion)}</div>
                                 <CardTitle className="font-headline">Analysis Complete</CardTitle>
                                 <CardDescription>Here's what the AI detected in your voice.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                               <div className="flex justify-between items-baseline p-3 bg-muted rounded-md">
-                                   <p className="font-medium">Detected Emotion:</p>
-                                   <p className="text-lg font-bold capitalize text-primary">{analysisResult.emotion}</p>
-                               </div>
-                               <div className="flex justify-between items-baseline p-3 bg-muted rounded-md">
-                                   <p className="font-medium">Confidence:</p>
-                                   <p className="font-bold">{Math.round(analysisResult.confidence * 100)}%</p>
-                               </div>
                                <div>
-                                   <h4 className="font-semibold mb-2 flex items-center gap-2"><Activity size={16}/> Vocal Biomarkers:</h4>
+                                   <h4 className="font-semibold mb-2 flex items-center gap-2"><MessageCircle size={16}/> AI Response:</h4>
                                    <p className="text-sm text-muted-foreground italic p-3 bg-muted/50 rounded-md">
-                                       "{analysisResult.explanation}"
+                                       "{analysisResult.nl_response}"
                                    </p>
                                </div>
                             </CardContent>
