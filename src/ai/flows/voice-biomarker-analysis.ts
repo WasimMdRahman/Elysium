@@ -73,7 +73,16 @@ const analyzeVoiceEmotionFlow = ai.defineFlow(
     outputSchema: AnalyzeVoiceEmotionOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      return output!;
+    } catch (error: any) {
+      // Handle cases where the AI service might be temporarily unavailable
+      if (error.message && error.message.includes('503')) {
+        throw new Error('503 Service Unavailable: The analysis service is currently busy. Please try again in a few moments.');
+      }
+      // Re-throw other errors
+      throw error;
+    }
   }
 );
