@@ -34,7 +34,7 @@ const features = [
   },
   {
     href: "/voice-journal",
-    title: "Voice Biomarker Analysis",
+    title: "Voice Biomarker",
     description: "Analyze your voice for emotional insights",
     icon: AudioWaveform,
   },

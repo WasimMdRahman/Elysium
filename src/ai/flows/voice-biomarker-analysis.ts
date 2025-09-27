@@ -51,17 +51,17 @@ const prompt = ai.definePrompt({
   name: 'analyzeVoiceEmotionPrompt',
   input: {schema: AnalyzeVoiceEmotionInputSchema},
   output: {schema: AnalyzeVoiceEmotionOutputSchema},
-  prompt: `You are an expert in vocal biomarker analysis. Your task is to analyze the provided audio clip and classify the speaker's primary emotion.
+  prompt: `You are an expert in vocal biomarker analysis. Your task is to analyze the provided audio clip and classify the speaker's primary emotion based *only* on vocal characteristics. Do not infer context from the words spoken.
 
   Analyze the following vocal characteristics:
-  - Pitch and pitch variation
-  - Speaking rate and rhythm
-  - Volume and intensity
-  - Tone and timbre
+  - Pitch and pitch variation (is it high, low, monotone, or varied?)
+  - Speaking rate and rhythm (is it fast, slow, hesitant, or fluent?)
+  - Volume and intensity (is it loud, soft, or strained?)
+  - Tone and timbre (is it breathy, harsh, or warm?)
 
-  Based on your analysis, classify the emotion into one of the following categories: normal, stressed, sad, anxious, happy, or joyful.
+  Based strictly on your analysis of these biomarkers, classify the emotion into one of the following categories: normal, stressed, sad, anxious, happy, or joyful.
 
-  Provide a confidence score for your classification and a brief explanation of the key vocal biomarkers that support your conclusion.
+  Provide a confidence score for your classification and a brief, objective explanation of the key vocal biomarkers that support your conclusion. Do not provide psychological advice or interpretations.
 
   Audio for analysis: {{media url=audioDataUri}}`,
 });
