@@ -28,7 +28,13 @@ const AnalyzeVoiceEmotionOutputSchema = z.object({
     session_id: z.string().describe('The current session ID.'),
     audio_duration_s: z.number().describe('The duration of the audio in seconds.'),
     dominant_emotion: z.string().describe('The single most dominant emotion detected.'),
-    emotion_probs: z.record(z.number()).describe('A probability distribution across all possible emotion classes.'),
+    emotion_probs: z.object({
+        happy: z.number(),
+        sad: z.number(),
+        angry: z.number(),
+        neutral: z.number(),
+        stressed: z.number()
+    }).describe('A probability distribution across all possible emotion classes.'),
     valence: z.number().describe('A float from -1.0 (negative) to 1.0 (positive) representing the pleasure of the emotion.'),
     arousal: z.number().describe('A float from 0.0 (calm) to 1.0 (agitated/excited) representing the intensity of the emotion.'),
     dominance: z.number().describe('A float from -1.0 to 1.0 representing the level of control in the emotion.'),
@@ -36,7 +42,11 @@ const AnalyzeVoiceEmotionOutputSchema = z.object({
     confidence: z.number().describe('The overall confidence score of the system in its analysis (0-1).'),
     transcript: z.string().optional().describe('The transcribed text from the audio, if available.'),
     transcript_confidence: z.number().optional().describe('The confidence score of the transcription (0-1).'),
-    features_summary: z.record(z.any()).describe('An object summarizing key acoustic indicators used for the decision.'),
+    features_summary: z.object({
+        pitch: z.number(),
+        tone: z.string(),
+        clarity: z.number(),
+    }).describe('An object summarizing key acoustic indicators used for the decision.'),
     action_recommendation: z.object({
         code: z.string().describe('A machine-readable code for a recommended action.'),
         label: z.string().describe('A human-friendly label for the recommended action.'),
@@ -47,7 +57,10 @@ const AnalyzeVoiceEmotionOutputSchema = z.object({
         consent_for_biometrics: z.boolean(),
         store_audio: z.boolean(),
     }),
-    model_metadata: z.record(z.string()).describe('Metadata about the models used for the analysis.'),
+    model_metadata: z.object({
+        version: z.string(),
+        confidence_score: z.number(),
+    }).describe('Metadata about the models used for the analysis.'),
 });
 
 export type AnalyzeVoiceEmotionOutput = z.infer<
