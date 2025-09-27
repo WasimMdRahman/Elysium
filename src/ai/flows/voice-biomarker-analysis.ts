@@ -43,7 +43,7 @@ export type AnalyzeVoiceEmotionOutput = z.infer<
 
 export async function analyzeVoiceEmotion(
   input: AnalyzeVoiceEmotionInput
-): Promise<AnalyzeVoiceEmotionOutput> {
+): Promise<AnalyzeVoiceEmotionOutput | { error: string }> {
   return analyzeVoiceEmotionFlow(input);
 }
 
@@ -73,15 +73,22 @@ const analyzeVoiceEmotionFlow = ai.defineFlow(
     outputSchema: z.union([AnalyzeVoiceEmotionOutputSchema, z.object({ error: z.string() })]),
   },
   async input => {
-    try {
-      const {output} = await prompt(input);
-      return output!;
-    } catch (error: any) {
-      if (error.message && error.message.includes('503')) {
-        return { error: '503 Service Unavailable: The analysis service is currently busy. Please try again in a few moments.' };
+    for (let i = 0; i < 3; i++) {
+      try {
+        const {output} = await prompt(input);
+        return output!;
+      } catch (error: any) {
+        if (error.message && error.message.includes('503')) {
+          console.log(`Attempt ${i + 1} failed with 503. Retrying...`);
+          // Wait for a short period before retrying (e.g., 1 second)
+          await new Promise(r => setTimeout(r, 1000));
+          continue; // Go to the next loop iteration
+        }
+        // For any other error, throw it immediately
+        throw error;
       }
-      // Re-throw other unexpected errors
-      throw error;
     }
+    // If all retries fail, return the user-friendly error
+    return { error: '503 Service Unavailable: The analysis service is currently busy. Please try again in a few moments.' };
   }
 );
