@@ -63,10 +63,12 @@ export default function VoiceJournalPage() {
                 };
 
                 mediaRecorderRef.current.onstop = async () => {
+                    const finalRecordingTime = recordingTime;
                     stopTimer();
                     setIsRecording(false);
+                    setRecordingTime(0);
                     
-                    if (recordingTime < MIN_RECORDING_SECONDS) {
+                    if (finalRecordingTime < MIN_RECORDING_SECONDS) {
                         setError(`Please record for at least ${MIN_RECORDING_SECONDS} seconds.`);
                         stream.getTracks().forEach(track => track.stop());
                         return;
@@ -148,7 +150,7 @@ export default function VoiceJournalPage() {
                      <div className="text-center">
                         {isRecording && (
                             <p className="text-2xl font-mono font-semibold">
-                                0:{recordingTime.toString().padStart(2, '0')} / 0:20
+                                0:{String(recordingTime).padStart(2, '0')} / 0:{MIN_RECORDING_SECONDS}
                             </p>
                         )}
                         <p className="text-sm text-muted-foreground">
