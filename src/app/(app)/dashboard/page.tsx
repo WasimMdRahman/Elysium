@@ -7,10 +7,9 @@ import {
   Bot,
   HeartPulse,
   BookText,
-  ListTodo,
   BrainCircuit,
   Waves,
-  Flame,
+  AudioWaveform,
 } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
@@ -34,10 +33,10 @@ const features = [
     icon: BookText,
   },
   {
-    href: "/tasks",
-    title: "Task Manager",
-    description: "Organize your daily to-do list",
-    icon: ListTodo,
+    href: "/voice-journal",
+    title: "Voice Biomarker Analysis",
+    description: "Analyze your voice for emotional insights",
+    icon: AudioWaveform,
   },
   {
     href: "/thought-quest",
