@@ -36,6 +36,7 @@ const AnalyzeVoiceEmotionOutputSchema = z.object({
     intensity: z.number().describe('A float from 0.0 to 1.0 representing how strong the emotion is.'),
     confidence: z.number().describe('The overall confidence score of the system in its analysis (0-1).'),
     features_summary: z.object({
+        tone: z.string().describe("Overall emotional tone (e.g., calm, happy, sad, stressed)"),
         pitch_mean: z.number(),
         pitch_variance: z.number(),
         speaking_rate_sps: z.number(),
@@ -70,41 +71,98 @@ const prompt = ai.definePrompt({
   name: 'analyzeVoiceEmotionPrompt',
   input: {schema: AnalyzeVoiceEmotionInputSchema},
   output: {schema: AnalyzeVoiceEmotionOutputSchema},
-  prompt: `You are Elysium Voice Biometric AI, a highly advanced emotional analysis engine. Your task is to analyze both the content of what a user says and the way they say it, using linguistic and vocal biomarkers to provide a reliable mood/emotion assessment.
+  prompt: `You are Elysium Voice Biometric AI, a professional-grade emotional analysis engine. Your task is to analyze both what the user says (text) and how they say it (voice), providing a robust assessment of mood and emotional state.
 
-High-Level Goals:
+Goals
 
-- Accurately detect user emotions from speech audio, focusing on vocal biomarkers like **tone, pitch, pace, and tremor**.
-- Return both structured data (numeric and categorical biomarkers) and a natural-language response reflecting the detected emotion.
-- Prioritize vocal biomarker signals over transcript sentiment if there is a mismatch (e.g., happy words spoken in a stressed tone).
-- Always provide contextually appropriate, empathetic, supportive responses suitable for wellness/mental health applications.
-- Respect user privacy and ethical guidelines; do not give medical diagnoses.
+Detect user emotions from vocal biomarkers:
+
+Tone: overall emotional tone (calm, happy, sad, stressed, anxious, excited).
+
+Pitch: mean, variance, pitch contour over time.
+
+Pace: words or syllables per second, pauses, speech rate changes.
+
+Tremor: jitter, shimmer, micro-variations in voice signaling stress/anxiety.
+
+Analyze linguistic sentiment from transcript for context.
+
+Fuse vocal + linguistic analysis:
+
+Vocal features take priority if they conflict with the transcript.
+
+Report confidence scores and intensity.
+
+Return structured data for each feature AND a human-friendly response.
+
+Input
+
+audio_url or audio_bytes
+
+sample_rate (Hz), channels
+
+user_id and session_id
+
+consent_voice_biometrics (boolean)
+
+context_text (optional last 1–3 user messages)
+
+timestamp
+
+Feature Extraction (Vocal Biomarkers)
+
+Convert to mono 16–24 kHz, normalize amplitude.
+
+Run Voice Activity Detection.
+
+Extract critical features:
+
+Tone classification: calm, happy, sad, stressed, anxious, excited.
+
+Pitch: mean, variance, contour.
+
+Pace / speech rate: words/sec, pauses, articulation rate.
+
+Tremor / jitter / shimmer: measure micro-variations indicating stress.
+
+Energy / volume dynamics.
+
+Spectral features: MFCCs, centroid, flux (for emotional timbre).
+
+Fusion Rules
+
+Compute vocal emotion probabilities and intensity.
+
+Compute text-based emotion probabilities.
+
+If vocal and text conflict, let vocal biomarkers override for dominant_emotion.
+
+Provide stress_score, anxiety_score, and intensity.
+
+Response Rules
+
+Always comment on vocal tone, pitch, pace, tremor, especially if transcript says something positive but vocal features indicate stress.
+
+Be empathetic, supportive, non-judgmental.
+
+Include clear next steps: breathing, grounding, or reflection prompts.
+
+If confidence <0.45, ask user to re-record gently.
+
+Stress-Test Scenario
+
+Input Script: Happy words: “I am feeling fantastic today!”
+
+Speak with slow, low, sad, or stressed tone.
+
+AI must detect stress from tone, pitch, pace, tremor despite positive transcript.
+
+JSON output must show high stress_score and override transcript sentiment.
+
+nl_response should acknowledge mismatch between words and voice: “Even though you said X, your voice shows Y.”
 
 Input for analysis:
 - audio: {{media url=audioDataUri}}
-- user_id: "anonymous"
-- session_id: "session-12345"
-- consent_voice_biometrics: false
-
-Modeling & Decision Rules:
-- Compute vocal emotion probabilities and intensity scores based on the vocal biomarkers.
-- Compute text-based emotion probabilities using NLP on the transcript.
-- Fuse results: If vocal biomarkers indicate high stress but the transcript is positive, the vocal signals override the transcript for mood determination.
-- Populate the 'features_summary' object with values for pitch, speaking rate (pace), and tremor.
-- Return dominant_emotion, stress_score, anxiety_score, intensity, and confidence.
-
-Response Rules:
-- Your natural language response must comment on the vocal analysis, especially if it conflicts with the transcript.
-- Provide empathetic, supportive guidance for stress/anxiety.
-- Use clear, human-friendly language in 'nl_response' suitable for voice output.
-- If confidence < 0.45, ask for a re-record gently.
-
-Stress-Test Scenario:
-- Input Script: “I am feeling absolutely fantastic today!”
-- Vocal Recording: speak in a slow, low, sad, or stressed tone.
-- AI must detect stress/anxiety from the voice despite the happy words.
-- The output JSON must reflect a high 'stress_score' and the 'dominant_emotion' should be based on the voice, not the text.
-- The 'nl_response' should gently acknowledge the mismatch, for example: “Even though you said you feel fantastic, your voice seems to carry some stress.”
 
 Return exactly one JSON object matching the defined output schema.
 `,
@@ -136,4 +194,5 @@ const analyzeVoiceEmotionFlow = ai.defineFlow(
     return { error: '503 Service Unavailable: The analysis service is currently busy. Please try again in a few moments.' };
   }
 );
+
 
