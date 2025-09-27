@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Loader, Activity, MessageCircle } from 'lucide-react';
+import { Mic, MicOff, Loader, Activity, MessageCircle, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { analyzeVoiceEmotion, AnalyzeVoiceEmotionOutput } from '@/ai/flows/voice-biomarker-analysis';
 import { cn } from '@/lib/utils';
@@ -54,10 +54,10 @@ export default function VoiceJournalPage() {
             const finalRecordingTime = recordingTime;
             stopTimer();
             setIsRecording(false);
-            setRecordingTime(0);
-
+            
             if (finalRecordingTime < MIN_RECORDING_SECONDS) {
                 setError(`Please record for at least ${MIN_RECORDING_SECONDS} seconds.`);
+                setRecordingTime(0);
                 mediaRecorderRef.current?.stop(); 
                 return;
             }
@@ -71,41 +71,39 @@ export default function VoiceJournalPage() {
                 audioChunksRef.current = [];
                 setAnalysisResult(null);
                 setError(null);
+                setRecordingTime(0);
 
                 mediaRecorderRef.current.ondataavailable = (event) => {
                     audioChunksRef.current.push(event.data);
                 };
 
                 mediaRecorderRef.current.onstop = async () => {
-                    // Only process if the time was sufficient
-                    if (recordingTime >= MIN_RECORDING_SECONDS || mediaRecorderRef.current?.state === 'inactive') {
-                        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                         if (audioBlob.size === 0) return;
-                        
-                        const reader = new FileReader();
-                        reader.readAsDataURL(audioBlob);
-                        reader.onloadend = async () => {
-                            const base64Audio = reader.result as string;
-                            setIsLoading(true);
-                            try {
-                                const result = await analyzeVoiceEmotion({ audioDataUri: base64Audio });
-                                if ('error' in result) {
-                                    if (result.error.includes('503')) {
-                                        setError("The analysis service is currently busy. Please try again in a few moments.");
-                                    } else {
-                                        setError(result.error);
-                                    }
+                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                     if (audioBlob.size === 0) return;
+                    
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = async () => {
+                        const base64Audio = reader.result as string;
+                        setIsLoading(true);
+                        try {
+                            const result = await analyzeVoiceEmotion({ audioDataUri: base64Audio });
+                            if ('error' in result) {
+                                if (result.error.includes('503')) {
+                                    setError("The analysis service is currently busy. Please try again in a few moments.");
                                 } else {
-                                    setAnalysisResult(result);
+                                    setError(result.error);
                                 }
-                            } catch (err: any) {
-                                console.error("Error analyzing voice:", err);
-                                setError("Sorry, we couldn't analyze your voice right now. Please try again.");
-                            } finally {
-                                setIsLoading(false);
+                            } else {
+                                setAnalysisResult(result);
                             }
-                        };
-                    }
+                        } catch (err: any) {
+                            console.error("Error analyzing voice:", err);
+                            setError("Sorry, we couldn't analyze your voice right now. Please try again.");
+                        } finally {
+                            setIsLoading(false);
+                        }
+                    };
                     // Clean up stream
                     streamRef.current?.getTracks().forEach(track => track.stop());
                     streamRef.current = null;
@@ -209,9 +207,14 @@ export default function VoiceJournalPage() {
                             <CardContent className="space-y-4">
                                <div>
                                    <h4 className="font-semibold mb-2 flex items-center gap-2"><MessageCircle size={16}/> AI Response:</h4>
-                                   <p className="text-sm text-muted-foreground italic p-3 bg-muted/50 rounded-md">
-                                       "{analysisResult.nl_response}"
-                                   </p>
+                                   <ul className="space-y-2 text-sm text-muted-foreground p-3 bg-muted/50 rounded-md">
+                                     {analysisResult.nl_response.map((point, index) => (
+                                       <li key={index} className="flex items-start gap-2">
+                                         <ChevronRight className="h-4 w-4 mt-1 shrink-0 text-primary" />
+                                         <span>{point}</span>
+                                       </li>
+                                     ))}
+                                   </ul>
                                </div>
                             </CardContent>
                         </Card>

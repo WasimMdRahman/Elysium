@@ -27,9 +27,8 @@ const AnalyzeVoiceEmotionOutputSchema = z.object({
     emotion_probs: z.object({
         happy: z.number(),
         sad: z.number(),
-        angry: z.number(),
+        stressed: z.number(),
         neutral: z.number(),
-        stressed: z.number()
     }).describe('A probability distribution across all possible emotion classes.'),
     stress_score: z.number().describe('A score from 0.0 to 1.0 indicating the level of stress.'),
     anxiety_score: z.number().describe('A score from 0.0 to 1.0 indicating the level of anxiety.'),
@@ -44,7 +43,7 @@ const AnalyzeVoiceEmotionOutputSchema = z.object({
     }).describe('An object summarizing key acoustic indicators used for the decision.'),
     transcript: z.string().optional().describe('The transcribed text from the audio, if available.'),
     transcript_confidence: z.number().optional().describe('The confidence score of the transcription (0-1).'),
-    nl_response: z.string().describe('A short, empathetic, context-aware natural-language reply for the user.'),
+    nl_response: z.array(z.string()).describe('A short, empathetic, context-aware natural-language reply for the user, presented as a list of points.'),
     model_metadata: z.object({
         vocal_model: z.string(),
         nlp_model: z.string(),
@@ -145,7 +144,7 @@ Always comment on vocal tone, pitch, pace, tremor, especially if transcript says
 
 Be empathetic, supportive, non-judgmental.
 
-Include clear next steps: breathing, grounding, or reflection prompts.
+Include clear next steps: breathing, grounding, or reflection prompts. Your natural language response (nl_response) should be a list of short, distinct points.
 
 If confidence <0.45, ask user to re-record gently.
 
@@ -194,5 +193,3 @@ const analyzeVoiceEmotionFlow = ai.defineFlow(
     return { error: '503 Service Unavailable: The analysis service is currently busy. Please try again in a few moments.' };
   }
 );
-
-
