@@ -44,9 +44,13 @@ export default function VoiceJournalPage() {
                         try {
                             const result = await analyzeVoiceEmotion({ audioDataUri: base64Audio });
                             setAnalysisResult(result);
-                        } catch (err) {
+                        } catch (err: any) {
                             console.error("Error analyzing voice:", err);
-                            setError("Sorry, we couldn't analyze your voice right now. Please try again.");
+                            if (err.message && err.message.includes('503')) {
+                                setError("The analysis service is currently busy. Please try again in a few moments.");
+                            } else {
+                                setError("Sorry, we couldn't analyze your voice right now. Please try again.");
+                            }
                         } finally {
                             setIsLoading(false);
                         }
