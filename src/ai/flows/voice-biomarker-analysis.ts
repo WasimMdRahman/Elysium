@@ -74,7 +74,7 @@ const prompt = ai.definePrompt({
 
 High-Level Goals:
 
-- Detect user emotions accurately from speech audio (tone, pitch, pace, tremor, volume, rhythm) and text transcript.
+- Accurately detect user emotions from speech audio, focusing on vocal biomarkers like **tone, pitch, pace, and tremor**.
 - Return both structured data (numeric and categorical biomarkers) and a natural-language response reflecting the detected emotion.
 - Prioritize vocal biomarker signals over transcript sentiment if there is a mismatch (e.g., happy words spoken in a stressed tone).
 - Always provide contextually appropriate, empathetic, supportive responses suitable for wellness/mental health applications.
@@ -87,26 +87,24 @@ Input for analysis:
 - consent_voice_biometrics: false
 
 Modeling & Decision Rules:
-- Compute vocal emotion probabilities and intensity scores.
-- Compute text-based emotion probabilities using NLP.
-- Fuse results:
-  - If vocal biomarkers indicate high stress/anxiety but transcript words are positive, vocal signals override transcript for mood determination.
-  - If vocal + text agree, combine probabilities for stronger confidence.
-- Return dominant_emotion, stress_score, anxiety_score, intensity, confidence.
+- Compute vocal emotion probabilities and intensity scores based on the vocal biomarkers.
+- Compute text-based emotion probabilities using NLP on the transcript.
+- Fuse results: If vocal biomarkers indicate high stress but the transcript is positive, the vocal signals override the transcript for mood determination.
+- Populate the 'features_summary' object with values for pitch, speaking rate (pace), and tremor.
+- Return dominant_emotion, stress_score, anxiety_score, intensity, and confidence.
 
 Response Rules:
-- Always comment on the vocal analysis, especially if it conflicts with transcript sentiment.
-- Provide empathetic, supportive guidance for stress/anxiety, even when transcript words are positive.
-- Use clear, human-friendly language in nl_response suitable for voice output.
+- Your natural language response must comment on the vocal analysis, especially if it conflicts with the transcript.
+- Provide empathetic, supportive guidance for stress/anxiety.
+- Use clear, human-friendly language in 'nl_response' suitable for voice output.
 - If confidence < 0.45, ask for a re-record gently.
-- Log features_summary and model_metadata for auditing.
 
 Stress-Test Scenario:
 - Input Script: “I am feeling absolutely fantastic today!”
-- Vocal Recording: speak in slow, low, sad, or stressed tone.
-- AI must detect stress/anxiety from voice despite happy words.
-- Output JSON must reflect high stress_score and override transcript sentiment in dominant_emotion.
-- nl_response should gently acknowledge the mismatch: “Even though you said X, your voice shows Y.”
+- Vocal Recording: speak in a slow, low, sad, or stressed tone.
+- AI must detect stress/anxiety from the voice despite the happy words.
+- The output JSON must reflect a high 'stress_score' and the 'dominant_emotion' should be based on the voice, not the text.
+- The 'nl_response' should gently acknowledge the mismatch, for example: “Even though you said you feel fantastic, your voice seems to carry some stress.”
 
 Return exactly one JSON object matching the defined output schema.
 `,
@@ -138,3 +136,4 @@ const analyzeVoiceEmotionFlow = ai.defineFlow(
     return { error: '503 Service Unavailable: The analysis service is currently busy. Please try again in a few moments.' };
   }
 );
+
