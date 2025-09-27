@@ -81,7 +81,7 @@ const analyzeVoiceEmotionFlow = ai.defineFlow(
         if (error.message && error.message.includes('503')) {
           console.log(`Attempt ${i + 1} failed with 503. Retrying...`);
           // Wait for a short period before retrying (e.g., 1 second)
-          await new Promise(r => setTimeout(r, 1000));
+          await new Promise(r => setTimeout(r, 1000 * (i + 1)));
           continue; // Go to the next loop iteration
         }
         // For any other error, throw it immediately
