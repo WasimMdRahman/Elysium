@@ -19,6 +19,7 @@ export default function VoiceJournalPage() {
     const [error, setError] = useState<string | null>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
+    const streamRef = useRef<MediaStream | null>(null);
     
     // State for recording timer
     const [recordingTime, setRecordingTime] = useState(0);
@@ -43,16 +44,29 @@ export default function VoiceJournalPage() {
     useEffect(() => {
         return () => {
             stopTimer();
+            streamRef.current?.getTracks().forEach(track => track.stop());
         };
     }, []);
 
     const handleRecording = async () => {
         if (isRecording) {
+            // Stop logic
+            const finalRecordingTime = recordingTime;
+            stopTimer();
+            setIsRecording(false);
+            setRecordingTime(0);
+
+            if (finalRecordingTime < MIN_RECORDING_SECONDS) {
+                setError(`Please record for at least ${MIN_RECORDING_SECONDS} seconds.`);
+                mediaRecorderRef.current?.stop(); 
+                return;
+            }
             mediaRecorderRef.current?.stop();
-            // onstop will handle the rest
         } else {
+            // Start logic
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                streamRef.current = stream;
                 mediaRecorderRef.current = new MediaRecorder(stream);
                 audioChunksRef.current = [];
                 setAnalysisResult(null);
@@ -63,42 +77,38 @@ export default function VoiceJournalPage() {
                 };
 
                 mediaRecorderRef.current.onstop = async () => {
-                    const finalRecordingTime = recordingTime;
-                    stopTimer();
-                    setIsRecording(false);
-                    setRecordingTime(0);
-                    
-                    if (finalRecordingTime < MIN_RECORDING_SECONDS) {
-                        setError(`Please record for at least ${MIN_RECORDING_SECONDS} seconds.`);
-                        stream.getTracks().forEach(track => track.stop());
-                        return;
-                    }
-
-                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                    const reader = new FileReader();
-                    reader.readAsDataURL(audioBlob);
-                    reader.onloadend = async () => {
-                        const base64Audio = reader.result as string;
-                        setIsLoading(true);
-                        try {
-                            const result = await analyzeVoiceEmotion({ audioDataUri: base64Audio });
-                            if ('error' in result) {
-                                if (result.error.includes('503')) {
-                                    setError("The analysis service is currently busy. Please try again in a few moments.");
+                    // Only process if the time was sufficient
+                    if (recordingTime >= MIN_RECORDING_SECONDS || mediaRecorderRef.current?.state === 'inactive') {
+                        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                         if (audioBlob.size === 0) return;
+                        
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        reader.onloadend = async () => {
+                            const base64Audio = reader.result as string;
+                            setIsLoading(true);
+                            try {
+                                const result = await analyzeVoiceEmotion({ audioDataUri: base64Audio });
+                                if ('error' in result) {
+                                    if (result.error.includes('503')) {
+                                        setError("The analysis service is currently busy. Please try again in a few moments.");
+                                    } else {
+                                        setError(result.error);
+                                    }
                                 } else {
-                                    setError(result.error);
+                                    setAnalysisResult(result);
                                 }
-                            } else {
-                                setAnalysisResult(result);
+                            } catch (err: any) {
+                                console.error("Error analyzing voice:", err);
+                                setError("Sorry, we couldn't analyze your voice right now. Please try again.");
+                            } finally {
+                                setIsLoading(false);
                             }
-                        } catch (err: any) {
-                            console.error("Error analyzing voice:", err);
-                            setError("Sorry, we couldn't analyze your voice right now. Please try again.");
-                        } finally {
-                            setIsLoading(false);
-                        }
-                    };
-                    stream.getTracks().forEach(track => track.stop());
+                        };
+                    }
+                    // Clean up stream
+                    streamRef.current?.getTracks().forEach(track => track.stop());
+                    streamRef.current = null;
                 };
 
                 mediaRecorderRef.current.start();
