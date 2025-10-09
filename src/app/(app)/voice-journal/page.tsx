@@ -89,11 +89,7 @@ export default function VoiceJournalPage() {
                         try {
                             const result = await analyzeVoiceEmotion({ audioDataUri: base64Audio });
                             if ('error' in result) {
-                                if (result.error.includes('503')) {
-                                    setError("The analysis service is currently busy. Please try again in a few moments.");
-                                } else {
-                                    setError(result.error);
-                                }
+                                setError(result.error);
                             } else {
                                 setAnalysisResult(result);
                             }
@@ -181,6 +177,7 @@ export default function VoiceJournalPage() {
             <AnimatePresence>
                 {error && (
                     <motion.div
+                        key="error-alert"
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
@@ -194,6 +191,7 @@ export default function VoiceJournalPage() {
                 )}
                 {analysisResult && (
                     <motion.div
+                        key="analysis-result"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="w-full max-w-lg"
