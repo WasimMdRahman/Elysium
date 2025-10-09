@@ -53,15 +53,21 @@ export default function VoiceJournalPage() {
             // Stop logic
             const finalRecordingTime = recordingTime;
             stopTimer();
-            setIsRecording(false);
             
             if (finalRecordingTime < MIN_RECORDING_SECONDS) {
                 setError(`Please record for at least ${MIN_RECORDING_SECONDS} seconds.`);
                 setRecordingTime(0);
-                mediaRecorderRef.current?.stop(); 
+                setIsRecording(false);
+                // Stop the tracks to turn off the browser's recording indicator
+                streamRef.current?.getTracks().forEach(track => track.stop());
+                streamRef.current = null;
+                 // Prevent onstop from firing by not calling stop() and just resetting
+                mediaRecorderRef.current = null;
+                audioChunksRef.current = [];
                 return;
             }
             mediaRecorderRef.current?.stop();
+            setIsRecording(false);
         } else {
             // Start logic
             try {
