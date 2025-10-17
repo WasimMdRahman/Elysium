@@ -2,12 +2,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { format, subDays, isWithinInterval } from 'date-fns';
+import { aiChatbotMentalHealthSupport } from '@/ai/flows/ai-chatbot-mental-health-support';
+import { Bot, Loader } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type MoodEntry = {
     date: Date;
@@ -56,6 +60,10 @@ export default function MoodTrackerPage() {
   const [mood, setMood] = useState([8]);
   const [moodData, setMoodData] = useState<MoodEntry[]>([]);
   const [timeRange, setTimeRange] = useState('all');
+  const [showLowMoodCard, setShowLowMoodCard] = useState(false);
+  const [lowMoodReason, setLowMoodReason] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
+  const [isSubmittingReason, setIsSubmittingReason] = useState(false);
 
   // Load mood data from localStorage
   useEffect(() => {
@@ -87,6 +95,32 @@ export default function MoodTrackerPage() {
   const handleLogMood = () => {
     const newEntry: MoodEntry = { date: new Date(), mood: mood[0] };
     setMoodData(prevData => [...prevData, newEntry].sort((a,b) => a.date.getTime() - b.date.getTime()));
+
+    if (mood[0] <= 6) {
+        setShowLowMoodCard(true);
+        setAiResponse('');
+        setLowMoodReason('');
+    } else {
+        setShowLowMoodCard(false);
+    }
+  }
+
+  const handleShareReason = async () => {
+      if (!lowMoodReason.trim()) return;
+      setIsSubmittingReason(true);
+      setAiResponse('');
+      try {
+          const response = await aiChatbotMentalHealthSupport({
+              message: lowMoodReason,
+              tone: 'empathetic'
+          });
+          setAiResponse(response.response);
+      } catch (error) {
+          console.error("Error fetching AI response for mood:", error);
+          setAiResponse("I'm having a little trouble connecting right now, but please know I'm here to listen.");
+      } finally {
+          setIsSubmittingReason(false);
+      }
   }
   
   const filteredData = moodData.filter(entry => {
@@ -105,28 +139,81 @@ export default function MoodTrackerPage() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline">How are you feeling today?</CardTitle>
-          <CardDescription>Log your current mood on a scale of 1 to 10.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-8">
-          <div className="text-center">
-            <p className="text-6xl font-bold">{currentMoodInfo.emoji}</p>
-            <p className="text-xl font-semibold mt-2">{mood[0]}</p>
-            <p className="text-muted-foreground">{currentMoodInfo.label}</p>
-          </div>
-          <Slider
-            value={mood}
-            onValueChange={setMood}
-            min={1}
-            max={10}
-            step={1}
-            aria-label={`Mood: ${currentMoodInfo.label}`}
-          />
-          <Button className="w-full" size="lg" onClick={handleLogMood}>Log Mood</Button>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-6">
+        <Card>
+            <CardHeader>
+            <CardTitle className="font-headline">How are you feeling today?</CardTitle>
+            <CardDescription>Log your current mood on a scale of 1 to 10.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+            <div className="text-center">
+                <p className="text-6xl font-bold">{currentMoodInfo.emoji}</p>
+                <p className="text-xl font-semibold mt-2">{mood[0]}</p>
+                <p className="text-muted-foreground">{currentMoodInfo.label}</p>
+            </div>
+            <Slider
+                value={mood}
+                onValueChange={setMood}
+                min={1}
+                max={10}
+                step={1}
+                aria-label={`Mood: ${currentMoodInfo.label}`}
+            />
+            <Button className="w-full" size="lg" onClick={handleLogMood}>Log Mood</Button>
+            </CardContent>
+        </Card>
+         <AnimatePresence>
+          {showLowMoodCard && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-headline">Share a little more?</CardTitle>
+                  <CardDescription>I've noticed your mood is a bit low. If you're comfortable, telling me what's on your mind can help.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea 
+                    placeholder="What's contributing to how you feel today?"
+                    value={lowMoodReason}
+                    onChange={(e) => setLowMoodReason(e.target.value)}
+                  />
+                </CardContent>
+                <CardFooter className="flex-col items-start gap-4">
+                  <Button onClick={handleShareReason} disabled={isSubmittingReason || !lowMoodReason.trim()}>
+                    {isSubmittingReason && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                    Share with Elysium
+                  </Button>
+                  {isSubmittingReason && (
+                     <div className="flex items-start gap-3 text-sm text-muted-foreground">
+                        <Bot className="h-4 w-4 mt-1 flex-shrink-0" />
+                        <p>Thinking of a thoughtful response...</p>
+                    </div>
+                  )}
+                  {aiResponse && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="w-full"
+                    >
+                        <div className="flex items-start gap-3 rounded-md bg-muted p-4">
+                            <Bot className="h-5 w-5 mt-1 flex-shrink-0 text-primary" />
+                            <div className="flex-1">
+                                <p className="font-semibold text-primary">Elysium says:</p>
+                                <p className="text-sm text-muted-foreground">{aiResponse}</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                  )}
+                </CardFooter>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">
@@ -191,3 +278,5 @@ export default function MoodTrackerPage() {
     </div>
   );
 }
+
+    
