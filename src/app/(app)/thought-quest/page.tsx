@@ -5,11 +5,25 @@ import { useState, useEffect } from 'react';
 import { generateThought } from '@/ai/flows/thought-quest-game-ai-thought-generation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, Zap, Loader, PartyPopper, CheckCircle, XCircle, Flame, Star, Gem } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Zap, Loader, PartyPopper, CheckCircle, XCircle, Flame, Star, Gem, Shield, Award, Crown, Diamond, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type Feedback = 'correct' | 'incorrect' | null;
 const TOTAL_QUESTIONS = 10;
+
+
+const trophies = [
+    { name: 'Bronze', type: 'XP', threshold: 2000, icon: Shield },
+    { name: 'Silver', type: 'XP', threshold: 3000, icon: Award },
+    { name: 'Gold', type: 'XP', threshold: 5000, icon: Trophy },
+    { name: 'Platinum', type: 'EP', threshold: 2000, icon: Crown },
+    { name: 'Diamond', type: 'EP', threshold: 3000, icon: Diamond },
+    { name: 'Master', type: 'XP', threshold: 20000, icon: Gem },
+    { name: 'Grandmaster', type: 'XP', threshold: 50000, icon: Star },
+];
+
 
 export default function ThoughtQuestPage() {
   const [thought, setThought] = useState<string>('');
@@ -227,6 +241,43 @@ export default function ThoughtQuestPage() {
             </CardContent>
         </Card>
       </div>
+
+      <Card className="w-full max-w-4xl">
+        <CardHeader>
+            <CardTitle className="text-center">Trophies</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <TooltipProvider>
+                <div className="flex justify-center gap-4 md:gap-8">
+                    {trophies.map(trophy => {
+                        const isUnlocked = trophy.type === 'XP' ? xp >= trophy.threshold : ep >= trophy.threshold;
+                        const colorMap = {
+                            'Bronze': 'text-orange-400',
+                            'Silver': 'text-slate-400',
+                            'Gold': 'text-yellow-500',
+                            'Platinum': 'text-cyan-400',
+                            'Diamond': 'text-blue-400',
+                            'Master': 'text-purple-500',
+                            'Grandmaster': 'text-red-500'
+                        };
+                        return (
+                            <Tooltip key={trophy.name}>
+                                <TooltipTrigger>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <trophy.icon className={cn("h-10 w-10 transition-colors", isUnlocked ? colorMap[trophy.name as keyof typeof colorMap] : "text-muted-foreground/50")} />
+                                        <span className={cn("text-xs font-semibold", isUnlocked ? "text-foreground" : "text-muted-foreground")}>{trophy.name}</span>
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Unlock at {trophy.threshold} {trophy.type}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        )
+                    })}
+                </div>
+            </TooltipProvider>
+        </CardContent>
+      </Card>
       
       <div className="relative w-full max-w-lg h-64">
         <AnimatePresence>
@@ -318,4 +369,5 @@ export default function ThoughtQuestPage() {
        )}
     </div>
   );
-}
+
+    
