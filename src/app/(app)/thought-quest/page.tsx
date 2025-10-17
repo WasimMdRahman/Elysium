@@ -192,28 +192,40 @@ export default function ThoughtQuestPage() {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <div className="text-center">
+      <div className="text-center w-full">
         <h1 className="text-3xl font-bold font-headline">Thought Quest</h1>
         <p className="text-muted-foreground">Challenge cognitive distortions and build healthier thinking habits.</p>
-        <div className="mt-4 flex items-center justify-center gap-4 text-lg font-bold">
-            <div className="flex items-center gap-1.5 text-orange-500" title="Daily Streak">
-                <Flame className="h-5 w-5" />
-                <span>{streak} Day{streak > 1 && 's'}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-yellow-500" title="Experience Points">
-                <Star className="h-5 w-5" />
-                <span>{xp} XP</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-blue-500" title="Engagement Points">
-                <Gem className="h-5 w-5" />
-                <span>{ep} EP</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-primary" title="Score">
-                <Zap className="h-5 w-5" />
-                <span>{score}</span>
-            </div>
-        </div>
-        <div className="mt-2 text-base text-muted-foreground">{questionsAnswered}/{TOTAL_QUESTIONS} thoughts reviewed</div>
+        <div className="mt-2 text-base text-muted-foreground">{questionsAnswered}/{TOTAL_QUESTIONS} thoughts reviewed | Total Score: {score}</div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
+        <Card className="text-center">
+            <CardHeader>
+                <CardTitle className="flex items-center justify-center gap-2 text-orange-500"><Flame /> Daily Streak</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-5xl font-bold">{streak}</p>
+                <p className="text-muted-foreground">Day{streak !== 1 && 's'}</p>
+            </CardContent>
+        </Card>
+        <Card className="text-center">
+            <CardHeader>
+                <CardTitle className="flex items-center justify-center gap-2 text-yellow-500"><Star /> Experience</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-5xl font-bold">{xp}</p>
+                <p className="text-muted-foreground">XP</p>
+            </CardContent>
+        </Card>
+        <Card className="text-center">
+            <CardHeader>
+                <CardTitle className="flex items-center justify-center gap-2 text-blue-500"><Gem /> Engagement</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-5xl font-bold">{ep}</p>
+                <p className="text-muted-foreground">EP</p>
+            </CardContent>
+        </Card>
       </div>
       
       <div className="relative w-full max-w-lg h-64">
