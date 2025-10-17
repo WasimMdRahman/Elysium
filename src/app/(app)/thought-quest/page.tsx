@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { generateThought } from '@/ai/flows/thought-quest-game-ai-thought-generation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,13 +16,13 @@ const TOTAL_QUESTIONS = 10;
 
 
 const trophies = [
-    { name: 'Bronze', type: 'XP', threshold: 2000, icon: Shield },
-    { name: 'Silver', type: 'XP', threshold: 3000, icon: Award },
-    { name: 'Gold', type: 'XP', threshold: 5000, icon: Trophy },
-    { name: 'Platinum', type: 'EP', threshold: 2000, icon: Crown },
-    { name: 'Diamond', type: 'EP', threshold: 3000, icon: Diamond },
-    { name: 'Master', type: 'XP', threshold: 20000, icon: Gem },
-    { name: 'Grandmaster', type: 'XP', threshold: 50000, icon: Star },
+    { name: 'Bronze', type: 'XP', threshold: 2000, img: '/trophies/bronze.png' },
+    { name: 'Silver', type: 'XP', threshold: 3000, img: '/trophies/silver.png' },
+    { name: 'Gold', type: 'XP', threshold: 5000, img: '/trophies/gold.png' },
+    { name: 'Platinum', type: 'EP', threshold: 2000, img: '/trophies/platinum.png' },
+    { name: 'Diamond', type: 'EP', threshold: 3000, img: '/trophies/diamond.png' },
+    { name: 'Master', type: 'XP', threshold: 20000, img: '/trophies/master.png' },
+    { name: 'Grandmaster', type: 'XP', threshold: 50000, img: '/trophies/grandmaster.png' },
 ];
 
 
@@ -251,20 +252,20 @@ export default function ThoughtQuestPage() {
                 <div className="flex justify-center gap-4 md:gap-8">
                     {trophies.map(trophy => {
                         const isUnlocked = trophy.type === 'XP' ? xp >= trophy.threshold : ep >= trophy.threshold;
-                        const colorMap = {
-                            'Bronze': 'text-orange-400',
-                            'Silver': 'text-slate-400',
-                            'Gold': 'text-yellow-500',
-                            'Platinum': 'text-cyan-400',
-                            'Diamond': 'text-blue-400',
-                            'Master': 'text-purple-500',
-                            'Grandmaster': 'text-red-500'
-                        };
                         return (
                             <Tooltip key={trophy.name}>
                                 <TooltipTrigger>
                                     <div className="flex flex-col items-center gap-2">
-                                        <trophy.icon className={cn("h-10 w-10 transition-colors", isUnlocked ? colorMap[trophy.name as keyof typeof colorMap] : "text-muted-foreground/50")} />
+                                        <Image 
+                                          src={trophy.img}
+                                          alt={`${trophy.name} Trophy`}
+                                          width={40}
+                                          height={40}
+                                          className={cn(
+                                            "transition-all",
+                                            !isUnlocked && "filter grayscale"
+                                          )}
+                                        />
                                         <span className={cn("text-xs font-semibold", isUnlocked ? "text-foreground" : "text-muted-foreground")}>{trophy.name}</span>
                                     </div>
                                 </TooltipTrigger>
