@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { generateThought } from '@/ai/flows/thought-quest-game-ai-thought-generation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, Zap, Loader, PartyPopper, CheckCircle, XCircle } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Zap, Loader, PartyPopper, CheckCircle, XCircle, Flame, Star, Gem } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Feedback = 'correct' | 'incorrect' | null;
@@ -20,39 +20,83 @@ export default function ThoughtQuestPage() {
   const [answered, setAnswered] = useState(false);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [previousThoughts, setPreviousThoughts] = useState<string[]>([]);
+  
+  // Gamification state
+  const [streak, setStreak] = useState(0);
+  const [xp, setXp] = useState(0);
+  const [ep, setEp] = useState(0);
+  const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
+  const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
+
 
   const isGameComplete = questionsAnswered >= TOTAL_QUESTIONS;
+  
+  const getYesterdayDateString = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return yesterday.toDateString();
+  }
 
   // Load state from localStorage
   useEffect(() => {
     try {
       const savedState = localStorage.getItem('thoughtQuestState');
+      const today = new Date().toDateString();
+
       if (savedState) {
-        const { score: savedScore, questions: savedQuestions, date, thoughts: savedThoughts } = JSON.parse(savedState);
-        const today = new Date().toDateString();
-        // Reset if it's a new day
-        if(date !== today) {
-          localStorage.removeItem('thoughtQuestState');
+        const { 
+            score: savedScore = 0, 
+            questions: savedQuestions = 0, 
+            date: savedDate, 
+            thoughts: savedThoughts = [],
+            streak: savedStreak = 0,
+            xp: savedXp = 0,
+            ep: savedEp = 0,
+            correctAnswersCount: savedCorrectCount = 0,
+            lastPlayedDate: savedLastPlayed
+        } = JSON.parse(savedState);
+        
+        // --- Streak Logic ---
+        const yesterday = getYesterdayDateString();
+        let currentStreak = savedStreak;
+
+        if (savedDate === today) { // Played today already
+             currentStreak = savedStreak > 0 ? savedStreak : 1;
+        } else if (savedDate === yesterday) { // Played yesterday
+            currentStreak = (savedStreak || 0) + 1;
+        } else { // Missed a day or first time
+            currentStreak = 1;
+        }
+        
+        // Reset daily game if it's a new day
+        if(savedDate !== today) {
           setScore(0);
           setQuestionsAnswered(0);
           setPreviousThoughts([]);
+          setXp(0);
+          setEp(0);
+          setCorrectAnswersCount(0);
           fetchNewThought([]); // pass empty array for a fresh start
         } else {
             setScore(savedScore);
             setQuestionsAnswered(savedQuestions);
-            setPreviousThoughts(savedThoughts || []);
+            setPreviousThoughts(savedThoughts);
+            setXp(savedXp);
+            setEp(savedEp);
+            setCorrectAnswersCount(savedCorrectCount);
             if (savedQuestions < TOTAL_QUESTIONS) {
-                fetchNewThought(savedThoughts || []);
+                fetchNewThought(savedThoughts);
             } else {
-                 setIsLoading(false);
+                setIsLoading(false);
             }
         }
+
+        setStreak(currentStreak);
+        setLastPlayedDate(savedDate);
       } else {
-        if (questionsAnswered < TOTAL_QUESTIONS) {
-            fetchNewThought([]);
-        } else {
-            setIsLoading(false);
-        }
+        // First time ever playing
+        setStreak(1);
+        fetchNewThought([]);
       }
     } catch (error) {
       console.error("Failed to load state from localStorage", error);
@@ -64,16 +108,27 @@ export default function ThoughtQuestPage() {
 
   // Auto-save state to localStorage
   useEffect(() => {
-    if(questionsAnswered > 0 || score > 0) { // Only save if the game has started
+    // Avoid saving initial blank state
+    if (questionsAnswered > 0 || score > 0 || xp > 0) {
         try {
             const today = new Date().toDateString();
-            const stateToSave = { score, questions: questionsAnswered, date: today, thoughts: previousThoughts };
+            const stateToSave = { 
+                score, 
+                questions: questionsAnswered, 
+                date: today, 
+                thoughts: previousThoughts,
+                streak,
+                xp,
+                ep,
+                correctAnswersCount,
+                lastPlayedDate: today
+            };
             localStorage.setItem('thoughtQuestState', JSON.stringify(stateToSave));
         } catch (error) {
           console.error("Failed to save state to localStorage", error);
         }
     }
-  }, [score, questionsAnswered, previousThoughts]);
+  }, [score, questionsAnswered, previousThoughts, streak, xp, ep, correctAnswersCount]);
 
 
   const fetchNewThought = async (currentThoughts: string[]) => {
@@ -106,12 +161,19 @@ export default function ThoughtQuestPage() {
     if (wasCorrect) {
       setScore(s => s + 10);
       setFeedback('correct');
+      setXp(currentXp => currentXp + 10);
+      
+      const newCorrectCount = correctAnswersCount + 1;
+      setCorrectAnswersCount(newCorrectCount);
+      if (newCorrectCount > 0 && newCorrectCount % 5 === 0) {
+        setEp(currentEp => currentEp + 10);
+      }
+
     } else {
       setScore(s => s + 0); // No negative marking
       setFeedback('incorrect');
     }
 
-    // This ensures we update the question count and thought list *after* the feedback is processed.
     setQuestionsAnswered(q => q + 1);
     setPreviousThoughts(prev => [...prev, thought]);
 
@@ -133,13 +195,25 @@ export default function ThoughtQuestPage() {
       <div className="text-center">
         <h1 className="text-3xl font-bold font-headline">Thought Quest</h1>
         <p className="text-muted-foreground">Challenge cognitive distortions and build healthier thinking habits.</p>
-        <div className="mt-2 flex items-center justify-center gap-4 text-xl">
-          <div className="font-bold text-primary flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            <span>Score: {score}</span>
-          </div>
-          <div className="text-base text-muted-foreground">{questionsAnswered}/{TOTAL_QUESTIONS}</div>
+        <div className="mt-4 flex items-center justify-center gap-4 text-lg font-bold">
+            <div className="flex items-center gap-1.5 text-orange-500" title="Daily Streak">
+                <Flame className="h-5 w-5" />
+                <span>{streak} Day{streak > 1 && 's'}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-yellow-500" title="Experience Points">
+                <Star className="h-5 w-5" />
+                <span>{xp} XP</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-blue-500" title="Engagement Points">
+                <Gem className="h-5 w-5" />
+                <span>{ep} EP</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-primary" title="Score">
+                <Zap className="h-5 w-5" />
+                <span>{score}</span>
+            </div>
         </div>
+        <div className="mt-2 text-base text-muted-foreground">{questionsAnswered}/{TOTAL_QUESTIONS} thoughts reviewed</div>
       </div>
       
       <div className="relative w-full max-w-lg h-64">
@@ -200,7 +274,7 @@ export default function ThoughtQuestPage() {
             </motion.div>
           ): null}
         </AnimatePresence>
-        {isLoading && (
+        {isLoading && !isGameComplete && (
           <div className="absolute inset-0 flex items-center justify-center">
              <Loader className="h-12 w-12 animate-spin text-primary" />
           </div>
@@ -233,4 +307,3 @@ export default function ThoughtQuestPage() {
     </div>
   );
 }
-

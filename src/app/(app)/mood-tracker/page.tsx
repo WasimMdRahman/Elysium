@@ -96,7 +96,7 @@ export default function MoodTrackerPage() {
     const newEntry: MoodEntry = { date: new Date(), mood: mood[0] };
     setMoodData(prevData => [...prevData, newEntry].sort((a,b) => a.date.getTime() - b.date.getTime()));
 
-    if (mood[0] <= 6) {
+    if (mood[0] <= 5) {
         setShowLowMoodCard(true);
         setAiResponse('');
         setLowMoodReason('');
