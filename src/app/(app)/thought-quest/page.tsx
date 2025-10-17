@@ -16,13 +16,13 @@ const TOTAL_QUESTIONS = 10;
 
 
 const trophies = [
-    { name: 'Bronze', type: 'XP', threshold: 2000, img: '/trophies/bronze.png' },
-    { name: 'Silver', type: 'XP', threshold: 3000, img: '/trophies/silver.png' },
-    { name: 'Gold', type: 'XP', threshold: 5000, img: '/trophies/gold.png' },
-    { name: 'Platinum', type: 'EP', threshold: 2000, img: '/trophies/platinum.png' },
-    { name: 'Diamond', type: 'EP', threshold: 3000, img: '/trophies/diamond.png' },
-    { name: 'Master', type: 'XP', threshold: 20000, img: '/trophies/master.png' },
-    { name: 'Grandmaster', type: 'XP', threshold: 50000, img: '/trophies/grandmaster.png' },
+    { name: 'Bronze', type: 'XP', threshold: 2000, img: '/trophies/bronze.jpg' },
+    { name: 'Silver', type: 'XP', threshold: 3000, img: '/trophies/silver.jpg' },
+    { name: 'Gold', type: 'XP', threshold: 5000, img: '/trophies/gold.jpg' },
+    { name: 'Platinum', type: 'EP', threshold: 2000, img: '/trophies/platinum.jpg' },
+    { name: 'Diamond', type: 'EP', threshold: 3000, img: '/trophies/diamond.jpg' },
+    { name: 'Master', type: 'XP', threshold: 20000, img: '/trophies/master.jpg' },
+    { name: 'Grandmaster', type: 'XP', threshold: 50000, img: '/trophies/grandmaster.jpg' },
 ];
 
 
@@ -372,3 +372,4 @@ export default function ThoughtQuestPage() {
   );
 
     
+
