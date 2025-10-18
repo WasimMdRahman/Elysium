@@ -241,42 +241,40 @@ export default function ThoughtQuestPage() {
         </Card>
       </div>
 
-      <Card className="w-full max-w-4xl">
-        <CardHeader>
-            <CardTitle className="text-center">Trophies</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <TooltipProvider>
-                <div className="flex justify-center gap-4 md:gap-8">
-                    {trophies.map(trophy => {
-                        const isUnlocked = trophy.type === 'XP' ? xp >= trophy.threshold : ep >= trophy.threshold;
-                        return (
-                            <Tooltip key={trophy.name}>
-                                <TooltipTrigger>
-                                    <div className="flex flex-col items-center gap-2">
-                                        <Image 
-                                          src={trophy.img}
-                                          alt={`${trophy.name} Trophy`}
-                                          width={40}
-                                          height={40}
-                                          className={cn(
-                                            "transition-all",
-                                            !isUnlocked && "filter grayscale"
-                                          )}
-                                        />
-                                        <span className={cn("text-xs font-semibold", isUnlocked ? "text-foreground" : "text-muted-foreground")}>{trophy.name}</span>
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Unlock at {trophy.threshold} {trophy.type}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        )
-                    })}
-                </div>
-            </TooltipProvider>
-        </CardContent>
-      </Card>
+       <div className="w-full max-w-4xl">
+        <h2 className="text-2xl font-bold font-headline text-center mb-4">Trophies</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {trophies.map(trophy => {
+            const isUnlocked = trophy.type === 'XP' ? xp >= trophy.threshold : ep >= trophy.threshold;
+            return (
+              <Card key={trophy.name} className={cn("flex flex-col items-center justify-center text-center p-4 transition-all", isUnlocked ? 'bg-amber-100/20 border-amber-400' : 'bg-muted/50')}>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Image 
+                              src={trophy.img}
+                              alt={`${trophy.name} Trophy`}
+                              width={50}
+                              height={50}
+                              className={cn(
+                                "transition-all",
+                                !isUnlocked && "filter grayscale opacity-30"
+                              )}
+                            />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Unlock at {trophy.threshold} {trophy.type}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                <CardTitle className={cn("text-sm font-semibold mt-2", isUnlocked ? "text-foreground" : "text-muted-foreground")}>
+                  {trophy.name}
+                </CardTitle>
+              </Card>
+            )
+          })}
+        </div>
+      </div>
       
       <div className="relative w-full max-w-lg h-64">
         <AnimatePresence>
@@ -369,10 +367,4 @@ export default function ThoughtQuestPage() {
     </div>
   );
 
-    
-
-
-
-
-
-    
+}
