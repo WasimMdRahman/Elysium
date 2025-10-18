@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI chatbot providing mental health support.
@@ -18,7 +19,8 @@ const AIChatbotMentalHealthSupportInputSchema = z.object({
   chatHistory: z.array(z.object({
     user: z.string(),
     bot: z.string()
-  })).optional().describe('The chat history between the user and the bot.'),
+  })).optional().describe('The recent chat history between the user and the bot.'),
+  summary: z.string().optional().describe('A running summary of the entire conversation for long-term context.'),
 });
 export type AIChatbotMentalHealthSupportInput = z.infer<
   typeof AIChatbotMentalHealthSupportInputSchema
@@ -45,7 +47,12 @@ const prompt = ai.definePrompt({
 
   **IMPORTANT:** You are NOT a replacement for a licensed therapist. If the user expresses thoughts of self-harm, immediately provide a crisis hotline number and advise them to seek professional help.
 
-  Here is the conversation history (last 5 exchanges):
+  {{#if summary}}
+  Here is a summary of the conversation so far:
+  "{{summary}}"
+  {{/if}}
+
+  Here is the recent conversation history:
   {{#each chatHistory}}
   User: "{{this.user}}"
   Elysium: "{{this.bot}}"
@@ -54,7 +61,7 @@ const prompt = ai.definePrompt({
   Current user message:
   "{{{message}}}"
 
-  Based on the history and the current message, respond in a '{{tone}}' tone. Be encouraging, non-judgmental, and provide a thoughtful, supportive response.
+  Based on the summary and recent history, respond to the user's current message in a '{{tone}}' tone. Be encouraging, non-judgmental, and provide a thoughtful, supportive response.
   `,
 });
 

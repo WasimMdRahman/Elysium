@@ -4,6 +4,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { aiChatbotMentalHealthSupport } from '@/ai/flows/ai-chatbot-mental-health-support';
+import { summarizeChatHistory } from '@/ai/flows/ai-chatbot-chat-summarization';
 import { transcribeAudio } from '@/ai/flows/ai-chatbot-speech-to-text';
 import { textToSpeech } from '@/ai/flows/ai-chatbot-text-to-speech';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ type ChatSession = {
     title: string;
     messages: Message[];
     timestamp: Date;
+    summary: string;
 }
 
 type ChatHistoryItem = {
@@ -37,6 +39,7 @@ type ChatHistoryItem = {
   bot: string;
 }
 
+const SUMMARIZATION_THRESHOLD = 10; // Summarize every 10 messages
 
 const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, startRenameSession, confirmRenameSession, setRenamingTitle, renamingTitle, cancelRename, deleteSession, createNewChat }: {
     sessions: ChatSession[];
@@ -173,7 +176,8 @@ export default function ChatbotPage() {
           timestamp: new Date(),
           messages: [
             { role: 'bot', text: 'Hello! I am your Elysium assistant. How can I support you today?' }
-          ]
+          ],
+          summary: '',
       };
       setSessions(prev => [newSession, ...prev]);
       setActiveSessionId(newSession.id);
@@ -186,7 +190,8 @@ export default function ChatbotPage() {
         const savedSessions = localStorage.getItem('chatSessions');
         const parsedSessions = savedSessions ? JSON.parse(savedSessions).map((s: any) => ({
             ...s,
-            timestamp: new Date(s.timestamp)
+            timestamp: new Date(s.timestamp),
+            summary: s.summary || '',
         })) : [];
 
         if (parsedSessions.length > 0) {
@@ -254,6 +259,32 @@ export default function ChatbotPage() {
     }
   }
 
+  const handleSummarization = async (sessionId: string) => {
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session || session.messages.length < 2) return;
+
+    console.log(`Checking summarization for session ${sessionId}. Messages: ${session.messages.length}`);
+    
+    // Check if it's time to summarize (e.g., every 10 messages)
+    if (session.messages.length % SUMMARIZATION_THRESHOLD === 0) {
+      console.log("Threshold met. Summarizing chat...");
+      
+      const fullHistory = session.messages.map(m => `${m.role}: ${m.text}`).join('\n');
+      const textToSummarize = `Previous summary:\n${session.summary}\n\nNew messages:\n${fullHistory}`;
+
+      try {
+        const { summary: newSummary } = await summarizeChatHistory({ chatHistory: textToSummarize });
+        
+        setSessions(prev => prev.map(s => 
+          s.id === sessionId ? { ...s, summary: newSummary } : s
+        ));
+        console.log("Chat summary updated successfully.");
+      } catch (error) {
+        console.error("Failed to summarize chat history:", error);
+      }
+    }
+  };
+
 
   const processAndSendMessage = async (messageText: string, playResponse: boolean = false) => {
     if (!messageText.trim() || isLoading || isOffline) return;
@@ -267,7 +298,8 @@ export default function ChatbotPage() {
           timestamp: new Date(),
           messages: [
             { role: 'bot', text: 'Hello! I am your Elysium assistant. How can I support you today?' }
-          ]
+          ],
+          summary: '',
         };
         setSessions(prev => [newSession, ...prev]);
         setActiveSessionId(newSession.id);
@@ -283,7 +315,6 @@ export default function ChatbotPage() {
             const isNewChat = s.title === "New Chat" && s.messages.length === 1;
             return { 
                 ...s, 
-                // Set title to first user message if it's a new chat
                 title: isNewChat ? messageText.substring(0, 30) + (messageText.length > 30 ? '...' : '') : s.title,
                 messages: [...s.messages, userMessage], 
                 timestamp: new Date() 
@@ -297,12 +328,10 @@ export default function ChatbotPage() {
     setLoadingMessage(null);
 
     try {
-      // Find the updated session to get the latest messages for history
       const currentSession = sessions.find(s => s.id === currentActiveSessionId);
-      const historyMessages = (currentSession?.messages || []).concat(userMessage);
+      const historyMessages = (currentSession?.messages || []).slice(-10); // Use last 10 messages for immediate context
 
       const chatHistory: ChatHistoryItem[] = historyMessages
-        .filter((_, i) => i < historyMessages.length - 1) // Exclude the latest user message
         .reduce((acc, msg, i, arr) => {
             if (msg.role === 'user' && arr[i+1]?.role === 'bot') {
                 acc.push({ user: msg.text, bot: arr[i+1].text });
@@ -314,7 +343,9 @@ export default function ChatbotPage() {
       const response = await aiChatbotMentalHealthSupport({
         message: messageText,
         tone: tone,
-        chatHistory: chatHistory
+        chatHistory: chatHistory,
+        // Pass the summary for long-term context
+        summary: currentSession?.summary 
       });
 
       const botMessage: Message = { role: 'bot', text: response.response };
@@ -330,9 +361,12 @@ export default function ChatbotPage() {
             }
         } catch (audioError) {
             console.error("Failed to generate or play audio:", audioError);
-            // Audio fails, but the text message is already displayed.
         }
       }
+      
+      // Trigger summarization check after state has been updated
+      handleSummarization(currentActiveSessionId);
+
 
     } catch (error) {
       console.error('Error fetching AI response:', error);
