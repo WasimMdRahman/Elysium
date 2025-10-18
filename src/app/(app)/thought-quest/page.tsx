@@ -21,8 +21,6 @@ const trophies = [
     { name: 'Gold', type: 'XP', threshold: 5000, img: '/trophies/gold.png' },
     { name: 'Platinum', type: 'EP', threshold: 2000, img: '/trophies/platinum.png' },
     { name: 'Diamond', type: 'EP', threshold: 3000, img: '/trophies/diamond.png' },
-    { name: 'Master', type: 'XP', threshold: 20000, img: '/trophies/master.png' },
-    { name: 'Grandmaster', type: 'XP', threshold: 50000, img: '/trophies/grandmaster.png' },
 ];
 
 
@@ -347,7 +345,7 @@ export default function ThoughtQuestPage() {
 
       {!isGameComplete && (
         <div className="flex flex-col items-center gap-4 w-full max-w-lg">
-            <p className="text-muted-foreground">Is this thought pattern helpful or unhelpful?</p>
+            <p className="text-muted-foreground">Is this Quote Helpful or Unhelpful?</p>
             <div className="flex gap-4">
             <Button
                 size="lg"
@@ -372,5 +370,6 @@ export default function ThoughtQuestPage() {
   );
 
     
+
 
 
