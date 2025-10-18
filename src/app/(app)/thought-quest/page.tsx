@@ -65,8 +65,7 @@ export default function ThoughtQuestPage() {
             streak: savedStreak = 0,
             xp: savedXp = 0,
             ep: savedEp = 0,
-            correctAnswersCount: savedCorrectCount = 0,
-            lastPlayedDate: savedLastPlayed
+            correctAnswersCount: savedCorrectCount = 0
         } = JSON.parse(savedState);
         
         // --- Streak Logic ---
@@ -81,21 +80,22 @@ export default function ThoughtQuestPage() {
             currentStreak = 1;
         }
         
+        setStreak(currentStreak);
+        setXp(savedXp); // Always load XP
+        setEp(savedEp); // Always load EP
+
         // Reset daily game if it's a new day
         if(savedDate !== today) {
           setScore(0);
           setQuestionsAnswered(0);
           setPreviousThoughts([]);
-          setXp(0);
-          setEp(0);
-          setCorrectAnswersCount(0);
+          setCorrectAnswersCount(0); // Reset daily correct count
           fetchNewThought([]); // pass empty array for a fresh start
         } else {
+            // Continue session from today
             setScore(savedScore);
             setQuestionsAnswered(savedQuestions);
             setPreviousThoughts(savedThoughts);
-            setXp(savedXp);
-            setEp(savedEp);
             setCorrectAnswersCount(savedCorrectCount);
             if (savedQuestions < TOTAL_QUESTIONS) {
                 fetchNewThought(savedThoughts);
@@ -104,11 +104,12 @@ export default function ThoughtQuestPage() {
             }
         }
 
-        setStreak(currentStreak);
         setLastPlayedDate(savedDate);
       } else {
         // First time ever playing
         setStreak(1);
+        setXp(0);
+        setEp(0);
         fetchNewThought([]);
       }
     } catch (error) {
@@ -121,8 +122,8 @@ export default function ThoughtQuestPage() {
 
   // Auto-save state to localStorage
   useEffect(() => {
-    // Avoid saving initial blank state
-    if (questionsAnswered > 0 || score > 0 || xp > 0) {
+    // Avoid saving initial blank state if nothing has been earned
+    if (questionsAnswered > 0 || score > 0 || xp > 0 || ep > 0) {
         try {
             const today = new Date().toDateString();
             const stateToSave = { 
@@ -133,8 +134,7 @@ export default function ThoughtQuestPage() {
                 streak,
                 xp,
                 ep,
-                correctAnswersCount,
-                lastPlayedDate: today
+                correctAnswersCount
             };
             localStorage.setItem('thoughtQuestState', JSON.stringify(stateToSave));
         } catch (error) {
@@ -373,3 +373,6 @@ export default function ThoughtQuestPage() {
 
 
 
+
+
+    
