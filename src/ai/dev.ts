@@ -8,3 +8,4 @@ import '@/ai/flows/ai-chatbot-emotion-detection.ts';
 import '@/ai/flows/ai-chatbot-speech-to-text.ts';
 import '@/ai/flows/ai-chatbot-text-to-speech.ts';
 import '@/ai/flows/voice-biomarker-analysis.ts';
+import '@/ai/flows/update-user-profile-summary.ts';

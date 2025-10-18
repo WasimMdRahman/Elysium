@@ -21,6 +21,7 @@ const AIChatbotMentalHealthSupportInputSchema = z.object({
     bot: z.string()
   })).optional().describe('The recent chat history between the user and the bot.'),
   summary: z.string().optional().describe('A running summary of the entire conversation for long-term context.'),
+  userProfile: z.string().optional().describe('A global summary of the user across all conversations for long-term memory.'),
 });
 export type AIChatbotMentalHealthSupportInput = z.infer<
   typeof AIChatbotMentalHealthSupportInputSchema
@@ -47,8 +48,13 @@ const prompt = ai.definePrompt({
 
   **IMPORTANT:** You are NOT a replacement for a licensed therapist. If the user expresses thoughts of self-harm, immediately provide a crisis hotline number and advise them to seek professional help.
 
+  {{#if userProfile}}
+  Here is a long-term profile of the user to give you context on their overall situation:
+  "{{userProfile}}"
+  {{/if}}
+
   {{#if summary}}
-  Here is a summary of the conversation so far:
+  Here is a summary of the current conversation so far:
   "{{summary}}"
   {{/if}}
 
@@ -61,7 +67,7 @@ const prompt = ai.definePrompt({
   Current user message:
   "{{{message}}}"
 
-  Based on the summary and recent history, respond to the user's current message in a '{{tone}}' tone. Be encouraging, non-judgmental, and provide a thoughtful, supportive response.
+  Based on the user profile, summary and recent history, respond to the user's current message in a '{{tone}}' tone. Be encouraging, non-judgmental, and provide a thoughtful, supportive response.
   `,
 });
 

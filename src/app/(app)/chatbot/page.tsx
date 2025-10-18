@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { aiChatbotMentalHealthSupport } from '@/ai/flows/ai-chatbot-mental-health-support';
 import { summarizeChatHistory } from '@/ai/flows/ai-chatbot-chat-summarization';
+import { updateUserProfileSummary } from '@/ai/flows/update-user-profile-summary';
 import { transcribeAudio } from '@/ai/flows/ai-chatbot-speech-to-text';
 import { textToSpeech } from '@/ai/flows/ai-chatbot-text-to-speech';
 import { Button } from '@/components/ui/button';
@@ -154,6 +155,7 @@ export default function ChatbotPage() {
   const [tone, setTone] = useState<'professional' | 'friendly' | 'empathetic' | 'humorous'>('professional');
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState('');
+  const [userProfile, setUserProfile] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -184,7 +186,7 @@ export default function ChatbotPage() {
       if (isMobile) setSheetOpen(false);
   }
 
-  // Load sessions from localStorage on initial render
+  // Load sessions and user profile from localStorage on initial render
   useEffect(() => {
     try {
         const savedSessions = localStorage.getItem('chatSessions');
@@ -199,8 +201,14 @@ export default function ChatbotPage() {
           setSessions(sortedSessions);
           setActiveSessionId(sortedSessions[0].id);
         }
+
+        const savedProfile = localStorage.getItem('userProfileSummary');
+        if(savedProfile) {
+            setUserProfile(savedProfile);
+        }
+
     } catch (error) {
-        console.error("Failed to load chat sessions from localStorage", error);
+        console.error("Failed to load data from localStorage", error);
     }
   }, []);
 
@@ -212,6 +220,8 @@ export default function ChatbotPage() {
             const sessionsToSave = sessions.filter(s => s.messages.length > 1 || s.title !== "New Chat");
             if (sessionsToSave.length > 0) {
                 localStorage.setItem('chatSessions', JSON.stringify(sessionsToSave));
+                // Trigger user profile update when sessions change significantly
+                handleUserProfileUpdate(sessionsToSave); 
             } else {
                  localStorage.removeItem('chatSessions');
             }
@@ -263,10 +273,8 @@ export default function ChatbotPage() {
     const session = sessions.find(s => s.id === sessionId);
     if (!session || session.messages.length < 2) return;
 
-    console.log(`Checking summarization for session ${sessionId}. Messages: ${session.messages.length}`);
-    
     // Check if it's time to summarize (e.g., every 10 messages)
-    if (session.messages.length % SUMMARIZATION_THRESHOLD === 0) {
+    if (session.messages.length > 1 && session.messages.length % SUMMARIZATION_THRESHOLD === 0) {
       console.log("Threshold met. Summarizing chat...");
       
       const fullHistory = session.messages.map(m => `${m.role}: ${m.text}`).join('\n');
@@ -284,6 +292,24 @@ export default function ChatbotPage() {
       }
     }
   };
+
+  const handleUserProfileUpdate = async (currentSessions: ChatSession[]) => {
+      console.log("Updating user profile summary...");
+      const allSummaries = currentSessions.map(s => s.summary).filter(Boolean);
+      if (allSummaries.length === 0) return;
+
+      try {
+          const { userProfile: newProfile } = await updateUserProfileSummary({
+              allSessionSummaries: allSummaries,
+              previousUserProfile: userProfile
+          });
+          setUserProfile(newProfile);
+          localStorage.setItem('userProfileSummary', newProfile);
+          console.log("User profile summary updated.");
+      } catch (error) {
+          console.error("Failed to update user profile summary:", error);
+      }
+  }
 
 
   const processAndSendMessage = async (messageText: string, playResponse: boolean = false) => {
@@ -328,8 +354,8 @@ export default function ChatbotPage() {
     setLoadingMessage(null);
 
     try {
-      const currentSession = sessions.find(s => s.id === currentActiveSessionId);
-      const historyMessages = (currentSession?.messages || []).slice(-10); // Use last 10 messages for immediate context
+      const sessionForResponse = sessions.find(s => s.id === currentActiveSessionId);
+      const historyMessages = (sessionForResponse?.messages || []).slice(-10);
 
       const chatHistory: ChatHistoryItem[] = historyMessages
         .reduce((acc, msg, i, arr) => {
@@ -339,13 +365,12 @@ export default function ChatbotPage() {
             return acc;
         }, [] as ChatHistoryItem[]);
 
-
       const response = await aiChatbotMentalHealthSupport({
         message: messageText,
         tone: tone,
         chatHistory: chatHistory,
-        // Pass the summary for long-term context
-        summary: currentSession?.summary 
+        summary: sessionForResponse?.summary,
+        userProfile: userProfile // Pass the global user profile
       });
 
       const botMessage: Message = { role: 'bot', text: response.response };
@@ -366,7 +391,6 @@ export default function ChatbotPage() {
       
       // Trigger summarization check after state has been updated
       handleSummarization(currentActiveSessionId);
-
 
     } catch (error) {
       console.error('Error fetching AI response:', error);
