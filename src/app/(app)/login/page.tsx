@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, AuthErrorCodes, signInAnonymously } from 'firebase/auth';
 import { useUser } from '@/firebase';
-import { Loader, UserPlus, LogIn } from 'lucide-react';
+import { Loader, UserPlus, LogIn, Save } from 'lucide-react';
 
 // Function to generate a unique, gamer-style username
 const generateUsername = () => {
