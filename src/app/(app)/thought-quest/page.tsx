@@ -19,7 +19,7 @@ const levels = [
     { name: 'Bronze', type: 'XP', threshold: 2000, color: 'text-yellow-600' },
     { name: 'Silver', type: 'XP', threshold: 3000, color: 'text-slate-400' },
     { name: 'Gold', type: 'XP', threshold: 5000, color: 'text-yellow-400' },
-    { name: 'Platinum', type: 'EP', threshold: 2000, color: 'text-cyan-400' },
+    { name: 'Platinum', type: 'EP', threshold: 2000, color: 'text-purple-400' },
     { name: 'Diamond', type: 'EP', threshold: 3000, color: 'text-blue-300' },
 ];
 
@@ -348,5 +348,3 @@ export default function ThoughtQuestPage() {
   );
 
 }
-
-
