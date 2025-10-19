@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { generateThought, GenerateThoughtInput, GenerateThoughtOutput } from '@/ai/flows/thought-quest-game-ai-thought-generation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, Loader, PartyPopper, Flame, Star, Gem, ArrowLeft, Play } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Loader, PartyPopper, Flame, Star, Gem, ArrowLeft, Play, BrainCircuit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -36,9 +36,9 @@ export default function ThoughtQuestPage() {
   const [previousThoughts, setPreviousThoughts] = useState<string[]>([]);
   
   // Gamification state
-  const [streak, setStreak] = useState(2);
-  const [xp, setXp] = useState(180);
-  const [ep, setEp] = useState(30);
+  const [streak, setStreak] = useState(0);
+  const [xp, setXp] = useState(0);
+  const [ep, setEp] = useState(0);
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
   const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
   
@@ -107,9 +107,18 @@ export default function ThoughtQuestPage() {
         }
 
         setLastPlayedDate(savedDate);
+      } else {
+        // This is for first-time players after the change.
+        setStreak(2);
+        setXp(180);
+        setEp(30);
       }
     } catch (error) {
       console.error("Failed to load state from localStorage", error);
+      // Fallback for first-time players or errors
+      setStreak(2);
+      setXp(180);
+      setEp(30);
     }
   }, []);
 
