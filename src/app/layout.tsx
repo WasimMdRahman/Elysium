@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { FirebaseClientProvider } from "@/firebase/client-provider";
 
 
 export default function RootLayout({
@@ -25,8 +26,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
+          <FirebaseClientProvider>
             {children}
-            <Toaster />
+          </FirebaseClientProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
