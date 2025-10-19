@@ -2,11 +2,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { generateThought } from '@/ai/flows/thought-quest-game-ai-thought-generation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, Zap, Loader, PartyPopper, CheckCircle, XCircle, Flame, Star, Gem, Shield, Award, Crown, Diamond, Trophy } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Loader, PartyPopper, Flame, Star, Gem } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -16,12 +15,12 @@ type Feedback = 'correct' | 'incorrect' | null;
 const TOTAL_QUESTIONS = 10;
 
 
-const trophies = [
-    { name: 'Bronze', type: 'XP', threshold: 2000, img: '/trophies/bronze.png' },
-    { name: 'Silver', type: 'XP', threshold: 3000, img: '/trophies/silver.png' },
-    { name: 'Gold', type: 'XP', threshold: 5000, img: '/trophies/gold.png' },
-    { name: 'Platinum', type: 'EP', threshold: 2000, img: '/trophies/platinum.png' },
-    { name: 'Diamond', type: 'EP', threshold: 3000, img: '/trophies/diamond.png' },
+const levels = [
+    { name: 'Bronze', type: 'XP', threshold: 2000, color: 'text-yellow-600' },
+    { name: 'Silver', type: 'XP', threshold: 3000, color: 'text-slate-400' },
+    { name: 'Gold', type: 'XP', threshold: 5000, color: 'text-yellow-400' },
+    { name: 'Platinum', type: 'EP', threshold: 2000, color: 'text-cyan-400' },
+    { name: 'Diamond', type: 'EP', threshold: 3000, color: 'text-blue-300' },
 ];
 
 
@@ -243,37 +242,29 @@ export default function ThoughtQuestPage() {
       </div>
 
        <div className="w-full max-w-4xl">
-        <h2 className="text-2xl font-bold font-headline text-center mb-4">Trophies</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-          {trophies.map(trophy => {
-            const isUnlocked = trophy.type === 'XP' ? xp >= trophy.threshold : ep >= trophy.threshold;
-            return (
-              <Card key={trophy.name} className={cn("flex flex-col items-center justify-center text-center p-4 transition-all", isUnlocked ? 'bg-amber-100/20 border-amber-400' : 'bg-muted/50')}>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Image 
-                              src={trophy.img}
-                              alt={`${trophy.name} Trophy`}
-                              width={50}
-                              height={50}
-                              className={cn(
-                                "transition-all",
-                                !isUnlocked && "filter grayscale opacity-30"
-                              )}
-                            />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Unlock at {trophy.threshold} {trophy.type}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <CardTitle className={cn("text-sm font-semibold mt-2", isUnlocked ? "text-foreground" : "text-muted-foreground")}>
-                  {trophy.name}
-                </CardTitle>
-              </Card>
-            )
-          })}
+        <h2 className="text-2xl font-bold font-headline text-center mb-4">Achievements</h2>
+        <div className="flex justify-center items-center gap-4 md:gap-8">
+          <TooltipProvider>
+            {levels.map(level => {
+              const isUnlocked = level.type === 'XP' ? xp >= level.threshold : ep >= level.threshold;
+              return (
+                <Tooltip key={level.name}>
+                  <TooltipTrigger>
+                    <Star className={cn(
+                        "h-10 w-10 md:h-12 md:w-12 transition-all duration-300",
+                        isUnlocked ? level.color : 'text-muted/30'
+                      )} 
+                      fill={isUnlocked ? 'currentColor' : 'none'}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                      <p className="font-semibold">{level.name}</p>
+                      <p>Unlock at {level.threshold} {level.type}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )
+            })}
+          </TooltipProvider>
         </div>
       </div>
       
@@ -357,3 +348,5 @@ export default function ThoughtQuestPage() {
   );
 
 }
+
+    
