@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subDays, isWithinInterval } from 'date-fns';
+import { format, subDays, isWithinInterval, isSameDay } from 'date-fns';
 import { aiChatbotMentalHealthSupport } from '@/ai/flows/ai-chatbot-mental-health-support';
 import { Bot, Loader, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -94,13 +94,37 @@ export default function MoodTrackerPage() {
   }, [moodData]);
 
   const handleLogMood = () => {
-    const newEntry: MoodEntry = { date: new Date(), mood: mood[0] };
-    setMoodData(prevData => [...prevData, newEntry].sort((a,b) => a.date.getTime() - b.date.getTime()));
+    const today = new Date();
+    const newMoodValue = mood[0];
 
-    if (mood[0] <= 5) {
+    setMoodData(prevData => {
+        const todayEntryIndex = prevData.findIndex(entry => isSameDay(entry.date, today));
+
+        let updatedData;
+        if (todayEntryIndex !== -1) {
+            // Update existing entry for today
+            updatedData = prevData.map((entry, index) => 
+                index === todayEntryIndex ? { ...entry, mood: newMoodValue, date: today } : entry
+            );
+        } else {
+            // Add a new entry for today
+            const newEntry: MoodEntry = { date: today, mood: newMoodValue };
+            updatedData = [...prevData, newEntry];
+        }
+
+        // Sort data to ensure the chart line connects correctly
+        return updatedData.sort((a, b) => a.date.getTime() - b.date.getTime());
+    });
+
+    if (newMoodValue <= 5) {
         setShowLowMoodCard(true);
-        setAiResponse('');
-        setLowMoodReason('');
+        // Reset AI card state only when a new low mood is logged,
+        // not when it's updated. This avoids clearing the AI response if the user
+        // adjusts their low mood score multiple times.
+        if (!showLowMoodCard) {
+            setAiResponse('');
+            setLowMoodReason('');
+        }
     } else {
         setShowLowMoodCard(false);
     }
@@ -141,7 +165,7 @@ export default function MoodTrackerPage() {
   return (
     <div className="flex flex-col gap-6">
         <Button asChild variant="ghost" size="icon">
-            <Link href="/dashboard"><ArrowLeft /></Link>
+             <Link href="/dashboard"><ArrowLeft /></Link>
         </Button>
         <div className="grid gap-6 lg:grid-cols-2">
             <div className="flex flex-col gap-6">
@@ -284,5 +308,3 @@ export default function MoodTrackerPage() {
     </div>
   );
 }
-
-    
