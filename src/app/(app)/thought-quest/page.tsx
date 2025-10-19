@@ -94,11 +94,6 @@ export default function ThoughtQuestPage() {
             setQuestionsAnswered(savedQuestions);
             setPreviousThoughts(savedThoughts);
             setCorrectAnswersCount(savedCorrectCount);
-            if (savedQuestions > 0) {
-                // If game was already started today, jump right in
-                setIsGameStarted(true);
-                fetchNewThought(savedThoughts);
-            }
         }
 
         setLastPlayedDate(savedDate);
@@ -355,3 +350,5 @@ export default function ThoughtQuestPage() {
   );
 
 }
+
+    
