@@ -25,21 +25,21 @@ const levels = [
 
 
 export default function ThoughtQuestPage() {
-  const [thought, setThought] = useState<string>('');
-  const [isHelpful, setIsHelpful] = useState<boolean>(false);
-  const [score, setScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [feedback, setFeedback] = useState<Feedback>(null);
-  const [answered, setAnswered] = useState(false);
-  const [questionsAnswered, setQuestionsAnswered] = useState(0);
-  const [previousThoughts, setPreviousThoughts] = useState<string[]>([]);
+  const [thought, setThought = useState<string>('');
+  const [isHelpful, setIsHelpful = useState<boolean>(false);
+  const [score, setScore = useState(0);
+  const [isLoading, setIsLoading = useState(true);
+  const [feedback, setFeedback = useState<Feedback>(null);
+  const [answered, setAnswered = useState(false);
+  const [questionsAnswered, setQuestionsAnswered = useState(0);
+  const [previousThoughts, setPreviousThoughts = useState<string[]>([]);
   
   // Gamification state
-  const [streak, setStreak] = useState(0);
-  const [xp, setXp] = useState(0);
-  const [ep, setEp] = useState(0);
-  const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
-  const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
+  const [streak, setStreak = useState(0);
+  const [xp, setXp = useState(0);
+  const [ep, setEp = useState(0);
+  const [correctAnswersCount, setCorrectAnswersCount = useState(0);
+  const [lastPlayedDate, setLastPlayedDate = useState<string | null>(null);
 
 
   const isGameComplete = questionsAnswered >= TOTAL_QUESTIONS;
@@ -214,7 +214,7 @@ export default function ThoughtQuestPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
         <Card className="text-center">
             <CardHeader>
-                <CardTitle className="flex items-center justify-center gap-2 text-orange-500"><Flame /> Daily Streak</CardTitle>
+                <CardTitle className="flex items-center justify-center gap-2 text-orange-500"><Flame /></CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-5xl font-bold">{streak}</p>
@@ -223,7 +223,7 @@ export default function ThoughtQuestPage() {
         </Card>
         <Card className="text-center">
             <CardHeader>
-                <CardTitle className="flex items-center justify-center gap-2 text-yellow-500"><Star /> Experience</CardTitle>
+                <CardTitle className="flex items-center justify-center gap-2 text-yellow-500"><Star /></CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-5xl font-bold">{xp}</p>
@@ -232,7 +232,7 @@ export default function ThoughtQuestPage() {
         </Card>
         <Card className="text-center">
             <CardHeader>
-                <CardTitle className="flex items-center justify-center gap-2 text-blue-500"><Gem /> Engagement</CardTitle>
+                <CardTitle className="flex items-center justify-center gap-2 text-blue-500"><Gem /></CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-5xl font-bold">{ep}</p>
