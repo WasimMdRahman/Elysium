@@ -41,13 +41,14 @@ export default function LoginPage() {
     }, []);
 
     // Redirect if user is already logged in
-    if (isUserLoading) {
-        return <div className="flex justify-center items-center h-full"><Loader className="animate-spin" /></div>;
-    }
+    useEffect(() => {
+        if (!isUserLoading && user) {
+            router.push('/dashboard');
+        }
+    }, [user, isUserLoading, router]);
 
-    if (user) {
-        router.push('/dashboard');
-        return null;
+    if (isUserLoading || user) {
+        return <div className="flex justify-center items-center h-full"><Loader className="animate-spin" /></div>;
     }
 
     const handleCreateAccount = async () => {
