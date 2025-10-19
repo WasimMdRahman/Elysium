@@ -66,6 +66,7 @@ export default function MoodTrackerPage() {
   const [aiResponse, setAiResponse] = useState('');
   const [isSubmittingReason, setIsSubmittingReason] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [filteredData, setFilteredData] = useState<MoodEntry[]>([]);
 
   // Ensure client-side only rendering for date-dependent logic
   useEffect(() => {
@@ -99,6 +100,23 @@ export default function MoodTrackerPage() {
     }
   }, [moodData]);
 
+  useEffect(() => {
+    if (isClient) {
+        const data = moodData.filter(entry => {
+            const now = new Date();
+            if (timeRange === 'week') {
+                return isWithinInterval(entry.date, { start: subDays(now, 7), end: now });
+            }
+            if (timeRange === 'month') {
+                return isWithinInterval(entry.date, { start: subDays(now, 30), end: now });
+            }
+            return true;
+        });
+        setFilteredData(data);
+    }
+  }, [moodData, timeRange, isClient]);
+
+
   const handleLogMood = () => {
     const today = new Date();
     const newMoodValue = mood[0];
@@ -109,9 +127,9 @@ export default function MoodTrackerPage() {
         let updatedData;
         if (todayEntryIndex !== -1) {
             // Update existing entry for today
-            updatedData = prevData.map((entry, index) => 
-                index === todayEntryIndex ? { ...entry, mood: newMoodValue, date: today } : entry
-            );
+            updatedData = [...prevData];
+            const existingEntry = updatedData[todayEntryIndex];
+            updatedData[todayEntryIndex] = { ...existingEntry, mood: newMoodValue };
         } else {
             // Add a new entry for today
             const newEntry: MoodEntry = { date: today, mood: newMoodValue };
@@ -153,17 +171,6 @@ export default function MoodTrackerPage() {
           setIsSubmittingReason(false);
       }
   }
-  
-  const filteredData = isClient ? moodData.filter(entry => {
-      const now = new Date();
-      if (timeRange === 'week') {
-          return isWithinInterval(entry.date, { start: subDays(now, 7), end: now });
-      }
-      if (timeRange === 'month') {
-          return isWithinInterval(entry.date, { start: subDays(now, 30), end: now });
-      }
-      return true;
-  }) : [];
 
   const currentMoodInfo = getMoodInfo(mood[0]);
 
