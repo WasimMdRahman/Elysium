@@ -13,8 +13,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import './animations.css';
 
 type Feedback = 'correct' | 'incorrect' | null;
-const TOTAL_QUESTIONS = 10;
-
 
 const levels = [
     { name: 'Bronze', type: 'XP', threshold: 2000, color: 'text-yellow-600' },
@@ -44,9 +42,6 @@ export default function ThoughtQuestPage() {
   
   const [isGameStarted, setIsGameStarted] = useState(false);
 
-
-  const isGameComplete = questionsAnswered >= TOTAL_QUESTIONS;
-  
   const getYesterdayDateString = () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -99,7 +94,7 @@ export default function ThoughtQuestPage() {
             setQuestionsAnswered(savedQuestions);
             setPreviousThoughts(savedThoughts);
             setCorrectAnswersCount(savedCorrectCount);
-            if (savedQuestions > 0 && savedQuestions < TOTAL_QUESTIONS) {
+            if (savedQuestions > 0) {
                 // If game was already started today, jump right in
                 setIsGameStarted(true);
                 fetchNewThought(savedThoughts);
@@ -168,7 +163,7 @@ export default function ThoughtQuestPage() {
   };
 
   const handleAnswer = (userChoice: boolean) => {
-    if (answered || isGameComplete) return;
+    if (answered) return;
     
     setAnswered(true);
     
@@ -194,9 +189,7 @@ export default function ThoughtQuestPage() {
 
 
     setTimeout(() => {
-      if(questionsAnswered + 1 < TOTAL_QUESTIONS) {
         fetchNewThought([...previousThoughts, thought]);
-      }
     }, 2000); // Increased timeout to match new animation
   };
 
@@ -218,7 +211,7 @@ export default function ThoughtQuestPage() {
       <div className="text-center w-full">
         <h1 className="text-3xl font-bold font-headline">Thought Quest</h1>
         <p className="text-muted-foreground">Challenge cognitive distortions and build healthier thinking habits.</p>
-        <div className="mt-2 text-base text-muted-foreground">{questionsAnswered}/{TOTAL_QUESTIONS} thoughts reviewed | Total Score: {score}</div>
+        <div className="mt-2 text-base text-muted-foreground">{questionsAnswered} thoughts reviewed | Total Score: {score}</div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
@@ -280,20 +273,7 @@ export default function ThoughtQuestPage() {
       
       <div className="relative w-full max-w-lg h-64">
         <AnimatePresence>
-         {isGameComplete ? (
-            <motion.div
-                key="complete"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="absolute inset-0"
-              >
-                <Card className="h-full flex flex-col justify-center items-center text-center p-6 bg-green-500/10 border-green-500">
-                   <PartyPopper className="h-12 w-12 text-green-600 mb-4" />
-                   <CardTitle className="font-headline">Quest Complete!</CardTitle>
-                   <CardDescription>You've answered all thoughts for today. Your final score is {score}. Come back tomorrow for a new quest!</CardDescription>
-                </Card>
-            </motion.div>
-         ) : !isGameStarted ? (
+         {!isGameStarted ? (
             <motion.div
                 key="start"
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -303,7 +283,7 @@ export default function ThoughtQuestPage() {
                 <Card className="h-full flex flex-col justify-center items-center text-center p-6">
                    <BrainCircuit className="h-12 w-12 text-primary mb-4" />
                    <CardTitle className="font-headline">Begin Your Quest</CardTitle>
-                   <CardDescription className="mb-6">Identify 10 thoughts as helpful or unhelpful to complete your daily quest.</CardDescription>
+                   <CardDescription className="mb-6">Identify thoughts as helpful or unhelpful to continue your quest.</CardDescription>
                    <Button onClick={startGame} size="lg">
                        <Play className="mr-2 h-5 w-5" />
                        Start Game
@@ -341,14 +321,14 @@ export default function ThoughtQuestPage() {
             </motion.div>
           ): null}
         </AnimatePresence>
-        {isLoading && isGameStarted && !isGameComplete && (
+        {isLoading && isGameStarted && (
           <div className="absolute inset-0 flex items-center justify-center">
              <Loader className="h-12 w-12 animate-spin text-primary" />
           </div>
         )}
       </div>
 
-      {!isGameComplete && isGameStarted && (
+      {isGameStarted && (
         <div className="flex flex-col items-center gap-4 w-full max-w-lg">
             <p className="text-muted-foreground">Is this Quote Helpful or Unhelpful?</p>
             <div className="flex gap-4">
