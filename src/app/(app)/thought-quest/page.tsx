@@ -2,10 +2,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { generateThought } from '@/ai/flows/thought-quest-game-ai-thought-generation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, Loader, PartyPopper, Flame, Star, Gem } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Loader, PartyPopper, Flame, Star, Gem, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -205,6 +206,9 @@ export default function ThoughtQuestPage() {
 
   return (
     <div className="flex flex-col items-center gap-6">
+        <Button asChild variant="ghost" className="w-fit p-0 h-fit self-start">
+             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+        </Button>
       <div className="text-center w-full">
         <h1 className="text-3xl font-bold font-headline">Thought Quest</h1>
         <p className="text-muted-foreground">Challenge cognitive distortions and build healthier thinking habits.</p>
@@ -348,3 +352,5 @@ export default function ThoughtQuestPage() {
   );
 
 }
+
+    

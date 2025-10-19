@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from "react";
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -128,6 +129,9 @@ export default function ExercisesPage() {
 
   return (
     <div className="flex flex-col gap-6">
+        <Button asChild variant="ghost" className="w-fit p-0 h-fit mb-4">
+             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+        </Button>
         <div>
             <h1 className="text-3xl font-bold font-headline">Mental Health Exercises</h1>
             <p className="text-muted-foreground">
@@ -163,3 +167,5 @@ export default function ExercisesPage() {
     </div>
   );
 }
+
+    

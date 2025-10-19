@@ -1,10 +1,16 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function PrivacyPage() {
   return (
     <Card>
       <CardHeader>
+        <Button asChild variant="ghost" className="w-fit p-0 h-fit mb-4">
+             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+        </Button>
         <CardTitle className="font-headline">Privacy Policy for Elysium</CardTitle>
         <CardDescription>Last updated: September 5, 2025</CardDescription>
       </CardHeader>
@@ -68,3 +74,5 @@ export default function PrivacyPage() {
     </Card>
   );
 }
+
+    

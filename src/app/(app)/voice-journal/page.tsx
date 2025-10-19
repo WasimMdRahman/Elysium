@@ -2,9 +2,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Loader, Activity, MessageCircle, ChevronRight } from 'lucide-react';
+import { Mic, MicOff, Loader, Activity, MessageCircle, ChevronRight, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { analyzeVoiceEmotion, AnalyzeVoiceEmotionOutput } from '@/ai/flows/voice-biomarker-analysis';
 import { cn } from '@/lib/utils';
@@ -145,6 +146,9 @@ export default function VoiceJournalPage() {
 
     return (
         <div className="flex flex-col items-center gap-6">
+            <Button asChild variant="ghost" className="w-fit p-0 h-fit self-start">
+                 <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+            </Button>
             <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">Voice Biomarker Analysis</h1>
                 <p className="text-muted-foreground">Record your voice for at least 20 seconds to get AI-powered emotional insights.</p>
@@ -223,3 +227,5 @@ export default function VoiceJournalPage() {
         </div>
     );
 }
+
+    

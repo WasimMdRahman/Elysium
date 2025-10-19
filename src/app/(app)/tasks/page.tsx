@@ -1,10 +1,12 @@
+
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash, Save } from 'lucide-react';
+import { Plus, Trash, Save, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Task {
@@ -69,6 +71,9 @@ export default function TasksPage() {
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
+        <Button asChild variant="ghost" className="w-fit p-0 h-fit mb-4">
+             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+        </Button>
         <CardTitle className="font-headline">Daily Task Manager</CardTitle>
         <CardDescription>
             {totalTasks > 0 
@@ -121,3 +126,5 @@ export default function TasksPage() {
     </Card>
   );
 }
+
+    

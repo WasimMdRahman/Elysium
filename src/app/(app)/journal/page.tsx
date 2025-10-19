@@ -297,7 +297,7 @@ export default function JournalPage() {
                     <>
                         <CardHeader className="flex flex-row items-center justify-between">
                              <div className="flex items-center gap-2">
-                                <Button asChild variant="ghost" size="icon" className="md:hidden">
+                                <Button asChild variant="ghost" size="icon">
                                      <Link href="/dashboard"><ArrowLeft/></Link>
                                 </Button>
                                 <div className="flex flex-col">
@@ -338,7 +338,10 @@ export default function JournalPage() {
                         </CardContent>
                     </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                    <div className="flex flex-col items-center justify-center h-full text-center p-4 relative">
+                        <Button asChild variant="ghost" className="absolute top-4 left-4">
+                            <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+                        </Button>
                         <FilePlus className="w-12 h-12 text-muted-foreground" />
                         <h2 className="text-xl font-semibold">Start Writing</h2>
                         <p className="text-muted-foreground">Click the "New Entry" button to begin your journal.</p>
@@ -351,3 +354,5 @@ export default function JournalPage() {
         </div>
     );
 }
+
+    

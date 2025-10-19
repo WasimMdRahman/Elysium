@@ -1,8 +1,12 @@
+
 'use client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -10,6 +14,9 @@ export default function SettingsPage() {
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
+        <Button asChild variant="ghost" className="w-fit p-0 h-fit mb-4">
+             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+        </Button>
         <CardTitle className="font-headline">Settings</CardTitle>
         <CardDescription>Manage your account and app preferences.</CardDescription>
       </CardHeader>
@@ -31,3 +38,5 @@ export default function SettingsPage() {
     </Card>
   );
 }
+
+    
