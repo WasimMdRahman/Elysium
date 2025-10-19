@@ -252,7 +252,7 @@ export default function ThoughtQuestPage() {
                   <TooltipTrigger>
                     <Star className={cn(
                         "h-10 w-10 md:h-12 md:w-12 transition-all duration-300",
-                        isUnlocked ? level.color : 'text-muted/30'
+                        isUnlocked ? level.color : 'text-gray-400'
                       )} 
                       fill={isUnlocked ? 'currentColor' : 'none'}
                     />
@@ -348,3 +348,5 @@ export default function ThoughtQuestPage() {
   );
 
 }
+
+    
