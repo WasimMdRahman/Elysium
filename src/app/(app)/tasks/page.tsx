@@ -71,8 +71,8 @@ export default function TasksPage() {
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <Button asChild variant="ghost" className="w-fit p-0 h-fit mb-4">
-             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+        <Button asChild variant="ghost" size="icon">
+             <Link href="/dashboard"><ArrowLeft /></Link>
         </Button>
         <CardTitle className="font-headline">Daily Task Manager</CardTitle>
         <CardDescription>

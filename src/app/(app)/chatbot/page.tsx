@@ -526,7 +526,7 @@ export default function ChatbotPage() {
                 <>
                     <CardHeader className="flex flex-row items-center justify-between border-b p-2 md:p-6">
                         <div className="flex items-center gap-2">
-                           <Button asChild variant="ghost" size="icon" className="hidden md:flex">
+                           <Button asChild variant="ghost" size="icon">
                              <Link href="/dashboard"><ArrowLeft /></Link>
                            </Button>
                            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -669,9 +669,9 @@ export default function ChatbotPage() {
                 </>
             ) : (
                 <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-4">
-                     <Button asChild variant="ghost" className="absolute top-4 left-4">
-                         <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
-                     </Button>
+                    <Button asChild variant="ghost" size="icon" className="absolute top-4 left-4">
+                       <Link href="/dashboard"><ArrowLeft /></Link>
+                    </Button>
                     <MessageSquare className="w-12 h-12 text-muted-foreground" />
                     <h2 className="text-xl font-semibold">Start a conversation</h2>
                     <p className="text-muted-foreground">Click the "New Chat" button to begin your conversation with Elysium.</p>

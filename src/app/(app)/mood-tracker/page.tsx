@@ -140,8 +140,8 @@ export default function MoodTrackerPage() {
 
   return (
     <div className="flex flex-col gap-6">
-        <Button asChild variant="ghost" className="w-fit p-0 h-fit">
-            <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+        <Button asChild variant="ghost" size="icon">
+            <Link href="/dashboard"><ArrowLeft /></Link>
         </Button>
         <div className="grid gap-6 lg:grid-cols-2">
             <div className="flex flex-col gap-6">

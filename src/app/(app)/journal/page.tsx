@@ -339,8 +339,8 @@ export default function JournalPage() {
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center p-4 relative">
-                        <Button asChild variant="ghost" className="absolute top-4 left-4">
-                            <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+                        <Button asChild variant="ghost" size="icon" className="absolute top-4 left-4">
+                            <Link href="/dashboard"><ArrowLeft /></Link>
                         </Button>
                         <FilePlus className="w-12 h-12 text-muted-foreground" />
                         <h2 className="text-xl font-semibold">Start Writing</h2>

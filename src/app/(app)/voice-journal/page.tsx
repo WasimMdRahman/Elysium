@@ -146,8 +146,8 @@ export default function VoiceJournalPage() {
 
     return (
         <div className="flex flex-col items-center gap-6">
-            <Button asChild variant="ghost" className="w-fit p-0 h-fit self-start">
-                 <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+            <Button asChild variant="ghost" size="icon" className="self-start">
+                 <Link href="/dashboard"><ArrowLeft /></Link>
             </Button>
             <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">Voice Biomarker Analysis</h1>
