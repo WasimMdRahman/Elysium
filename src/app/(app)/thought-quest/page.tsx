@@ -25,21 +25,21 @@ const levels = [
 
 
 export default function ThoughtQuestPage() {
-  const [thought, setThought = useState<string>('');
-  const [isHelpful, setIsHelpful = useState<boolean>(false);
-  const [score, setScore = useState(0);
-  const [isLoading, setIsLoading = useState(true);
-  const [feedback, setFeedback = useState<Feedback>(null);
-  const [answered, setAnswered = useState(false);
-  const [questionsAnswered, setQuestionsAnswered = useState(0);
-  const [previousThoughts, setPreviousThoughts = useState<string[]>([]);
+  const [thought, setThought] = useState<string>('');
+  const [isHelpful, setIsHelpful] = useState<boolean>(false);
+  const [score, setScore] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [feedback, setFeedback] = useState<Feedback>(null);
+  const [answered, setAnswered] = useState(false);
+  const [questionsAnswered, setQuestionsAnswered] = useState(0);
+  const [previousThoughts, setPreviousThoughts] = useState<string[]>([]);
   
   // Gamification state
-  const [streak, setStreak = useState(0);
-  const [xp, setXp = useState(0);
-  const [ep, setEp = useState(0);
-  const [correctAnswersCount, setCorrectAnswersCount = useState(0);
-  const [lastPlayedDate, setLastPlayedDate = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
+  const [xp, setXp] = useState(0);
+  const [ep, setEp] = useState(0);
+  const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
+  const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
 
 
   const isGameComplete = questionsAnswered >= TOTAL_QUESTIONS;
@@ -348,5 +348,3 @@ export default function ThoughtQuestPage() {
   );
 
 }
-
-    
