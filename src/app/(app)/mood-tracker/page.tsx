@@ -13,6 +13,7 @@ import { format, subDays, isWithinInterval, isSameDay, startOfDay } from 'date-f
 import { aiChatbotMentalHealthSupport } from '@/ai/flows/ai-chatbot-mental-health-support';
 import { Bot, Loader, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/hooks/use-toast';
 
 type MoodEntry = {
     date: Date;
@@ -67,6 +68,7 @@ export default function MoodTrackerPage() {
   const [isSubmittingReason, setIsSubmittingReason] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [filteredData, setFilteredData] = useState<MoodEntry[]>([]);
+  const { toast } = useToast();
 
   // Ensure client-side only rendering for date-dependent logic
   useEffect(() => {
@@ -76,11 +78,22 @@ export default function MoodTrackerPage() {
     try {
         const savedMoodData = localStorage.getItem('moodTrackerData');
         if (savedMoodData) {
-            const parsedData = JSON.parse(savedMoodData).map((d: any) => ({
-                ...d,
-                date: new Date(d.date)
-            }));
-            setMoodData(parsedData);
+            const parsedData: {date: string; mood: number}[] = JSON.parse(savedMoodData);
+            const dailyEntries = new Map<string, MoodEntry>();
+
+            // Ensure only one entry per day, keeping the first one.
+            for (const entry of parsedData) {
+                const day = startOfDay(new Date(entry.date)).toISOString();
+                if (!dailyEntries.has(day)) {
+                    dailyEntries.set(day, {
+                        ...entry,
+                        date: new Date(entry.date)
+                    });
+                }
+            }
+
+            const cleanedData = Array.from(dailyEntries.values());
+            setMoodData(cleanedData);
         }
     } catch (error) {
         console.error("Failed to load mood data from localStorage", error);
@@ -117,38 +130,39 @@ export default function MoodTrackerPage() {
 
 
   const handleLogMood = () => {
-    const today = startOfDay(new Date()); // Use startOfDay to ignore time
+    const today = startOfDay(new Date());
     const newMoodValue = mood[0];
 
-    setMoodData(prevData => {
-        const todayEntryIndex = prevData.findIndex(entry => isSameDay(entry.date, today));
+    // Check if an entry for today already exists
+    const todayEntryIndex = moodData.findIndex(entry => isSameDay(entry.date, today));
 
-        let updatedData;
-        if (todayEntryIndex !== -1) {
-            // Update existing entry for today
-            updatedData = [...prevData];
-            const existingEntry = updatedData[todayEntryIndex];
-            // IMPORTANT: Reuse the original date object to prevent duplicate points on the chart
-            updatedData[todayEntryIndex] = { ...existingEntry, mood: newMoodValue, date: existingEntry.date };
-        } else {
-            // Add a new entry for today
-            const newEntry: MoodEntry = { date: today, mood: newMoodValue };
-            updatedData = [...prevData, newEntry];
-        }
+    if (todayEntryIndex !== -1) {
+      // If an entry for today already exists, do not add a new one.
+      // Inform the user.
+      toast({
+        title: "Mood Already Logged",
+        description: "You've already logged your mood for today. You can log a new mood tomorrow.",
+      });
+      return;
+    }
 
-        // Sort data to ensure the chart line connects correctly
-        return updatedData.sort((a, b) => a.date.getTime() - b.date.getTime());
+    // Add a new entry for today, as one doesn't exist.
+    const newEntry: MoodEntry = { date: new Date(), mood: newMoodValue };
+    const updatedData = [...moodData, newEntry];
+
+    setMoodData(updatedData.sort((a, b) => a.date.getTime() - b.date.getTime()));
+
+    toast({
+      title: "Mood Logged!",
+      description: `Your mood has been logged as ${getMoodInfo(newMoodValue).label}.`,
     });
+
 
     if (newMoodValue <= 5) {
         setShowLowMoodCard(true);
-        // Reset AI card state only when a new low mood is logged,
-        // not when it's updated. This avoids clearing the AI response if the user
-        // adjusts their low mood score multiple times.
-        if (!showLowMoodCard) {
-            setAiResponse('');
-            setLowMoodReason('');
-        }
+        // Reset AI card state only when a new low mood is logged
+        setAiResponse('');
+        setLowMoodReason('');
     } else {
         setShowLowMoodCard(false);
     }
