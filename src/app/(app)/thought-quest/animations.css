@@ -54,3 +54,75 @@
   font-weight: bold;
   color: hsl(var(--foreground));
 }
+
+
+/* Incorrect Answer Animation */
+
+.wrong-answer-animation {
+    text-align: center;
+    opacity: 0;
+    animation: fadeInOut 2s ease forwards;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(4px);
+    border-radius: var(--radius);
+}
+
+.crossmark {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f44336;
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.crossmark::before,
+.crossmark::after {
+    content: "";
+    position: absolute;
+    width: 45px;
+    height: 6px;
+    background: white;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+    opacity: 0;
+}
+
+.crossmark::before {
+    transform: translate(-50%, -50%) rotate(45deg) scale(0);
+    animation: cross1 1s forwards;
+}
+
+.crossmark::after {
+    transform: translate(-50%, -50%) rotate(-45deg) scale(0);
+    animation: cross2 1s forwards;
+    animation-delay: 0.1s;
+}
+
+.wrong-answer-animation p {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: hsl(var(--foreground));
+}
+
+@keyframes cross1 {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(45deg) scale(0); }
+    50% { opacity: 1; transform: translate(-50%, -50%) rotate(45deg) scale(1.2); }
+    100% { opacity: 1; transform: translate(-50%, -50%) rotate(45deg) scale(1); }
+}
+
+@keyframes cross2 {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(-45deg) scale(0); }
+    50% { opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(1.2); }
+    100% { opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
+}

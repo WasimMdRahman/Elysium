@@ -312,16 +312,10 @@ export default function ThoughtQuestPage() {
                       </div>
                     )}
                     {feedback === 'incorrect' && (
-                      <motion.div 
-                        key="incorrect"
-                        variants={feedbackVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="hidden"
-                        className="absolute inset-0 flex items-center justify-center bg-destructive/20"
-                      >
-                          <XCircle className="h-24 w-24 text-white" />
-                      </motion.div>
+                       <div className="wrong-answer-animation">
+                        <div className="crossmark"></div>
+                        <p>Oops... That's Wrong 😢</p>
+                      </div>
                     )}
                   </AnimatePresence>
                 </CardContent>
