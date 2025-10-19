@@ -130,43 +130,43 @@ export default function MoodTrackerPage() {
 
 
   const handleLogMood = () => {
+    if (!isClient) return;
     const today = startOfDay(new Date());
     const newMoodValue = mood[0];
-
-    // Check if an entry for today already exists
     const todayEntryIndex = moodData.findIndex(entry => isSameDay(entry.date, today));
 
     if (todayEntryIndex !== -1) {
-      // If an entry for today already exists, do not add a new one.
-      // Inform the user.
-      toast({
-        title: "Mood Already Logged",
-        description: "You've already logged your mood for today. You can log a new mood tomorrow.",
-      });
-      return;
+        // Entry for today exists, so we update it.
+        const updatedData = moodData.map((entry, index) => {
+            if (index === todayEntryIndex) {
+                return { ...entry, mood: newMoodValue };
+            }
+            return entry;
+        });
+        setMoodData(updatedData);
+        toast({
+            title: "Mood Updated!",
+            description: `Your mood for today is now ${getMoodInfo(newMoodValue).label}.`,
+        });
+    } else {
+        // No entry for today, so create a new one.
+        const newEntry: MoodEntry = { date: new Date(), mood: newMoodValue };
+        const updatedData = [...moodData, newEntry].sort((a, b) => a.date.getTime() - b.date.getTime());
+        setMoodData(updatedData);
+        toast({
+            title: "Mood Logged!",
+            description: `Your mood has been logged as ${getMoodInfo(newMoodValue).label}.`,
+        });
     }
-
-    // Add a new entry for today, as one doesn't exist.
-    const newEntry: MoodEntry = { date: new Date(), mood: newMoodValue };
-    const updatedData = [...moodData, newEntry];
-
-    setMoodData(updatedData.sort((a, b) => a.date.getTime() - b.date.getTime()));
-
-    toast({
-      title: "Mood Logged!",
-      description: `Your mood has been logged as ${getMoodInfo(newMoodValue).label}.`,
-    });
-
 
     if (newMoodValue <= 5) {
         setShowLowMoodCard(true);
-        // Reset AI card state only when a new low mood is logged
         setAiResponse('');
         setLowMoodReason('');
     } else {
         setShowLowMoodCard(false);
     }
-  }
+  };
 
   const handleShareReason = async () => {
       if (!lowMoodReason.trim()) return;
@@ -195,7 +195,7 @@ export default function MoodTrackerPage() {
 
   return (
     <div className="flex flex-col gap-6">
-        <Button asChild variant="ghost" size="icon">
+        <Button asChild variant="ghost" size="icon" className="self-start">
              <Link href="/dashboard"><ArrowLeft /></Link>
         </Button>
         <div className="grid gap-6 lg:grid-cols-2">
