@@ -65,6 +65,12 @@ export default function MoodTrackerPage() {
   const [lowMoodReason, setLowMoodReason] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [isSubmittingReason, setIsSubmittingReason] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure client-side only rendering for date-dependent logic
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Load mood data from localStorage
   useEffect(() => {
@@ -148,7 +154,7 @@ export default function MoodTrackerPage() {
       }
   }
   
-  const filteredData = moodData.filter(entry => {
+  const filteredData = isClient ? moodData.filter(entry => {
       const now = new Date();
       if (timeRange === 'week') {
           return isWithinInterval(entry.date, { start: subDays(now, 7), end: now });
@@ -157,7 +163,7 @@ export default function MoodTrackerPage() {
           return isWithinInterval(entry.date, { start: subDays(now, 30), end: now });
       }
       return true;
-  });
+  }) : [];
 
   const currentMoodInfo = getMoodInfo(mood[0]);
 
