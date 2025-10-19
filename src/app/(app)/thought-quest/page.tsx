@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { generateThought, GenerateThoughtInput, GenerateThoughtOutput } from '@/ai/flows/thought-quest-game-ai-thought-generation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, Loader, PartyPopper, Flame, Star, Gem, ArrowLeft } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Loader, PartyPopper, Flame, Star, Gem, ArrowLeft, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -29,7 +29,7 @@ export default function ThoughtQuestPage() {
   const [thought, setThought] = useState('');
   const [isHelpful, setIsHelpful] = useState(false);
   const [score, setScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [answered, setAnswered] = useState(false);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
@@ -41,6 +41,8 @@ export default function ThoughtQuestPage() {
   const [ep, setEp] = useState(30);
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
   const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
+  
+  const [isGameStarted, setIsGameStarted] = useState(false);
 
 
   const isGameComplete = questionsAnswered >= TOTAL_QUESTIONS;
@@ -81,9 +83,9 @@ export default function ThoughtQuestPage() {
             currentStreak = 1;
         }
         
-        // setStreak(currentStreak); // User requested specific values
-        // setXp(savedXp); 
-        // setEp(savedEp); 
+        setStreak(2); // User requested specific values
+        setXp(180); 
+        setEp(30); 
 
         // Reset daily game if it's a new day
         if(savedDate !== today) {
@@ -91,33 +93,24 @@ export default function ThoughtQuestPage() {
           setQuestionsAnswered(0);
           setPreviousThoughts([]);
           setCorrectAnswersCount(0); // Reset daily correct count
-          fetchNewThought([]); // pass empty array for a fresh start
         } else {
             // Continue session from today
             setScore(savedScore);
             setQuestionsAnswered(savedQuestions);
             setPreviousThoughts(savedThoughts);
             setCorrectAnswersCount(savedCorrectCount);
-            if (savedQuestions < TOTAL_QUESTIONS) {
+            if (savedQuestions > 0 && savedQuestions < TOTAL_QUESTIONS) {
+                // If game was already started today, jump right in
+                setIsGameStarted(true);
                 fetchNewThought(savedThoughts);
-            } else {
-                setIsLoading(false);
             }
         }
 
         setLastPlayedDate(savedDate);
-      } else {
-        // First time ever playing
-        fetchNewThought([]);
       }
     } catch (error) {
       console.error("Failed to load state from localStorage", error);
-      if (questionsAnswered < TOTAL_QUESTIONS) {
-        fetchNewThought([]);
-      }
     }
-    // We remove the dependency array to only run this on first load
-    // and not when the user-set state changes.
   }, []);
 
   // Auto-save state to localStorage
@@ -196,6 +189,11 @@ export default function ThoughtQuestPage() {
         fetchNewThought([...previousThoughts, thought]);
       }
     }, 2000); // Increased timeout to match new animation
+  };
+
+  const startGame = () => {
+    setIsGameStarted(true);
+    fetchNewThought(previousThoughts);
   };
 
   const feedbackVariants = {
@@ -286,9 +284,26 @@ export default function ThoughtQuestPage() {
                    <CardDescription>You've answered all thoughts for today. Your final score is {score}. Come back tomorrow for a new quest!</CardDescription>
                 </Card>
             </motion.div>
+         ) : !isGameStarted ? (
+            <motion.div
+                key="start"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute inset-0"
+            >
+                <Card className="h-full flex flex-col justify-center items-center text-center p-6">
+                   <BrainCircuit className="h-12 w-12 text-primary mb-4" />
+                   <CardTitle className="font-headline">Begin Your Quest</CardTitle>
+                   <CardDescription className="mb-6">Identify 10 thoughts as helpful or unhelpful to complete your daily quest.</CardDescription>
+                   <Button onClick={startGame} size="lg">
+                       <Play className="mr-2 h-5 w-5" />
+                       Start Game
+                   </Button>
+                </Card>
+            </motion.div>
          ) : !isLoading ? (
             <motion.div
-              key={thought}
+              key={thought || 'empty'}
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -50, scale: 0.9 }}
@@ -317,14 +332,14 @@ export default function ThoughtQuestPage() {
             </motion.div>
           ): null}
         </AnimatePresence>
-        {isLoading && !isGameComplete && (
+        {isLoading && isGameStarted && !isGameComplete && (
           <div className="absolute inset-0 flex items-center justify-center">
              <Loader className="h-12 w-12 animate-spin text-primary" />
           </div>
         )}
       </div>
 
-      {!isGameComplete && (
+      {!isGameComplete && isGameStarted && (
         <div className="flex flex-col items-center gap-4 w-full max-w-lg">
             <p className="text-muted-foreground">Is this Quote Helpful or Unhelpful?</p>
             <div className="flex gap-4">
