@@ -25,8 +25,8 @@ const levels = [
 
 
 export default function ThoughtQuestPage() {
-  const [thought, setThought] = useState<string>('');
-  const [isHelpful, setIsHelpful] = useState<boolean>(false);
+  const [thought, setThought] = useState('');
+  const [isHelpful, setIsHelpful] = useState(false);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [feedback, setFeedback] = useState<Feedback>(null);
@@ -81,8 +81,8 @@ export default function ThoughtQuestPage() {
         }
         
         setStreak(currentStreak);
-        setXp(5000); // Always load XP
-        setEp(3000); // Always load EP
+        setXp(savedXp); 
+        setEp(savedEp); 
 
         // Reset daily game if it's a new day
         if(savedDate !== today) {
@@ -108,8 +108,8 @@ export default function ThoughtQuestPage() {
       } else {
         // First time ever playing
         setStreak(1);
-        setXp(5000);
-        setEp(3000);
+        setXp(0);
+        setEp(0);
         fetchNewThought([]);
       }
     } catch (error) {
