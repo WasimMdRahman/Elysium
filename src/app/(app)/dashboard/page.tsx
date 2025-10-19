@@ -61,7 +61,6 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      duration: 1,
     },
   },
 };
@@ -121,7 +120,7 @@ export default function DashboardPage() {
 
       <motion.div 
         className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-        variants={containerVariants} // You can reuse container variants if you want to stagger the cards too
+        variants={containerVariants}
       >
         {features.map((feature) => (
           <motion.div key={feature.href} variants={itemVariants}>
