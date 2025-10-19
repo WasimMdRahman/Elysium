@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,18 +9,36 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { getAuth, signInAnonymously, createUserWithEmailAndPassword, signInWithEmailAndPassword, AuthErrorCodes } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, AuthErrorCodes, signInAnonymously } from 'firebase/auth';
 import { useUser } from '@/firebase';
-import { Loader } from 'lucide-react';
+import { Loader, UserPlus, LogIn } from 'lucide-react';
+
+// Function to generate a unique, gamer-style username
+const generateUsername = () => {
+    const parts = [
+        Math.random().toString(36).substring(2, 6),
+        Math.random().toString(36).substring(2, 6),
+        Math.random().toString(36).substring(2, 6),
+    ];
+    return `Elysium-${parts.join('-').toUpperCase()}`;
+}
+
+const APP_DOMAIN = "elysium.app"; // Our internal app domain
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [newGeneratedUsername, setNewGeneratedUsername] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isGuestLoading, setGuestLoading] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
     const { user, isUserLoading } = useUser();
     const auth = getAuth();
+
+    useEffect(() => {
+        setNewGeneratedUsername(generateUsername());
+    }, []);
 
     // Redirect if user is already logged in
     if (isUserLoading) {
@@ -32,121 +50,134 @@ export default function LoginPage() {
         return null;
     }
 
-
-    const handleAuthAction = async (action: 'login' | 'signup') => {
-        if (!email || !password) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Email and password cannot be empty.' });
+    const handleCreateAccount = async () => {
+        if (!password) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Password cannot be empty.' });
             return;
         }
         setIsLoading(true);
+        const fakeEmail = `${newGeneratedUsername}@${APP_DOMAIN}`;
         try {
-            if (action === 'signup') {
-                await createUserWithEmailAndPassword(auth, email, password);
-                toast({ title: 'Success', description: 'Account created successfully! Redirecting...' });
-            } else {
-                await signInWithEmailAndPassword(auth, email, password);
-                toast({ title: 'Success', description: 'Logged in successfully! Redirecting...' });
-            }
+            await createUserWithEmailAndPassword(auth, fakeEmail, password);
+            toast({ 
+                title: 'Account Created!', 
+                description: `Your username is ${newGeneratedUsername}. Keep it safe!`
+            });
             router.push('/dashboard');
         } catch (error: any) {
             let description = 'An unexpected error occurred.';
-            if (error.code === AuthErrorCodes.EMAIL_EXISTS) {
-                description = 'This email is already in use. Please try logging in.';
-            } else if (error.code === AuthErrorCodes.WEAK_PASSWORD) {
+            if (error.code === AuthErrorCodes.WEAK_PASSWORD) {
                 description = 'The password is too weak. Please use at least 6 characters.';
-            } else if (error.code === AuthErrorCodes.INVALID_EMAIL) {
-                description = 'The email address is not valid.';
-            } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                 description = 'Invalid email or password.';
             }
-            toast({ variant: 'destructive', title: 'Authentication Failed', description });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleAnonymousSignIn = async () => {
-        setIsLoading(true);
-        try {
-            await signInAnonymously(auth);
-            toast({ title: 'Signed in Anonymously', description: 'You can explore the app. Create an account to save your data.' });
-            router.push('/dashboard');
-        } catch (error) {
-            console.error(error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not sign in anonymously.' });
+             toast({ variant: 'destructive', title: 'Creation Failed', description });
         } finally {
             setIsLoading(false);
         }
     }
 
+    const handleRecoverAccount = async () => {
+        if (!username || !password) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Username and password cannot be empty.' });
+            return;
+        }
+        setIsLoading(true);
+        const fakeEmail = `${username}@${APP_DOMAIN}`;
+        try {
+            await signInWithEmailAndPassword(auth, fakeEmail, password);
+            toast({ title: 'Welcome Back!', description: 'Logged in successfully!' });
+            router.push('/dashboard');
+        } catch (error: any)
+        {
+            toast({ variant: 'destructive', title: 'Login Failed', description: 'Invalid username or password.' });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    
+    const handleAnonymousSignIn = async () => {
+        setGuestLoading(true);
+        try {
+            await signInAnonymously(auth);
+            toast({ title: 'Signed in Anonymously', description: 'You can explore the app. Create a full account to save your data permanently.' });
+            router.push('/dashboard');
+        } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not sign in anonymously.' });
+        } finally {
+            setGuestLoading(false);
+        }
+    }
+
+
     return (
         <div className="flex justify-center items-center">
-            <Tabs defaultValue="login" className="w-full max-w-md">
+            <Tabs defaultValue="create" className="w-full max-w-md">
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="login">Login</TabsTrigger>
-                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                    <TabsTrigger value="create"><UserPlus className="mr-2 h-4 w-4"/> New Player</TabsTrigger>
+                    <TabsTrigger value="recover"><LogIn className="mr-2 h-4 w-4"/> Recover Account</TabsTrigger>
                 </TabsList>
-                <TabsContent value="login">
+                <TabsContent value="create">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Welcome Back</CardTitle>
-                            <CardDescription>Sign in to access your synced data.</CardDescription>
+                            <CardTitle>Start Your Journey</CardTitle>
+                            <CardDescription>We've generated a unique, private username for you. Set a password to secure your account and save your progress in the cloud.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="login-email">Email</Label>
-                                <Input id="login-email" type="email" placeholder="m@example.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
+                                <Label htmlFor="new-username">Your Unique Username</Label>
+                                <Input id="new-username" type="text" value={newGeneratedUsername} disabled />
+                                <p className="text-xs text-muted-foreground">Keep this username safe to recover your account later.</p>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="login-password">Password</Label>
-                                <Input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
+                                <Label htmlFor="new-password">Set Your Password</Label>
+                                <Input id="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Choose a secure password" disabled={isLoading} />
                             </div>
                         </CardContent>
                         <CardFooter className="flex-col gap-4">
-                            <Button onClick={() => handleAuthAction('login')} className="w-full" disabled={isLoading}>
-                                {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                Login
+                            <Button onClick={handleCreateAccount} className="w-full" disabled={isLoading}>
+                                {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                Create & Secure Account
                             </Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
-                <TabsContent value="signup">
+                <TabsContent value="recover">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Create an Account</CardTitle>
-                            <CardDescription>Sign up to save your progress and sync across devices.</CardDescription>
+                            <CardTitle>Recover Your Account</CardTitle>
+                            <CardDescription>Enter your unique username and password to sign in.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="signup-email">Email</Label>
-                                <Input id="signup-email" type="email" placeholder="m@example.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
+                                <Label htmlFor="recover-username">Username</Label>
+                                <Input id="recover-username" type="text" placeholder="Elysium-XXXX-XXXX" value={username} onChange={(e) => setUsername(e.target.value)} disabled={isLoading} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="signup-password">Password</Label>
-                                <Input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
+                                <Label htmlFor="recover-password">Password</Label>
+                                <Input id="recover-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button onClick={() => handleAuthAction('signup')} className="w-full" disabled={isLoading}>
+                            <Button onClick={handleRecoverAccount} className="w-full" disabled={isLoading}>
                                 {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                Sign Up
+                                Sign In
                             </Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
-                <div className="relative mt-6">
+                 <div className="relative mt-6">
                     <div className="absolute inset-0 flex items-center">
                         <span className="w-full border-t" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-background px-2 text-muted-foreground">
-                            Or continue with
+                            Or just exploring?
                         </span>
                     </div>
                 </div>
                  <div className="mt-6">
-                    <Button variant="outline" className="w-full" onClick={handleAnonymousSignIn} disabled={isLoading}>
-                        {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : 'Sign In Anonymously'}
+                    <Button variant="outline" className="w-full" onClick={handleAnonymousSignIn} disabled={isGuestLoading}>
+                        {isGuestLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : 'Continue as Guest'}
                     </Button>
                  </div>
             </Tabs>

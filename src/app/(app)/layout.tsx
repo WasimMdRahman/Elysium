@@ -37,6 +37,7 @@ const menuItems = [
     { href: "/terms", icon: FileText, label: "Terms of Service", tooltip: "Terms of Service" },
 ];
 
+const APP_DOMAIN = "elysium.app";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -50,6 +51,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const currentPage = menuItems.find(item => pathname.startsWith(item.href)) || (pathname.startsWith('/login') ? { label: 'Sign In' } : null);
   const pageTitle = currentPage ? currentPage.label : "Elysium";
   
+  // Custom logic to display username from "fake" email
+  const displayUsername = user && !user.isAnonymous && user.email ? user.email.replace(`@${APP_DOMAIN}`, '') : 'Anonymous User';
+
   return (
     <SidebarProvider>
       <SplashScreen />
@@ -86,9 +90,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Log Out" onClick={handleSignOut}>
                 <Avatar className="h-6 w-6">
-                  <AvatarFallback>{user.email ? user.email.charAt(0).toUpperCase() : <UserIcon size={14}/>}</AvatarFallback>
+                  <AvatarFallback>{displayUsername.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <span className="truncate">{user.isAnonymous ? 'Anonymous User' : user.email}</span>
+                <span className="truncate">{displayUsername}</span>
                 <LogOut className="ml-auto h-4 w-4" />
               </SidebarMenuButton>
             </SidebarMenuItem>
