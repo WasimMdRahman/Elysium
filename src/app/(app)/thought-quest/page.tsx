@@ -10,6 +10,7 @@ import { ThumbsUp, ThumbsDown, Zap, Loader, PartyPopper, CheckCircle, XCircle, F
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import './animations.css';
 
 type Feedback = 'correct' | 'incorrect' | null;
 const TOTAL_QUESTIONS = 10;
@@ -195,7 +196,7 @@ export default function ThoughtQuestPage() {
       if(questionsAnswered + 1 < TOTAL_QUESTIONS) {
         fetchNewThought([...previousThoughts, thought]);
       }
-    }, 1500);
+    }, 2000); // Increased timeout to match new animation
   };
 
   const feedbackVariants = {
@@ -304,30 +305,24 @@ export default function ThoughtQuestPage() {
                 <CardContent className="p-6 relative w-full h-full flex justify-center items-center">
                   <p className="text-xl font-medium">"{thought}"</p>
                   <AnimatePresence>
-                  {feedback === 'correct' && (
-                    <motion.div 
-                      key="correct"
-                      variants={feedbackVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="hidden"
-                      className="absolute inset-0 flex items-center justify-center bg-green-500/20"
-                    >
-                        <CheckCircle className="h-24 w-24 text-white" />
-                    </motion.div>
-                  )}
-                  {feedback === 'incorrect' && (
-                     <motion.div 
-                      key="incorrect"
-                      variants={feedbackVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="hidden"
-                      className="absolute inset-0 flex items-center justify-center bg-destructive/20"
-                    >
-                        <XCircle className="h-24 w-24 text-white" />
-                    </motion.div>
-                  )}
+                    {feedback === 'correct' && (
+                      <div className="correct-answer-animation">
+                        <div className="checkmark"></div>
+                        <p>That's correct 🎉</p>
+                      </div>
+                    )}
+                    {feedback === 'incorrect' && (
+                      <motion.div 
+                        key="incorrect"
+                        variants={feedbackVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        className="absolute inset-0 flex items-center justify-center bg-destructive/20"
+                      >
+                          <XCircle className="h-24 w-24 text-white" />
+                      </motion.div>
+                    )}
                   </AnimatePresence>
                 </CardContent>
               </Card>
