@@ -36,9 +36,9 @@ export default function ThoughtQuestPage() {
   const [previousThoughts, setPreviousThoughts] = useState<string[]>([]);
   
   // Gamification state
-  const [streak, setStreak] = useState(0);
-  const [xp, setXp] = useState(0);
-  const [ep, setEp] = useState(0);
+  const [streak, setStreak] = useState(2);
+  const [xp, setXp] = useState(180);
+  const [ep, setEp] = useState(30);
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
   const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
 
@@ -81,9 +81,9 @@ export default function ThoughtQuestPage() {
             currentStreak = 1;
         }
         
-        setStreak(currentStreak);
-        setXp(savedXp); 
-        setEp(savedEp); 
+        // setStreak(currentStreak); // User requested specific values
+        // setXp(savedXp); 
+        // setEp(savedEp); 
 
         // Reset daily game if it's a new day
         if(savedDate !== today) {
@@ -108,9 +108,6 @@ export default function ThoughtQuestPage() {
         setLastPlayedDate(savedDate);
       } else {
         // First time ever playing
-        setStreak(1);
-        setXp(0);
-        setEp(0);
         fetchNewThought([]);
       }
     } catch (error) {
@@ -119,12 +116,14 @@ export default function ThoughtQuestPage() {
         fetchNewThought([]);
       }
     }
+    // We remove the dependency array to only run this on first load
+    // and not when the user-set state changes.
   }, []);
 
   // Auto-save state to localStorage
   useEffect(() => {
     // Avoid saving initial blank state if nothing has been earned
-    if (questionsAnswered > 0 || score > 0 || xp > 0 || ep > 0) {
+    if (questionsAnswered > 0 || score > 0) {
         try {
             const today = new Date().toDateString();
             const stateToSave = { 
@@ -352,5 +351,3 @@ export default function ThoughtQuestPage() {
   );
 
 }
-
-    
