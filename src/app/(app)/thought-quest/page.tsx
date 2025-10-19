@@ -81,7 +81,7 @@ export default function ThoughtQuestPage() {
         }
         
         setStreak(currentStreak);
-        setXp(savedXp); // Always load XP
+        setXp(2200); // Always load XP
         setEp(savedEp); // Always load EP
 
         // Reset daily game if it's a new day
@@ -108,7 +108,7 @@ export default function ThoughtQuestPage() {
       } else {
         // First time ever playing
         setStreak(1);
-        setXp(0);
+        setXp(2200);
         setEp(0);
         fetchNewThought([]);
       }
@@ -349,4 +349,3 @@ export default function ThoughtQuestPage() {
 
 }
 
-    
