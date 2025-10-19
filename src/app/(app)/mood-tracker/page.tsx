@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subDays, isWithinInterval, isSameDay } from 'date-fns';
+import { format, subDays, isWithinInterval, isSameDay, startOfDay } from 'date-fns';
 import { aiChatbotMentalHealthSupport } from '@/ai/flows/ai-chatbot-mental-health-support';
 import { Bot, Loader, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,10 +71,8 @@ export default function MoodTrackerPage() {
   // Ensure client-side only rendering for date-dependent logic
   useEffect(() => {
     setIsClient(true);
-  }, []);
 
-  // Load mood data from localStorage
-  useEffect(() => {
+    // Load mood data from localStorage
     try {
         const savedMoodData = localStorage.getItem('moodTrackerData');
         if (savedMoodData) {
@@ -91,6 +89,7 @@ export default function MoodTrackerPage() {
 
   // Auto-save mood data to localStorage whenever it changes
   useEffect(() => {
+    if (!isClient) return;
     try {
         if (moodData.length > 0) {
             localStorage.setItem('moodTrackerData', JSON.stringify(moodData));
@@ -98,7 +97,7 @@ export default function MoodTrackerPage() {
     } catch (error) {
         console.error("Failed to save mood data to localStorage", error);
     }
-  }, [moodData]);
+  }, [moodData, isClient]);
 
   useEffect(() => {
     if (isClient) {
@@ -118,7 +117,7 @@ export default function MoodTrackerPage() {
 
 
   const handleLogMood = () => {
-    const today = new Date();
+    const today = startOfDay(new Date()); // Use startOfDay to ignore time
     const newMoodValue = mood[0];
 
     setMoodData(prevData => {
@@ -129,7 +128,8 @@ export default function MoodTrackerPage() {
             // Update existing entry for today
             updatedData = [...prevData];
             const existingEntry = updatedData[todayEntryIndex];
-            updatedData[todayEntryIndex] = { ...existingEntry, mood: newMoodValue };
+            // IMPORTANT: Reuse the original date object to prevent duplicate points on the chart
+            updatedData[todayEntryIndex] = { ...existingEntry, mood: newMoodValue, date: existingEntry.date };
         } else {
             // Add a new entry for today
             const newEntry: MoodEntry = { date: today, mood: newMoodValue };
@@ -173,6 +173,10 @@ export default function MoodTrackerPage() {
   }
 
   const currentMoodInfo = getMoodInfo(mood[0]);
+  
+  if (!isClient) {
+    return null; // or a loading skeleton
+  }
 
 
   return (
