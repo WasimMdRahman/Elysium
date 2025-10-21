@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { generateThought, GenerateThoughtInput, GenerateThoughtOutput } from '@/ai/flows/thought-quest-game-ai-thought-generation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp, ThumbsDown, Loader, PartyPopper, Flame, Star, Gem, ArrowLeft, Play, BrainCircuit } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Loader, Flame, Star, Gem, ArrowLeft, Play, BrainCircuit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -38,15 +38,8 @@ export default function ThoughtQuestPage() {
   const [xp, setXp] = useState(0);
   const [ep, setEp] = useState(0);
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
-  const [lastPlayedDate, setLastPlayedDate] = useState<string | null>(null);
   
   const [isGameStarted, setIsGameStarted] = useState(false);
-
-  const getYesterdayDateString = () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.toDateString();
-  }
 
   // Load state from localStorage
   useEffect(() => {
@@ -67,6 +60,11 @@ export default function ThoughtQuestPage() {
         } = JSON.parse(savedState);
         
         // --- Streak Logic ---
+        const getYesterdayDateString = () => {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          return yesterday.toDateString();
+        }
         const yesterday = getYesterdayDateString();
         let currentStreak = savedStreak;
 
@@ -95,8 +93,6 @@ export default function ThoughtQuestPage() {
             setPreviousThoughts(savedThoughts);
             setCorrectAnswersCount(savedCorrectCount);
         }
-
-        setLastPlayedDate(savedDate);
       } else {
         // This is for first-time players after the change.
         setStreak(2);
@@ -136,7 +132,7 @@ export default function ThoughtQuestPage() {
   }, [score, questionsAnswered, previousThoughts, streak, xp, ep, correctAnswersCount]);
 
 
-  const fetchNewThought = async (currentThoughts: string[]) => {
+  const fetchNewThought = useCallback(async (currentThoughts: string[]) => {
     setIsLoading(true);
     setAnswered(false);
     setFeedback(null);
@@ -147,15 +143,14 @@ export default function ThoughtQuestPage() {
       const result = await generateThought({ topic: randomTopic, previousThoughts: currentThoughts });
       setThought(result.thought);
       setIsHelpful(result.isHelpful); 
-      // We update the list of thoughts for the session in the handleAnswer function
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate thought:", error);
-      setThought("I can't seem to think of anything right now. Please try again.");
-      setIsHelpful(true);
+      setThought(error.message || "I can't seem to think of anything right now. Please try again.");
+      setIsHelpful(true); // Set a default to avoid breaking logic
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const handleAnswer = (userChoice: boolean) => {
     if (answered) return;
@@ -187,7 +182,7 @@ export default function ThoughtQuestPage() {
         if (isGameStarted) {
             fetchNewThought([...previousThoughts, thought]);
         }
-    }, 2000); // Increased timeout to match new animation
+    }, 2000);
   };
 
   const startGame = () => {
@@ -195,11 +190,6 @@ export default function ThoughtQuestPage() {
         setIsGameStarted(true);
         fetchNewThought(previousThoughts);
     }
-  };
-
-  const feedbackVariants = {
-    hidden: { opacity: 0, scale: 0.5 },
-    visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 20 } },
   };
 
   return (
@@ -307,14 +297,14 @@ export default function ThoughtQuestPage() {
                         <div className="xp-animation">+10 XP</div>
                         <div className="feedback-animation-overlay">
                             <div className="checkmark"></div>
-                            <p>That's correct 🎉</p>
+                            <p>Correct!</p>
                         </div>
                       </>
                     )}
                     {feedback === 'incorrect' && (
                        <div className="feedback-animation-overlay">
                         <div className="crossmark"></div>
-                        <p>Oops... That's Wrong 😢</p>
+                        <p>Not quite</p>
                       </div>
                     )}
                   </AnimatePresence>
@@ -332,13 +322,13 @@ export default function ThoughtQuestPage() {
 
       {isGameStarted && (
         <div className="flex flex-col items-center gap-4 w-full max-w-lg">
-            <p className="text-muted-foreground">Is this Quote Helpful or Unhelpful?</p>
+            <p className="text-muted-foreground">Is this thought helpful or unhelpful?</p>
             <div className="flex gap-4">
             <Button
                 size="lg"
                 variant="outline"
                 onClick={() => handleAnswer(false)}
-                disabled={answered}
+                disabled={answered || isLoading}
             >
                 <ThumbsDown className="mr-2 h-5 w-5" /> Unhelpful
             </Button>
@@ -346,7 +336,7 @@ export default function ThoughtQuestPage() {
                 size="lg"
                 variant="outline"
                 onClick={() => handleAnswer(true)}
-                disabled={answered}
+                disabled={answered || isLoading}
             >
                 <ThumbsUp className="mr-2 h-5 w-5" /> Helpful
             </Button>
@@ -357,3 +347,5 @@ export default function ThoughtQuestPage() {
   );
 
 }
+
+    
