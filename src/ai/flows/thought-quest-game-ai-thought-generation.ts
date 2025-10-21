@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -60,7 +61,22 @@ const generateThoughtFlow = ai.defineFlow(
     outputSchema: GenerateThoughtOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    // Retry logic for 503 errors
+    for (let i = 0; i < 3; i++) {
+      try {
+        const {output} = await prompt(input);
+        return output!;
+      } catch (error: any) {
+        if (error.message && error.message.includes('503')) {
+          console.log(`Attempt ${i + 1} for generateThought failed with 503. Retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
+          continue;
+        }
+        // For any other error, throw it immediately
+        throw error;
+      }
+    }
+     // If all retries fail, throw a user-friendly error.
+    throw new Error('The AI service is currently busy. Please try again in a few moments.');
   }
 );
