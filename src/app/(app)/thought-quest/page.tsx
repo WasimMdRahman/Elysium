@@ -184,13 +184,17 @@ export default function ThoughtQuestPage() {
 
 
     setTimeout(() => {
-        fetchNewThought([...previousThoughts, thought]);
+        if (isGameStarted) {
+            fetchNewThought([...previousThoughts, thought]);
+        }
     }, 2000); // Increased timeout to match new animation
   };
 
   const startGame = () => {
-    setIsGameStarted(true);
-    fetchNewThought(previousThoughts);
+    if (!isGameStarted) {
+        setIsGameStarted(true);
+        fetchNewThought(previousThoughts);
+    }
   };
 
   const feedbackVariants = {
@@ -205,7 +209,7 @@ export default function ThoughtQuestPage() {
         </Button>
       <div className="text-center w-full">
         <h1 className="text-3xl font-bold font-headline">Thought Quest</h1>
-        <p className="text-muted-foreground">Challenge cognitive distortions and build healthier thinking habits.</p>
+        <p className="text-muted-foreground">Identify thoughts as helpful or unhelpful to build healthier thinking habits.</p>
         <div className="mt-2 text-base text-muted-foreground">{questionsAnswered} thoughts reviewed | Total Score: {score}</div>
       </div>
 
@@ -299,13 +303,16 @@ export default function ThoughtQuestPage() {
                   <p className="text-xl font-medium">"{thought}"</p>
                   <AnimatePresence>
                     {feedback === 'correct' && (
-                      <div className="correct-answer-animation">
-                        <div className="checkmark"></div>
-                        <p>That's correct 🎉</p>
-                      </div>
+                      <>
+                        <div className="xp-animation">+10 XP</div>
+                        <div className="feedback-animation-overlay">
+                            <div className="checkmark"></div>
+                            <p>That's correct 🎉</p>
+                        </div>
+                      </>
                     )}
                     {feedback === 'incorrect' && (
-                       <div className="wrong-answer-animation">
+                       <div className="feedback-animation-overlay">
                         <div className="crossmark"></div>
                         <p>Oops... That's Wrong 😢</p>
                       </div>
@@ -350,5 +357,3 @@ export default function ThoughtQuestPage() {
   );
 
 }
-
-    

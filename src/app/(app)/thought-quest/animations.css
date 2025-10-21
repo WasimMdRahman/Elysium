@@ -12,7 +12,7 @@
   100% { opacity: 0; transform: scale(0.8); }
 }
 
-.correct-answer-animation {
+.feedback-animation-overlay {
   position: absolute;
   inset: 0;
   display: flex;
@@ -25,6 +25,7 @@
   background: hsl(var(--background) / 0.8);
   backdrop-filter: blur(4px);
   border-radius: var(--radius);
+  z-index: 10;
 }
 
 .checkmark {
@@ -49,28 +50,10 @@
   animation: tick 1s forwards;
 }
 
-.correct-answer-animation p {
+.feedback-animation-overlay p {
   font-size: 1.5rem;
   font-weight: bold;
   color: hsl(var(--foreground));
-}
-
-
-/* Incorrect Answer Animation */
-
-.wrong-answer-animation {
-    text-align: center;
-    opacity: 0;
-    animation: fadeInOut 2s ease forwards;
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: hsl(var(--background) / 0.8);
-    backdrop-filter: blur(4px);
-    border-radius: var(--radius);
 }
 
 .crossmark {
@@ -109,12 +92,6 @@
     animation-delay: 0.1s;
 }
 
-.wrong-answer-animation p {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: hsl(var(--foreground));
-}
-
 @keyframes cross1 {
     0% { opacity: 0; transform: translate(-50%, -50%) rotate(45deg) scale(0); }
     50% { opacity: 1; transform: translate(-50%, -50%) rotate(45deg) scale(1.2); }
@@ -125,4 +102,39 @@
     0% { opacity: 0; transform: translate(-50%, -50%) rotate(-45deg) scale(0); }
     50% { opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(1.2); }
     100% { opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
+}
+
+
+/* XP Animation */
+@keyframes xp-fade-in-out {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.xp-animation {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: 600;
+  color: #00ffae;
+  opacity: 0;
+  text-shadow: 0 0 8px #00ffae;
+  z-index: 20;
+  animation: xp-fade-in-out 2s ease-in-out forwards;
 }
