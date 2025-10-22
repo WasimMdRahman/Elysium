@@ -31,8 +31,8 @@ export function DashboardCard({ href, imageUrl, imageHint, title, description, i
                 <Image 
                     src={imageUrl} 
                     alt={`${title} icon`} 
-                    fill
-                    sizes="40px"
+                    width={40}
+                    height={40}
                     className="object-cover"
                     data-ai-hint={imageHint}
                 />
