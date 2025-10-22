@@ -76,7 +76,6 @@ const JournalList = ({ entries, activeEntryId, setActiveEntryId, renamingId, sta
                 <>
                     <div className="overflow-hidden">
                         <p className="font-medium truncate">{entry.title}</p>
-                        <p className="text-xs text-muted-foreground">{format(new Date(entry.date), 'dd-MM-yyyy p')}</p>
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -150,25 +149,33 @@ export default function JournalPage() {
 
     // Load entries from localStorage
     useEffect(() => {
-        try {
-            const savedEntries = localStorage.getItem('journalEntries');
-            const parsedEntries: JournalEntry[] = savedEntries ? JSON.parse(savedEntries).map((e: any) => ({
-                    ...e,
-                    date: new Date(e.date)
-                })) : [];
-            
-            if (parsedEntries.length > 0) {
-                const sortedEntries = parsedEntries.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                setEntries(sortedEntries);
-                setActiveEntryId(sortedEntries[0].id);
-            } else {
-                createNewEntry();
-            }
+        let isMounted = true;
+        if (typeof window !== 'undefined') {
+            try {
+                const savedEntries = localStorage.getItem('journalEntries');
+                const parsedEntries: JournalEntry[] = savedEntries ? JSON.parse(savedEntries).map((e: any) => ({
+                        ...e,
+                        date: new Date(e.date)
+                    })) : [];
+                
+                if (isMounted) {
+                    if (parsedEntries.length > 0) {
+                        const sortedEntries = parsedEntries.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                        setEntries(sortedEntries);
+                        setActiveEntryId(sortedEntries[0].id);
+                    } else {
+                        createNewEntry();
+                    }
+                }
 
-        } catch (error) {
-            console.error("Failed to load journal entries from localStorage", error);
-            createNewEntry();
+            } catch (error) {
+                console.error("Failed to load journal entries from localStorage", error);
+                if (isMounted) {
+                    createNewEntry();
+                }
+            }
         }
+        return () => { isMounted = false };
          // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     
@@ -306,16 +313,14 @@ export default function JournalPage() {
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent className="flex-1 flex flex-col">
-                           <ScrollArea className="flex-1">
-                             <Textarea
-                                 placeholder="Start writing your thoughts here..."
-                                 className="w-full h-full text-base resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-2 md:p-4"
-                                 value={activeEntry.content}
-                                 onChange={(e) => updateContent(e.target.value)}
-                             />
-                           </ScrollArea>
-                        </CardContent>
+                        <ScrollArea className="flex-1">
+                            <Textarea
+                                placeholder="Start writing your thoughts here..."
+                                className="w-full h-full text-base resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-2 md:p-4"
+                                value={activeEntry.content}
+                                onChange={(e) => updateContent(e.target.value)}
+                            />
+                        </ScrollArea>
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center p-8">
@@ -334,5 +339,3 @@ export default function JournalPage() {
         </div>
     );
 }
-
-    
