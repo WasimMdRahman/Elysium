@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -252,25 +252,6 @@ export default function JournalPage() {
             }));
         }
     };
-
-    const saveTasks = () => {
-        try {
-            // Filter out empty new entries before saving
-            const entriesToSave = entries.filter(entry => entry.content.trim() !== '' || entry.title !== 'New Entry');
-            localStorage.setItem('journalEntries', JSON.stringify(entriesToSave));
-            toast({
-                title: "Journal Saved!",
-                description: "Your entries have been successfully saved.",
-            });
-        } catch (error) {
-             console.error("Failed to save journal entries to localStorage", error);
-             toast({
-                title: "Error",
-                description: "Could not save your journal entries.",
-                variant: "destructive"
-             })
-        }
-    }
     
     const journalListProps = {
         entries: entries.filter(e => e.content.trim() !== '' || e.title !== 'New Entry' || e.id === activeEntryId),
@@ -335,9 +316,6 @@ export default function JournalPage() {
                              />
                            </ScrollArea>
                         </CardContent>
-                        <CardFooter>
-                            <Button onClick={saveTasks}>Save</Button>
-                        </CardFooter>
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center p-8">
@@ -356,5 +334,3 @@ export default function JournalPage() {
         </div>
     );
 }
-
-    
