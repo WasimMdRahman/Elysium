@@ -10,7 +10,6 @@ import { transcribeAudio } from '@/ai/flows/ai-chatbot-speech-to-text';
 import { textToSpeech } from '@/ai/flows/ai-chatbot-text-to-speech';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -114,7 +113,7 @@ const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, s
     );
     
     return (
-        <div className="md:col-span-1 lg:col-span-1 flex flex-col h-full border-0 md:border md:rounded-lg">
+        <div className="flex flex-col h-full rounded-lg border">
             <div className="flex flex-row items-center justify-between p-2 border-b">
                 <div>
                     <h2 className="font-bold font-headline text-lg">Chat History</h2>
@@ -605,7 +604,7 @@ export default function ChatbotPage() {
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
                         }`}>
-                        <p className="text-sm">{message.text}</p>
+                        <p className="text-sm break-words">{message.text}</p>
                         </div>
                         {message.role === 'user' && (
                         <Avatar className="h-8 w-8 border">
