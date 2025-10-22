@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Flame, Star, Gem, ArrowLeft, Play, BrainCircuit, Loader } from 'lucide-react';
+import { Flame, Star, Gem, ArrowLeft, Play, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -160,7 +160,7 @@ export default function ThoughtQuestLobbyPage() {
             className="absolute inset-0"
         >
             <Card className="h-full flex flex-col justify-center items-center text-center p-6">
-               <BrainCircuit className="h-12 w-12 text-primary mb-4" />
+               <div className="text-5xl mb-4">🧠</div>
                <CardTitle className="font-headline">Begin Your Quest</CardTitle>
                <CardDescription className="mb-6">Identify thoughts as helpful or unhelpful to continue your quest.</CardDescription>
                <Button onClick={startGame} size="lg" disabled={isLoading}>
