@@ -159,8 +159,6 @@ export default function ChatbotPage() {
   const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
 
   // Voice state
   const [isRecording, setIsRecording] = useState(false);
@@ -181,45 +179,53 @@ export default function ChatbotPage() {
 
   // Load sessions and user profile from localStorage on initial render, only on client
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    try {
+        const savedSessions = localStorage.getItem('chatSessions');
+        const parsedSessions = savedSessions ? JSON.parse(savedSessions).map((s: any) => ({
+            ...s,
+            timestamp: new Date(s.timestamp),
+            summary: s.summary || '',
+        })) : [];
 
-  useEffect(() => {
-    if (isMounted) {
-      try {
-          const savedSessions = localStorage.getItem('chatSessions');
-          const parsedSessions = savedSessions ? JSON.parse(savedSessions).map((s: any) => ({
-              ...s,
-              timestamp: new Date(s.timestamp),
-              summary: s.summary || '',
-          })) : [];
-
-          if (parsedSessions.length > 0) {
-            const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-            setSessions(sortedSessions);
-            setActiveSessionId(sortedSessions[0].id);
-          } else {
-            // If no saved sessions, start a new temp chat
-            createNewChat();
-          }
-
-          const savedProfile = localStorage.getItem('userProfileSummary');
-          if(savedProfile) {
-              setUserProfile(savedProfile);
-          }
-
-      } catch (error) {
-          console.error("Failed to load data from localStorage", error);
+        if (parsedSessions.length > 0) {
+          const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          setSessions(sortedSessions);
+          setActiveSessionId(sortedSessions[0].id);
+        } else {
+          // If no saved sessions, start a new temp chat
           createNewChat();
-      }
+        }
+
+        const savedProfile = localStorage.getItem('userProfileSummary');
+        if(savedProfile) {
+            setUserProfile(savedProfile);
+        }
+
+        const handleOnline = () => setIsOffline(false);
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        // Initial check
+        if (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') {
+          setIsOffline(!navigator.onLine);
+        }
+
+        return () => {
+          window.removeEventListener('online', handleOnline);
+          window.removeEventListener('offline', handleOffline);
+        };
+    } catch (error) {
+        console.error("Failed to load data from localStorage", error);
+        createNewChat();
     }
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted]);
+  }, []);
 
   
   // When active session changes, update current messages
   useEffect(() => {
-    if (!isMounted) return;
     const session = sessions.find(s => s.id === activeSessionId);
     if(session){
         setCurrentMessages(session.messages);
@@ -228,12 +234,11 @@ export default function ChatbotPage() {
             { role: 'bot', text: 'Hello! I am your Elysium assistant. How can I support you today?' }
          ]);
     }
-  }, [activeSessionId, sessions, isMounted]);
+  }, [activeSessionId, sessions]);
 
 
   // Save sessions to localStorage whenever they change
   useEffect(() => {
-    if (!isMounted) return;
     try {
         if (sessions.length > 0) {
             const sessionsToSave = sessions.filter(s => s.messages.length > 1 && s.id !== null);
@@ -250,7 +255,7 @@ export default function ChatbotPage() {
         console.error("Failed to save chat sessions to localStorage", error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessions, isMounted]);
+  }, [sessions]);
 
 
   useEffect(() => {
@@ -262,26 +267,6 @@ export default function ChatbotPage() {
     }
   }, [currentMessages, isLoading]);
   
-  // Offline detection
-  useEffect(() => {
-    if (!isMounted) return;
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    // Initial check
-    if (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') {
-      setIsOffline(!navigator.onLine);
-    }
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [isMounted]);
-
   const playAudio = (audioDataUri: string) => {
     if (audioPlayerRef.current) {
         audioPlayerRef.current.src = audioDataUri;
@@ -618,7 +603,7 @@ export default function ChatbotPage() {
                             <AvatarFallback>🤖</AvatarFallback>
                         </Avatar>
                         )}
-                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm ${
+                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm break-words ${
                         message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
