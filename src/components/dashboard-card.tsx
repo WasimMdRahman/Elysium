@@ -23,13 +23,15 @@ export function DashboardCard({ href, emoji, title, description, isLoading, onCl
   return (
     <Link href={href} className="group" onClick={handleClick}>
       <Card className="h-full transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-primary/10">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <div>
-            <div className="mb-2 text-2xl">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
+          <div className="flex items-center gap-4">
+            <div className="text-4xl">
                 {emoji}
             </div>
-            <CardTitle className="font-headline">{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
+            <div>
+              <CardTitle className="font-headline">{title}</CardTitle>
+              <CardDescription>{description}</CardDescription>
+            </div>
           </div>
           {isLoading ? (
             <Loader className="h-5 w-5 text-muted-foreground animate-spin" />
