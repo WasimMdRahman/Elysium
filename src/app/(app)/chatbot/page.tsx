@@ -170,7 +170,6 @@ export default function ChatbotPage() {
 
 
   const activeSession = sessions.find(s => s.id === activeSessionId);
-  const activeMessages = activeSession ? activeSession.messages : currentMessages;
   
   const createNewChat = () => {
       setActiveSessionId(null);
@@ -183,34 +182,42 @@ export default function ChatbotPage() {
   // Load sessions and user profile from localStorage on initial render, only on client
   useEffect(() => {
     setIsMounted(true);
-    try {
-        const savedSessions = localStorage.getItem('chatSessions');
-        const parsedSessions = savedSessions ? JSON.parse(savedSessions).map((s: any) => ({
-            ...s,
-            timestamp: new Date(s.timestamp),
-            summary: s.summary || '',
-        })) : [];
+    // This effect should only run on the client after hydration
+    // to avoid server-client mismatch from localStorage.
+  }, []);
 
-        if (parsedSessions.length > 0) {
-          const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-          setSessions(sortedSessions);
-          setActiveSessionId(sortedSessions[0].id);
-        } else {
-          // If no saved sessions, start a new temp chat
+  useEffect(() => {
+    if (isMounted) {
+      try {
+          const savedSessions = localStorage.getItem('chatSessions');
+          const parsedSessions = savedSessions ? JSON.parse(savedSessions).map((s: any) => ({
+              ...s,
+              timestamp: new Date(s.timestamp),
+              summary: s.summary || '',
+          })) : [];
+
+          if (parsedSessions.length > 0) {
+            const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            setSessions(sortedSessions);
+            setActiveSessionId(sortedSessions[0].id);
+          } else {
+            // If no saved sessions, start a new temp chat
+            createNewChat();
+          }
+
+          const savedProfile = localStorage.getItem('userProfileSummary');
+          if(savedProfile) {
+              setUserProfile(savedProfile);
+          }
+
+      } catch (error) {
+          console.error("Failed to load data from localStorage", error);
           createNewChat();
-        }
-
-        const savedProfile = localStorage.getItem('userProfileSummary');
-        if(savedProfile) {
-            setUserProfile(savedProfile);
-        }
-
-    } catch (error) {
-        console.error("Failed to load data from localStorage", error);
-        createNewChat();
+      }
     }
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isMounted]);
+
   
   // When active session changes, update current messages
   useEffect(() => {
@@ -227,7 +234,7 @@ export default function ChatbotPage() {
     if (!isMounted) return;
     try {
         if (sessions.length > 0) {
-            const sessionsToSave = sessions.filter(s => s.messages.length > 1 || s.title !== "New Chat");
+            const sessionsToSave = sessions.filter(s => s.messages.length > 1 || (s.messages.length === 1 && s.messages[0].role !== 'bot'));
             if (sessionsToSave.length > 0) {
                 localStorage.setItem('chatSessions', JSON.stringify(sessionsToSave));
                 handleUserProfileUpdate(sessionsToSave); 
@@ -251,10 +258,11 @@ export default function ChatbotPage() {
         behavior: 'smooth',
       });
     }
-  }, [activeMessages, isLoading]);
+  }, [currentMessages, isLoading]);
   
   // Offline detection
   useEffect(() => {
+    if (!isMounted) return;
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
 
@@ -270,7 +278,7 @@ export default function ChatbotPage() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [isMounted]);
 
   const playAudio = (audioDataUri: string) => {
     if (audioPlayerRef.current) {
@@ -320,13 +328,12 @@ export default function ChatbotPage() {
       }
   }
 
-
   const processAndSendMessage = async (messageText: string, playResponse: boolean = false) => {
     if (!messageText.trim() || isLoading || isOffline) return;
 
     const userMessage: Message = { role: 'user', text: messageText };
     const newMessages = [...currentMessages, userMessage];
-    setCurrentMessages(newMessages);
+    
     setInput('');
     setIsLoading(true);
     setLoadingMessage(null);
@@ -345,6 +352,7 @@ export default function ChatbotPage() {
         };
         setSessions(prev => [newSession, ...prev]);
         setActiveSessionId(newSession.id);
+        setCurrentMessages(newMessages);
         currentSessionId = newSession.id;
         sessionForResponse = newSession;
     } else {
@@ -353,6 +361,7 @@ export default function ChatbotPage() {
                 ? { ...s, messages: newMessages, timestamp: new Date() } 
                 : s
         ));
+         setCurrentMessages(newMessages);
     }
 
 
@@ -377,7 +386,10 @@ export default function ChatbotPage() {
 
       const botMessage: Message = { role: 'bot', text: response.response };
       
-      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, botMessage] } : s));
+      const finalMessages = [...newMessages, botMessage];
+
+      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: finalMessages } : s));
+      setCurrentMessages(finalMessages);
       
       if (playResponse) {
         setLoadingMessage('Generating audio...');
@@ -398,11 +410,11 @@ export default function ChatbotPage() {
     } catch (error) {
       console.error('Error fetching AI response:', error);
       const errorMessage: Message = { role: 'bot', text: 'Sorry, I am having trouble connecting right now.' };
-      if(currentSessionId){
-         setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, errorMessage] } : s));
-      } else {
-         setCurrentMessages(prev => [...prev, errorMessage]);
-      }
+       const finalMessages = [...newMessages, errorMessage];
+       if(currentSessionId){
+         setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: finalMessages } : s));
+       }
+       setCurrentMessages(finalMessages);
     } finally {
       setIsLoading(false);
       setLoadingMessage(null);
@@ -594,7 +606,7 @@ export default function ChatbotPage() {
             <main className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full" ref={scrollAreaRef}>
                 <div className="p-4 space-y-6 max-w-3xl mx-auto">
-                    {activeMessages.map((message, index) => (
+                    {currentMessages.map((message, index) => (
                     <div
                         key={index}
                         className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
@@ -604,7 +616,7 @@ export default function ChatbotPage() {
                             <AvatarFallback>🤖</AvatarFallback>
                         </Avatar>
                         )}
-                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm break-word ${
+                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm break-words ${
                         message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
