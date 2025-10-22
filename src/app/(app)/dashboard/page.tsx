@@ -12,42 +12,42 @@ const features = [
     href: "/chatbot",
     title: "AI Chatbot",
     description: "24/7 mental health support",
-    imageUrl: "https://picsum.photos/seed/chatbot/200/200",
+    imageUrl: "/Feature Images/AI Chatbot.png",
     imageHint: "robot face"
   },
   {
     href: "/mood-tracker",
     title: "Mood Tracker",
     description: "Log and visualize your daily mood",
-    imageUrl: "https://picsum.photos/seed/mood/200/200",
+    imageUrl: "/Feature Images/Mood Tracker.png",
     imageHint: "heartbeat chart"
   },
   {
     href: "/journal",
     title: "Journal",
     description: "Reflect with an intelligent journal",
-    imageUrl: "https://picsum.photos/seed/journal/200/200",
+    imageUrl: "/Feature Images/Journal.png",
     imageHint: "notebook pen"
   },
   {
     href: "/voice-journal",
     title: "Voice Biomarker",
     description: "Analyze your voice for emotional insights",
-    imageUrl: "https://picsum.photos/seed/voice/200/200",
+    imageUrl: "/Feature Images/Voice Biomarker.png",
     imageHint: "sound wave"
   },
   {
     href: "/thought-quest",
     title: "Thought Quest",
     description: "A CBT game to challenge thoughts",
-    imageUrl: "https://picsum.photos/seed/quest/200/200",
+    imageUrl: "/Feature Images/Thought Quest.png",
     imageHint: "brain circuit"
   },
   {
     href: "/exercises",
     title: "Mental Health Exercises",
     description: "Guided practices for wellness",
-    imageUrl: "https://picsum.photos/seed/exercises/200/200",
+    imageUrl: "/Feature Images/Mental Health Exercises.png",
     imageHint: "calm water"
   },
 ];
