@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ChatbotLoadingScreen } from '../chatbot/loading-screen';
 import { MoodTrackerLoadingScreen } from '../mood-tracker/loading-screen';
+import { JournalLoadingScreen } from '../journal/loading-screen';
 
 
 const features = [
@@ -107,6 +108,10 @@ export default function DashboardPage() {
 
   if (loadingCard === '/mood-tracker') {
     return <MoodTrackerLoadingScreen />;
+  }
+
+  if (loadingCard === '/journal') {
+    return <JournalLoadingScreen />;
   }
 
   return (
