@@ -21,10 +21,10 @@ const levels = [
     { name: 'Diamond', type: 'EP', threshold: 3000, color: 'text-blue-300' },
 ];
 
-const LoadingScreen = () => (
+export const LoadingScreen = () => (
     <div className="loading-screen">
         <div className="loading-emoji">🧠</div>
-        <div className="loading-text">Loading Game</div>
+        <div className="loading-text">Loading Thought Quest</div>
     </div>
 );
 

@@ -9,6 +9,7 @@ import { ChatbotLoadingScreen } from '../chatbot/loading-screen';
 import { MoodTrackerLoadingScreen } from '../mood-tracker/loading-screen';
 import { JournalLoadingScreen } from '../journal/loading-screen';
 import { VoiceJournalLoadingScreen } from '../voice-journal/loading-screen';
+import { LoadingScreen as ThoughtQuestLoadingScreen } from '../thought-quest/page';
 
 
 const features = [
@@ -117,6 +118,10 @@ export default function DashboardPage() {
 
   if (loadingCard === '/voice-journal') {
     return <VoiceJournalLoadingScreen />;
+  }
+
+  if (loadingCard === '/thought-quest') {
+    return <ThoughtQuestLoadingScreen />;
   }
 
   return (
