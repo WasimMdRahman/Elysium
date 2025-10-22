@@ -653,10 +653,10 @@ export default function ChatbotPage() {
                                     className="flex-1"
                                     disabled={isLoading || isRecording}
                                 />
-                                <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn(isRecording && "bg-destructive hover:bg-destructive/90")}>
+                                <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn("rounded-full", isRecording && "bg-destructive hover:bg-destructive/90")}>
                                     {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                                 </Button>
-                                <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording || isOffline}>
+                                <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording || isOffline} className="rounded-full">
                                     <Send className="h-4 w-4" />
                                 </Button>
                             </form>
@@ -685,5 +685,6 @@ export default function ChatbotPage() {
     </div>
   );
 }
+
 
     
