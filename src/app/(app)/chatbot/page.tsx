@@ -588,7 +588,7 @@ export default function ChatbotPage() {
             
             <main className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full" ref={scrollAreaRef}>
-                <div className="p-6 space-y-6 max-w-3xl mx-auto">
+                <div className="p-4 space-y-6 max-w-3xl mx-auto">
                     {activeMessages.map((message, index) => (
                     <div
                         key={index}
@@ -596,7 +596,7 @@ export default function ChatbotPage() {
                     >
                         {message.role === 'bot' && (
                         <Avatar className="h-8 w-8 border">
-                            <AvatarFallback><span>🤖</span></AvatarFallback>
+                            <AvatarFallback>🤖</AvatarFallback>
                         </Avatar>
                         )}
                         <div className={`max-w-[75%] rounded-2xl p-3 ${
@@ -616,7 +616,7 @@ export default function ChatbotPage() {
                     {isLoading && (
                     <div className="flex items-start gap-4">
                         <Avatar className="h-8 w-8 border">
-                        <AvatarFallback><span>🤖</span></AvatarFallback>
+                        <AvatarFallback>🤖</AvatarFallback>
                         </Avatar>
                         <div className="max-w-[75%] rounded-2xl bg-muted p-3">
                         {loadingMessage ? (
