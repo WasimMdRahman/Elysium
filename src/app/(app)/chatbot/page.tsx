@@ -599,7 +599,7 @@ export default function ChatbotPage() {
                             >
                                 {message.role === 'bot' && (
                                 <Avatar className="h-8 w-8 border">
-                                    <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
+                                    <AvatarFallback><span>🤖</span></AvatarFallback>
                                 </Avatar>
                                 )}
                                 <div className={`max-w-[75%] rounded-lg p-3 ${
@@ -619,7 +619,7 @@ export default function ChatbotPage() {
                             {isLoading && (
                             <div className="flex items-start gap-4">
                                 <Avatar className="h-8 w-8 border">
-                                <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
+                                <AvatarFallback><span>🤖</span></AvatarFallback>
                                 </Avatar>
                                 <div className="max-w-[75%] rounded-lg bg-muted p-3">
                                 {loadingMessage ? (
@@ -685,6 +685,5 @@ export default function ChatbotPage() {
     </div>
   );
 }
-
 
     
