@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Flame, Star, Gem, ArrowLeft, Play, BrainCircuit } from 'lucide-react';
+import { Flame, Star, Gem, ArrowLeft, Play, BrainCircuit, Loader } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -29,6 +29,7 @@ export default function ThoughtQuestLobbyPage() {
   const [ep, setEp] = useState(0);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [score, setScore] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
 
   // Load state from localStorage
@@ -64,6 +65,7 @@ export default function ThoughtQuestLobbyPage() {
   }, []);
 
   const startGame = () => {
+    setIsLoading(true);
     router.push('/thought-quest/game');
   };
 
@@ -146,9 +148,13 @@ export default function ThoughtQuestLobbyPage() {
                <BrainCircuit className="h-12 w-12 text-primary mb-4" />
                <CardTitle className="font-headline">Begin Your Quest</CardTitle>
                <CardDescription className="mb-6">Identify thoughts as helpful or unhelpful to continue your quest.</CardDescription>
-               <Button onClick={startGame} size="lg">
-                   <Play className="mr-2 h-5 w-5" />
-                   Start Game
+               <Button onClick={startGame} size="lg" disabled={isLoading}>
+                   {isLoading ? (
+                       <Loader className="mr-2 h-5 w-5 animate-spin" />
+                   ) : (
+                       <Play className="mr-2 h-5 w-5" />
+                   )}
+                   {isLoading ? 'Loading...' : 'Start Game'}
                </Button>
             </Card>
         </motion.div>
