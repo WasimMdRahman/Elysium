@@ -307,7 +307,7 @@ export default function JournalPage() {
                                 </Button>
                             </div>
                         </CardHeader>
-                        <div className="flex-1 overflow-y-auto">
+                        <div className="flex-1">
                             <Textarea
                                 placeholder="Start writing your thoughts here..."
                                 className="w-full min-h-full text-base resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-2 md:p-4"
@@ -333,4 +333,3 @@ export default function JournalPage() {
         </div>
     );
 }
-
