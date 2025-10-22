@@ -198,8 +198,8 @@ export default function MoodTrackerPage() {
         <Button asChild variant="ghost" size="icon" className="self-start">
              <Link href="/dashboard"><ArrowLeft /></Link>
         </Button>
-        <div className="grid gap-6 lg:grid-cols-2">
-            <div className="flex flex-col gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex flex-col gap-6 lg:w-1/2">
                 <Card>
                     <CardHeader>
                     <CardTitle className="font-headline">How are you feeling today?</CardTitle>
@@ -232,7 +232,7 @@ export default function MoodTrackerPage() {
                     <Card>
                         <CardHeader>
                         <CardTitle className="font-headline">Share a little more?</CardTitle>
-                        <CardDescription>I've noticed your mood is a bit low. If you're comfortable, telling me what's on your mind can help.</CardDescription>
+                        <CardDescription>I've noticed your mood is a bit low. If you're comfortable, telling me what's on my mind can help.</CardDescription>
                         </CardHeader>
                         <CardContent>
                         <Textarea 
@@ -274,7 +274,7 @@ export default function MoodTrackerPage() {
                 </AnimatePresence>
             </div>
 
-            <Card>
+            <Card className="lg:w-1/2">
                 <CardHeader>
                 <div className="flex justify-between items-start">
                     <div>
@@ -339,3 +339,5 @@ export default function MoodTrackerPage() {
     </div>
   );
 }
+
+    
