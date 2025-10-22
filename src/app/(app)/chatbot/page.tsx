@@ -182,8 +182,6 @@ export default function ChatbotPage() {
   // Load sessions and user profile from localStorage on initial render, only on client
   useEffect(() => {
     setIsMounted(true);
-    // This effect should only run on the client after hydration
-    // to avoid server-client mismatch from localStorage.
   }, []);
 
   useEffect(() => {
@@ -225,6 +223,10 @@ export default function ChatbotPage() {
     const session = sessions.find(s => s.id === activeSessionId);
     if(session){
         setCurrentMessages(session.messages);
+    } else if (activeSessionId === null) {
+         setCurrentMessages([
+            { role: 'bot', text: 'Hello! I am your Elysium assistant. How can I support you today?' }
+         ]);
     }
   }, [activeSessionId, sessions, isMounted]);
 
@@ -234,7 +236,7 @@ export default function ChatbotPage() {
     if (!isMounted) return;
     try {
         if (sessions.length > 0) {
-            const sessionsToSave = sessions.filter(s => s.messages.length > 1 || (s.messages.length === 1 && s.messages[0].role !== 'bot'));
+            const sessionsToSave = sessions.filter(s => s.messages.length > 1 && s.id !== null);
             if (sessionsToSave.length > 0) {
                 localStorage.setItem('chatSessions', JSON.stringify(sessionsToSave));
                 handleUserProfileUpdate(sessionsToSave); 
@@ -616,7 +618,7 @@ export default function ChatbotPage() {
                             <AvatarFallback>🤖</AvatarFallback>
                         </Avatar>
                         )}
-                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm break-words ${
+                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm ${
                         message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
