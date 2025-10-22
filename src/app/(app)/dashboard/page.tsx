@@ -19,35 +19,35 @@ const features = [
     href: "/mood-tracker",
     title: "Mood Tracker",
     description: "Log and visualize your daily mood",
-    imageUrl: "/feature-images/mood-tracker.png",
+    imageUrl: "/feature-images/mood-tracker.jpg",
     imageHint: "heartbeat chart"
   },
   {
     href: "/journal",
     title: "Journal",
     description: "Reflect with an intelligent journal",
-    imageUrl: "/feature-images/journal.png",
+    imageUrl: "/feature-images/journal.jpg",
     imageHint: "notebook pen"
   },
   {
     href: "/voice-journal",
     title: "Voice Biomarker",
     description: "Analyze your voice for emotional insights",
-    imageUrl: "/feature-images/voice-biomarker.png",
+    imageUrl: "/feature-images/voice-biomarker.jpg",
     imageHint: "sound wave"
   },
   {
     href: "/thought-quest",
     title: "Thought Quest",
     description: "A CBT game to challenge thoughts",
-    imageUrl: "/feature-images/thought-quest.png",
+    imageUrl: "/feature-images/thought-quest.jpg",
     imageHint: "brain circuit"
   },
   {
     href: "/exercises",
     title: "Mental Health Exercises",
     description: "Guided practices for wellness",
-    imageUrl: "/feature-images/mental-health-exercises.png",
+    imageUrl: "/feature-images/mental-health-exercises.jpg",
     imageHint: "calm water"
   },
 ];
