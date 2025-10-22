@@ -12,43 +12,37 @@ const features = [
     href: "/chatbot",
     title: "AI Chatbot",
     description: "24/7 mental health support",
-    imageUrl: "/feature-images/chatbot.jpg",
-    imageHint: "robot face"
+    emoji: "🤖"
   },
   {
     href: "/mood-tracker",
     title: "Mood Tracker",
     description: "Log and visualize your daily mood",
-    imageUrl: "/feature-images/mood-tracker.jpg",
-    imageHint: "heartbeat chart"
+    emoji: "😊"
   },
   {
     href: "/journal",
     title: "Journal",
     description: "Reflect with an intelligent journal",
-    imageUrl: "/feature-images/journal.jpg",
-    imageHint: "notebook pen"
+    emoji: "📔"
   },
   {
     href: "/voice-journal",
     title: "Voice Biomarker",
     description: "Analyze your voice for emotional insights",
-    imageUrl: "/feature-images/voice-biomarker.jpg",
-    imageHint: "sound wave"
+    emoji: "🎤"
   },
   {
     href: "/thought-quest",
     title: "Thought Quest",
     description: "A CBT game to challenge thoughts",
-    imageUrl: "/feature-images/thought-quest.jpg",
-    imageHint: "brain circuit"
+    emoji: "🧠"
   },
   {
     href: "/exercises",
     title: "Mental Health Exercises",
     description: "Guided practices for wellness",
-    imageUrl: "/feature-images/mental-health-exercises.jpg",
-    imageHint: "calm water"
+    emoji: "🧘‍♀️"
   },
 ];
 
@@ -124,8 +118,7 @@ export default function DashboardPage() {
           <motion.div key={feature.href} variants={itemVariants}>
             <DashboardCard
               href={feature.href}
-              imageUrl={feature.imageUrl}
-              imageHint={feature.imageHint}
+              emoji={feature.emoji}
               title={feature.title}
               description={feature.description}
               isLoading={loadingCard === feature.href}
