@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { DashboardCard } from "@/components/dashboard-card";
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { ChatbotLoadingScreen } from '../chatbot/loading-screen';
 
 
 const features = [
@@ -93,8 +94,15 @@ export default function DashboardPage() {
 
   const handleCardClick = (href: string) => {
     setLoadingCard(href);
-    router.push(href);
+    // Use a timeout to simulate loading and show the animation
+    setTimeout(() => {
+        router.push(href);
+    }, 2000); 
   };
+
+  if (loadingCard === '/chatbot') {
+    return <ChatbotLoadingScreen />;
+  }
 
   return (
     <motion.div 
