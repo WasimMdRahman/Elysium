@@ -302,15 +302,14 @@ export default function JournalPage() {
                                 </Button>
                                 <div className="flex flex-col">
                                     <CardTitle className="font-headline text-2xl">{activeEntry.title}</CardTitle>
-                                    <CardDescription>{format(new Date(activeEntry.date), 'dd-MM-yyyy p')}</CardDescription>
                                 </div>
                             </div>
                              <div className="flex items-center gap-2">
                                 {/* Mobile History Button */}
                                 <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                                     <SheetTrigger asChild>
-                                        <Button variant="outline" className="md:hidden">
-                                            <History className="mr-2 h-4 w-4" /> History
+                                        <Button variant="outline" size="icon" className="md:hidden">
+                                            <History className="h-4 w-4" />
                                         </Button>
                                     </SheetTrigger>
                                     <SheetContent side="left" className="p-0">
@@ -318,13 +317,11 @@ export default function JournalPage() {
                                          <JournalList {...journalListProps} />
                                     </SheetContent>
                                 </Sheet>
-                                <Button onClick={createNewEntry} variant="outline">
-                                    <FilePlus className="mr-2 h-4 w-4" />
-                                    <span className="hidden md:inline">New Entry</span>
+                                <Button onClick={createNewEntry} variant="outline" size="icon">
+                                    <FilePlus className="h-4 w-4" />
                                 </Button>
                                 <Button onClick={saveTasks}>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    <span className="hidden md:inline">Save</span>
+                                    Save
                                 </Button>
                             </div>
                         </CardHeader>
@@ -354,5 +351,3 @@ export default function JournalPage() {
         </div>
     );
 }
-
-    
