@@ -132,9 +132,9 @@
   transform: translateX(-50%);
   font-size: 20px;
   font-weight: 600;
-  color: #00ffae;
+  color: #006400;
   opacity: 0;
-  text-shadow: 0 0 8px #00ffae;
+  text-shadow: 0 0 8px #006400;
   z-index: 20;
   animation: xp-fade-in-out 2s ease-in-out forwards;
 }
