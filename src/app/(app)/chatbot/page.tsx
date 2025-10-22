@@ -114,17 +114,17 @@ const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, s
     );
     
     return (
-        <Card className="md:col-span-1 lg:col-span-1 flex flex-col h-full border-0 md:border">
-            <CardHeader className="flex flex-row items-center justify-between">
+        <div className="md:col-span-1 lg:col-span-1 flex flex-col h-full border-0 md:border md:rounded-lg">
+            <div className="flex flex-row items-center justify-between p-2 border-b">
                 <div>
-                    <CardTitle className="font-headline">Chat History</CardTitle>
-                    <CardDescription>Your past conversations</CardDescription>
+                    <h2 className="font-bold font-headline text-lg">Chat History</h2>
+                    <p className="text-sm text-muted-foreground">Your past conversations</p>
                 </div>
                 <Button variant="ghost" size="icon" onClick={createNewChat}>
                     <MessageSquare className="h-5 w-5" />
                 </Button>
-            </CardHeader>
-            <CardContent className="flex-1 p-0">
+            </div>
+            <div className="flex-1 p-0">
                  <ScrollArea className="h-full">
                     <div className="space-y-2 p-2">
                         {sessions.length === 0 && (
@@ -140,8 +140,8 @@ const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, s
                         {grouped.earlier.map(renderSession)}
                     </div>
                  </ScrollArea>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 };
 
@@ -600,7 +600,7 @@ export default function ChatbotPage() {
                             <AvatarFallback><span>🤖</span></AvatarFallback>
                         </Avatar>
                         )}
-                        <div className={`max-w-[75%] rounded-lg p-3 ${
+                        <div className={`max-w-[75%] rounded-2xl p-3 ${
                         message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
@@ -619,7 +619,7 @@ export default function ChatbotPage() {
                         <Avatar className="h-8 w-8 border">
                         <AvatarFallback><span>🤖</span></AvatarFallback>
                         </Avatar>
-                        <div className="max-w-[75%] rounded-lg bg-muted p-3">
+                        <div className="max-w-[75%] rounded-2xl bg-muted p-3">
                         {loadingMessage ? (
                             <p className="text-sm text-muted-foreground italic">{loadingMessage}</p>
                         ) : (
@@ -649,7 +649,7 @@ export default function ChatbotPage() {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Type or record your message..."
-                            className="flex-1"
+                            className="flex-1 rounded-full"
                             disabled={isLoading || isRecording}
                         />
                         <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn("rounded-full", isRecording && "bg-destructive hover:bg-destructive/90")}>
