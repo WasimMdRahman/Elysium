@@ -179,47 +179,53 @@ export default function ChatbotPage() {
 
   // Load sessions and user profile from localStorage on initial render, only on client
   useEffect(() => {
-    try {
-        const savedSessions = localStorage.getItem('chatSessions');
-        const parsedSessions = savedSessions ? JSON.parse(savedSessions).map((s: any) => ({
-            ...s,
-            timestamp: new Date(s.timestamp),
-            summary: s.summary || '',
-        })) : [];
+    
+    const loadData = () => {
+        try {
+            const savedSessions = localStorage.getItem('chatSessions');
+            const parsedSessions = savedSessions ? JSON.parse(savedSessions).map((s: any) => ({
+                ...s,
+                timestamp: new Date(s.timestamp),
+                summary: s.summary || '',
+            })) : [];
 
-        if (parsedSessions.length > 0) {
-          const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-          setSessions(sortedSessions);
-          setActiveSessionId(sortedSessions[0].id);
-        } else {
-          // If no saved sessions, start a new temp chat
-          createNewChat();
+            if (parsedSessions.length > 0) {
+              const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+              setSessions(sortedSessions);
+              setActiveSessionId(sortedSessions[0].id);
+            } else {
+              // If no saved sessions, start a new temp chat
+              createNewChat();
+            }
+
+            const savedProfile = localStorage.getItem('userProfileSummary');
+            if(savedProfile) {
+                setUserProfile(savedProfile);
+            }
+
+        } catch (error) {
+            console.error("Failed to load data from localStorage", error);
+            createNewChat();
         }
-
-        const savedProfile = localStorage.getItem('userProfileSummary');
-        if(savedProfile) {
-            setUserProfile(savedProfile);
-        }
-
-        const handleOnline = () => setIsOffline(false);
-        const handleOffline = () => setIsOffline(true);
-
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-
-        // Initial check
-        if (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') {
-          setIsOffline(!navigator.onLine);
-        }
-
-        return () => {
-          window.removeEventListener('online', handleOnline);
-          window.removeEventListener('offline', handleOffline);
-        };
-    } catch (error) {
-        console.error("Failed to load data from localStorage", error);
-        createNewChat();
     }
+
+    loadData();
+
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial check
+    if (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') {
+      setIsOffline(!navigator.onLine);
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -603,12 +609,12 @@ export default function ChatbotPage() {
                             <AvatarFallback>🤖</AvatarFallback>
                         </Avatar>
                         )}
-                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm break-words ${
+                        <div className={`p-3 rounded-2xl max-w-[80%] text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words ${
                         message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
                         }`}>
-                            <p className="whitespace-pre-wrap">{message.text}</p>
+                            {message.text}
                         </div>
                         {message.role === 'user' && (
                         <Avatar className="h-8 w-8 border">
