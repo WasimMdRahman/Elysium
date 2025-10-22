@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subDays, isWithinInterval, isSameDay, startOfDay } from 'date-fns';
+import { format, subDays, isWithinInterval, isSameDay, startOfDay, isSameMonth } from 'date-fns';
 import { aiChatbotMentalHealthSupport } from '@/ai/flows/ai-chatbot-mental-health-support';
 import { Bot, Loader, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -120,7 +120,7 @@ export default function MoodTrackerPage() {
                 return isWithinInterval(entry.date, { start: subDays(now, 7), end: now });
             }
             if (timeRange === 'month') {
-                return isWithinInterval(entry.date, { start: subDays(now, 30), end: now });
+                return isSameMonth(entry.date, now);
             }
             return true;
         });
@@ -339,5 +339,3 @@ export default function MoodTrackerPage() {
     </div>
   );
 }
-
-    
