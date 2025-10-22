@@ -12,42 +12,42 @@ const features = [
     href: "/chatbot",
     title: "AI Chatbot",
     description: "24/7 mental health support",
-    imageUrl: "/Feature%20Images/Chatbot.jpg",
+    imageUrl: "/feature-images/chatbot.jpg",
     imageHint: "robot face"
   },
   {
     href: "/mood-tracker",
     title: "Mood Tracker",
     description: "Log and visualize your daily mood",
-    imageUrl: "/Feature%20Images/Mood%20Tracker.png",
+    imageUrl: "/feature-images/mood-tracker.png",
     imageHint: "heartbeat chart"
   },
   {
     href: "/journal",
     title: "Journal",
     description: "Reflect with an intelligent journal",
-    imageUrl: "/Feature%20Images/Journal.png",
+    imageUrl: "/feature-images/journal.png",
     imageHint: "notebook pen"
   },
   {
     href: "/voice-journal",
     title: "Voice Biomarker",
     description: "Analyze your voice for emotional insights",
-    imageUrl: "/Feature%20Images/Voice%20Biomarker.png",
+    imageUrl: "/feature-images/voice-biomarker.png",
     imageHint: "sound wave"
   },
   {
     href: "/thought-quest",
     title: "Thought Quest",
     description: "A CBT game to challenge thoughts",
-    imageUrl: "/Feature%20Images/Thought%20Quest.png",
+    imageUrl: "/feature-images/thought-quest.png",
     imageHint: "brain circuit"
   },
   {
     href: "/exercises",
     title: "Mental Health Exercises",
     description: "Guided practices for wellness",
-    imageUrl: "/Feature%20Images/Mental%20Health%20Exercises.png",
+    imageUrl: "/feature-images/mental-health-exercises.png",
     imageHint: "calm water"
   },
 ];
