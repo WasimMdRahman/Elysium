@@ -1,0 +1,60 @@
+
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background-color: #0d1117; /* Matches body background from your code */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  z-index: 9999;
+}
+
+.loading-emoji {
+  font-size: 60px;
+  opacity: 0;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0);
+  animation: fadeGlow 2s ease-in-out forwards;
+}
+
+@keyframes fadeGlow {
+  0% {
+    opacity: 0;
+    text-shadow: 0 0 0px rgba(255, 255, 255, 0);
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.9;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    transform: scale(1);
+  }
+}
+
+.loading-text {
+  margin-top: 15px;
+  font-size: 16px;
+  letter-spacing: 1px;
+  opacity: 0;
+  animation: textFade 2s ease-in-out forwards;
+}
+
+@keyframes textFade {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+  }
+}

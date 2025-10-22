@@ -6,10 +6,11 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Flame, Star, Gem, ArrowLeft, Play, BrainCircuit, Loader } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import './animations.css';
+import './loading-animation.css';
 import { useRouter } from 'next/navigation';
 
 const levels = [
@@ -19,6 +20,13 @@ const levels = [
     { name: 'Platinum', type: 'EP', threshold: 2000, color: 'text-purple-400' },
     { name: 'Diamond', type: 'EP', threshold: 3000, color: 'text-blue-300' },
 ];
+
+const LoadingScreen = () => (
+    <div className="loading-screen">
+        <div className="loading-emoji">🧠</div>
+        <div className="loading-text">Loading Game</div>
+    </div>
+);
 
 export default function ThoughtQuestLobbyPage() {
   const router = useRouter();
@@ -66,8 +74,15 @@ export default function ThoughtQuestLobbyPage() {
 
   const startGame = () => {
     setIsLoading(true);
-    router.push('/thought-quest/game');
+    setTimeout(() => {
+        router.push('/thought-quest/game');
+    }, 2000);
   };
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
 
   return (
     <div className="flex flex-col items-center gap-6">
