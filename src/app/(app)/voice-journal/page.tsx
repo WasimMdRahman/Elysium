@@ -3,9 +3,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Loader, Activity, MessageCircle, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Mic, MicOff, Loader, Activity, MessageCircle, ChevronRight, ArrowLeft, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { analyzeVoiceEmotion, AnalyzeVoiceEmotionOutput } from '@/ai/flows/voice-biomarker-analysis';
 import { cn } from '@/lib/utils';
@@ -220,6 +220,14 @@ export default function VoiceJournalPage() {
                                    </div>
                                </div>
                             </CardContent>
+                            <CardFooter>
+                                <Button asChild className="w-full">
+                                    <Link href="/chatbot">
+                                        <MessageSquare className="mr-2 h-4 w-4" />
+                                        Talk about it with Elysium
+                                    </Link>
+                                </Button>
+                            </CardFooter>
                         </Card>
                     </motion.div>
                 )}
