@@ -257,7 +257,8 @@ export default function ChatbotPage() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    if (typeof navigator.onLine === 'boolean') {
+    // Initial check
+    if (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') {
       setIsOffline(!navigator.onLine);
     }
 
