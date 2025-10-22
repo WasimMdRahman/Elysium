@@ -129,7 +129,6 @@ const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, s
                         {sessions.length === 0 && (
                             <div className="p-4 text-center text-sm text-muted-foreground">No chats yet.</div>
                         )}
-                        {grouped.today.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Today</p>}
                         {grouped.today.map(renderSession)}
                         {grouped.yesterday.length > 0 && <p className="px-3 py-1 text-sm font-semibold text-muted-foreground">Yesterday</p>}
                         {grouped.yesterday.map(renderSession)}
@@ -160,6 +159,8 @@ export default function ChatbotPage() {
   const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
 
   // Voice state
   const [isRecording, setIsRecording] = useState(false);
@@ -179,8 +180,9 @@ export default function ChatbotPage() {
       if (isMobile) setSheetOpen(false);
   }
 
-  // Load sessions and user profile from localStorage on initial render
+  // Load sessions and user profile from localStorage on initial render, only on client
   useEffect(() => {
+    setIsMounted(true);
     try {
         const savedSessions = localStorage.getItem('chatSessions');
         const parsedSessions = savedSessions ? JSON.parse(savedSessions).map((s: any) => ({
@@ -221,6 +223,7 @@ export default function ChatbotPage() {
 
   // Save sessions to localStorage whenever they change
   useEffect(() => {
+    if (!isMounted) return;
     try {
         if (sessions.length > 0) {
             const sessionsToSave = sessions.filter(s => s.messages.length > 1 || s.title !== "New Chat");
@@ -237,7 +240,7 @@ export default function ChatbotPage() {
         console.error("Failed to save chat sessions to localStorage", error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessions]);
+  }, [sessions, isMounted]);
 
 
   useEffect(() => {
@@ -600,12 +603,12 @@ export default function ChatbotPage() {
                             <AvatarFallback>🤖</AvatarFallback>
                         </Avatar>
                         )}
-                        <div className={`max-w-[75%] rounded-2xl p-3 ${
+                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm whitespace-pre-wrap break-word ${
                         message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
                         }`}>
-                        <p className="text-sm break-word">{message.text}</p>
+                            <p>{message.text}</p>
                         </div>
                         {message.role === 'user' && (
                         <Avatar className="h-8 w-8 border">
@@ -670,6 +673,3 @@ export default function ChatbotPage() {
     </div>
   );
 }
-
-
-    
