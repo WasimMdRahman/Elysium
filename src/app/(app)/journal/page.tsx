@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FilePlus, MoreVertical, Trash, Edit, Save, Check, X, ArrowLeft, History } from "lucide-react";
+import { FilePlus, MoreVertical, Trash, Edit, Check, X, ArrowLeft, History } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -243,7 +243,7 @@ export default function JournalPage() {
                         ...e, 
                         content, 
                         // Set title from first line of content if it's a new entry
-                        title: isNewUntouchedEntry && content.trim() ? content.substring(0, 30) + (content.length > 30 ? '...' : '') : e.title,
+                        title: isNewUntouchedEntry && content.trim() ? content.substring(0, 15) + (content.length > 15 ? '...' : '') : e.title,
                         date: new Date() 
                     };
                 }
@@ -315,39 +315,4 @@ export default function JournalPage() {
                                     <SheetContent side="left" className="p-0">
                                          <SheetHeader><SheetTitle className="sr-only">Journal History</SheetTitle></SheetHeader>
                                          <JournalList {...journalListProps} />
-                                    </SheetContent>
-                                </Sheet>
-                                <Button onClick={createNewEntry} variant="outline" size="icon">
-                                    <FilePlus className="h-4 w-4" />
-                                </Button>
-                                <Button onClick={saveTasks}>
-                                    Save
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="flex-1">
-                            <Textarea
-                                className="h-full resize-none text-base border-0 focus-visible:ring-0 px-2 md:px-6"
-                                value={activeEntry.content}
-                                onChange={(e) => updateContent(e.target.value)}
-                                placeholder="Start writing your thoughts..."
-                            />
-                        </CardContent>
-                    </>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-4 relative">
-                        <Button asChild variant="ghost" size="icon" className="absolute top-4 left-4">
-                            <Link href="/dashboard"><ArrowLeft /></Link>
-                        </Button>
-                        <FilePlus className="w-12 h-12 text-muted-foreground" />
-                        <h2 className="text-xl font-semibold">Start Writing</h2>
-                        <p className="text-muted-foreground">Click the "New Entry" button to begin your journal.</p>
-                        <Button onClick={createNewEntry}>
-                            <FilePlus className="mr-2 h-4 w-4" /> New Entry
-                        </Button>
-                    </div>
-                )}
-            </Card>
-        </div>
-    );
-}
+                                    </S<ctrl63>
