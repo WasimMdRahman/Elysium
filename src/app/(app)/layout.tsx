@@ -55,7 +55,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const displayUsername = user && !user.isAnonymous && user.email ? user.email.replace(`@${APP_DOMAIN}`, '') : 'Anonymous User';
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <SplashScreen />
       <Sidebar>
         <SidebarHeader>
@@ -113,7 +113,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center gap-4 border-b bg-background/50 backdrop-blur-sm px-6">
-            <SidebarTrigger className="md:hidden" />
+            <SidebarTrigger />
             <div className="flex-1">
                 <h1 className="text-lg font-semibold font-headline">{pageTitle}</h1>
             </div>
