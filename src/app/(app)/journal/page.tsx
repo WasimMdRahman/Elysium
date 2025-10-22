@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -135,21 +135,8 @@ export default function JournalPage() {
     const isMobile = useIsMobile();
     const [sheetOpen, setSheetOpen] = useState(false);
     
-    const createNewEntry = () => {
-        const newEntry: JournalEntry = {
-            id: `entry-${new Date().getTime()}-${Math.random().toString(36).substring(7)}`,
-            title: "New Entry",
-            content: "",
-            date: new Date(),
-        };
-        setEntries(prev => [newEntry, ...prev]);
-        setActiveEntryId(newEntry.id);
-        if (isMobile) setSheetOpen(false);
-    };
-
-    // Load entries from localStorage
+    // Load entries from localStorage and set active entry
     useEffect(() => {
-        let isMounted = true;
         if (typeof window !== 'undefined') {
             try {
                 const savedEntries = localStorage.getItem('journalEntries');
@@ -158,24 +145,19 @@ export default function JournalPage() {
                         date: new Date(e.date)
                     })) : [];
                 
-                if (isMounted) {
-                    if (parsedEntries.length > 0) {
-                        const sortedEntries = parsedEntries.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                        setEntries(sortedEntries);
-                        setActiveEntryId(sortedEntries[0].id);
-                    } else {
-                        createNewEntry();
-                    }
+                if (parsedEntries.length > 0) {
+                    const sortedEntries = parsedEntries.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    setEntries(sortedEntries);
+                    setActiveEntryId(sortedEntries[0].id);
+                } else {
+                    createNewEntry();
                 }
 
             } catch (error) {
                 console.error("Failed to load journal entries from localStorage", error);
-                if (isMounted) {
-                    createNewEntry();
-                }
+                createNewEntry();
             }
         }
-        return () => { isMounted = false };
          // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     
@@ -197,6 +179,18 @@ export default function JournalPage() {
             localStorage.removeItem('journalEntries');
         }
     }, [entries]);
+
+    const createNewEntry = () => {
+        const newEntry: JournalEntry = {
+            id: `entry-${new Date().getTime()}-${Math.random().toString(36).substring(7)}`,
+            title: "New Entry",
+            content: "",
+            date: new Date(),
+        };
+        setEntries(prev => [newEntry, ...prev]);
+        setActiveEntryId(newEntry.id);
+        if (isMobile) setSheetOpen(false);
+    };
 
     const activeEntry = entries.find(e => e.id === activeEntryId);
 
@@ -313,14 +307,14 @@ export default function JournalPage() {
                                 </Button>
                             </div>
                         </CardHeader>
-                        <ScrollArea className="flex-1">
+                        <div className="flex-1 overflow-y-auto">
                             <Textarea
                                 placeholder="Start writing your thoughts here..."
-                                className="w-full h-full text-base resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-2 md:p-4"
+                                className="w-full min-h-full text-base resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-2 md:p-4"
                                 value={activeEntry.content}
                                 onChange={(e) => updateContent(e.target.value)}
                             />
-                        </ScrollArea>
+                        </div>
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center p-8">
@@ -339,3 +333,4 @@ export default function JournalPage() {
         </div>
     );
 }
+
