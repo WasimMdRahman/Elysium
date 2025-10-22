@@ -20,6 +20,7 @@ import {
   FileText,
   User as UserIcon,
   LogOut,
+  Menu,
 } from "lucide-react";
 import Link from "next/link";
 import { ClientThemeToggle } from "./client-theme-toggle";
@@ -113,7 +114,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center gap-4 border-b bg-background/50 backdrop-blur-sm px-6">
-            <SidebarTrigger />
+            <SidebarTrigger>
+              <Menu />
+            </SidebarTrigger>
             <div className="flex-1">
                 <h1 className="text-lg font-semibold font-headline">{pageTitle}</h1>
             </div>
