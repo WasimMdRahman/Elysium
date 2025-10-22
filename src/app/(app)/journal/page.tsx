@@ -169,6 +169,7 @@ export default function JournalPage() {
             console.error("Failed to load journal entries from localStorage", error);
             createNewEntry();
         }
+         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     
     // Auto-save on change
@@ -309,10 +310,51 @@ export default function JournalPage() {
                                 <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                                     <SheetTrigger asChild>
                                         <Button variant="outline" size="icon" className="md:hidden">
-                                            <History className="h-4 w-4" />
+                                            <History />
                                         </Button>
                                     </SheetTrigger>
                                     <SheetContent side="left" className="p-0">
-                                         <SheetHeader><SheetTitle className="sr-only">Journal History</SheetTitle></SheetHeader>
-                                         <JournalList {...journalListProps} />
-                                    </S<ctrl63>
+                                        <>
+                                            <SheetHeader><SheetTitle className="sr-only">Journal History</SheetTitle></SheetHeader>
+                                            <JournalList {...journalListProps} />
+                                        </>
+                                    </SheetContent>
+                                </Sheet>
+                                <Button variant="ghost" size="icon" onClick={createNewEntry} className="md:hidden">
+                                    <FilePlus />
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex-1 flex flex-col">
+                           <ScrollArea className="flex-1">
+                             <Textarea
+                                 placeholder="Start writing your thoughts here..."
+                                 className="w-full h-full text-base resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-2 md:p-4"
+                                 value={activeEntry.content}
+                                 onChange={(e) => updateContent(e.target.value)}
+                             />
+                           </ScrollArea>
+                        </CardContent>
+                        <CardFooter>
+                            <Button onClick={saveTasks}>Save</Button>
+                        </CardFooter>
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                        <div className="text-6xl mb-4">📔</div>
+                        <h2 className="text-2xl font-bold font-headline mb-2">Your Journal Awaits</h2>
+                        <p className="text-muted-foreground max-w-sm mb-6">
+                           Create your first entry to start your journey of self-reflection.
+                        </p>
+                        <Button onClick={createNewEntry}>
+                            <FilePlus className="mr-2 h-4 w-4" />
+                            Create First Entry
+                        </Button>
+                     </div>
+                )}
+            </Card>
+        </div>
+    );
+}
+
+    
