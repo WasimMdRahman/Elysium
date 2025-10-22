@@ -12,7 +12,7 @@ const features = [
     href: "/chatbot",
     title: "AI Chatbot",
     description: "24/7 mental health support",
-    imageUrl: "/Feature Images/AI Chatbot.png",
+    imageUrl: "/Feature Images/Chatbot.jpg",
     imageHint: "robot face"
   },
   {
