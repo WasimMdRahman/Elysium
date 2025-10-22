@@ -604,7 +604,7 @@ export default function ChatbotPage() {
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
                         }`}>
-                        <p className="text-sm break-words">{message.text}</p>
+                        <p className="text-sm break-word">{message.text}</p>
                         </div>
                         {message.role === 'user' && (
                         <Avatar className="h-8 w-8 border">
@@ -669,5 +669,6 @@ export default function ChatbotPage() {
     </div>
   );
 }
+
 
     
