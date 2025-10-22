@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, ArrowLeft, History, Mic, MicOff, WifiOff } from 'lucide-react';
+import { Send, User, MoreVertical, Trash, Edit, MessageSquare, Check, X, ArrowLeft, History, Mic, MicOff, WifiOff } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import { format, isToday, isYesterday, subDays, isAfter } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -525,155 +525,150 @@ export default function ChatbotPage() {
             <ChatList {...chatListProps} />
         </div>
 
-        <Card className="md:col-span-2 lg:col-span-3 flex flex-col border-0 md:border">
-            <>
-                <CardHeader className="flex flex-row items-center justify-between border-b p-2 md:p-6">
-                    <div className="flex items-center gap-2">
-                       <Button asChild variant="ghost" size="icon">
-                         <Link href="/dashboard"><ArrowLeft /></Link>
-                       </Button>
-                       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                            <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon" className="md:hidden">
-                                    <History className="h-5 w-5" />
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="left" className="p-0">
-                                 <SheetHeader>
-                                    <SheetTitle className="sr-only">Chat History</SheetTitle>
-                                 </SheetHeader>
-                                 <ChatList {...chatListProps} />
-                            </SheetContent>
-                        </Sheet>
+        <div className="md:col-span-2 lg:col-span-3 flex flex-col h-full">
+            <header className="flex items-center justify-between p-2 md:p-0 md:pt-2">
+                 <div className="flex items-center gap-2">
+                    <Button asChild variant="ghost" size="icon">
+                        <Link href="/dashboard"><ArrowLeft /></Link>
+                    </Button>
+                    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon" className="md:hidden">
+                                <History className="h-5 w-5" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="p-0">
+                                <SheetHeader>
+                                <SheetTitle className="sr-only">Chat History</SheetTitle>
+                                </SheetHeader>
+                                <ChatList {...chatListProps} />
+                        </SheetContent>
+                    </Sheet>
+                    <div className="flex flex-col items-start text-left md:hidden">
+                        <p className="font-semibold truncate text-base">{getHeaderTitle()}</p>
                     </div>
+                </div>
+                 <div className="hidden md:flex flex-col items-center text-center">
+                    <p className="font-semibold text-lg">{getHeaderTitle()}</p>
+                    <p className="text-xs text-muted-foreground">Your 24/7 mental health support</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={createNewChat} className="hidden md:flex">
+                        <MessageSquare className="mr-2 h-4 w-4" /> New Chat
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={createNewChat} className="md:hidden">
+                        <MessageSquare className="h-5 w-5" />
+                    </Button>
 
-                    <div className="flex flex-col items-center text-center">
-                        <p className="font-semibold truncate text-base md:hidden">{getHeaderTitle()}</p>
-                        <p className="text-xs text-muted-foreground md:hidden">24/7 mental health support</p>
-                    </div>
-                    
-                    <div className="hidden md:block">
-                        <CardTitle className="font-headline">{getHeaderTitle()}</CardTitle>
-                        <CardDescription>Your 24/7 mental health support</CardDescription>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={createNewChat} className="hidden md:flex">
-                            <MessageSquare className="mr-2 h-4 w-4" /> New Chat
-                        </Button>
-                         <Button variant="ghost" size="icon" onClick={createNewChat} className="md:hidden">
-                            <MessageSquare className="h-5 w-5" />
-                        </Button>
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <MoreVertical className="h-5 w-5" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuPortal>
-                                <DropdownMenuContent align="end">
-                                     <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger>
-                                            <span>Tone: {tone.charAt(0).toUpperCase() + tone.slice(1)}</span>
-                                        </DropdownMenuSubTrigger>
-                                        <DropdownMenuPortal>
-                                            <DropdownMenuSubContent>
-                                                <DropdownMenuItem onSelect={() => setTone('professional')}>Professional</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => setTone('friendly')}>Friendly</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => setTone('empathetic')}>Empathetic</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => setTone('humorous')}>Humorous</DropdownMenuItem>
-                                            </DropdownMenuSubContent>
-                                        </DropdownMenuPortal>
-                                    </DropdownMenuSub>
-                                </DropdownMenuContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenu>
-                    </div>
-                </CardHeader>
-                <CardContent className="flex-1 overflow-hidden p-0">
-                    <ScrollArea className="h-full" ref={scrollAreaRef}>
-                    <div className="p-6 space-y-6">
-                        {activeMessages.map((message, index) => (
-                        <div
-                            key={index}
-                            className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
-                        >
-                            {message.role === 'bot' && (
-                            <Avatar className="h-8 w-8 border">
-                                <AvatarFallback><span>🤖</span></AvatarFallback>
-                            </Avatar>
-                            )}
-                            <div className={`max-w-[75%] rounded-lg p-3 ${
-                            message.role === 'user'
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
-                            }`}>
-                            <p className="text-sm">{message.text}</p>
-                            </div>
-                            {message.role === 'user' && (
-                            <Avatar className="h-8 w-8 border">
-                                <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                            </Avatar>
-                            )}
-                        </div>
-                        ))}
-                        {isLoading && (
-                        <div className="flex items-start gap-4">
-                            <Avatar className="h-8 w-8 border">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-5 w-5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuPortal>
+                            <DropdownMenuContent align="end">
+                                    <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                        <span>Tone: {tone.charAt(0).toUpperCase() + tone.slice(1)}</span>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuItem onSelect={() => setTone('professional')}>Professional</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => setTone('friendly')}>Friendly</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => setTone('empathetic')}>Empathetic</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => setTone('humorous')}>Humorous</DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                            </DropdownMenuContent>
+                        </DropdownMenuPortal>
+                    </DropdownMenu>
+                </div>
+            </header>
+            
+            <main className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full" ref={scrollAreaRef}>
+                <div className="p-6 space-y-6 max-w-3xl mx-auto">
+                    {activeMessages.map((message, index) => (
+                    <div
+                        key={index}
+                        className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
+                    >
+                        {message.role === 'bot' && (
+                        <Avatar className="h-8 w-8 border">
                             <AvatarFallback><span>🤖</span></AvatarFallback>
-                            </Avatar>
-                            <div className="max-w-[75%] rounded-lg bg-muted p-3">
-                            {loadingMessage ? (
-                                <p className="text-sm text-muted-foreground italic">{loadingMessage}</p>
-                            ) : (
-                                <div className="flex items-center space-x-2">
-                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
-                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
-                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
-                                </div>
-                            )}
-                            </div>
+                        </Avatar>
+                        )}
+                        <div className={`max-w-[75%] rounded-lg p-3 ${
+                        message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        }`}>
+                        <p className="text-sm">{message.text}</p>
                         </div>
+                        {message.role === 'user' && (
+                        <Avatar className="h-8 w-8 border">
+                            <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                        </Avatar>
                         )}
                     </div>
-                    </ScrollArea>
-                </CardContent>
-                <CardFooter className="border-t p-2 md:p-4">
-                  <div className="w-full flex flex-col items-center gap-2">
-                    {isOffline ? (
-                        <div className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed bg-muted p-3 text-muted-foreground">
-                            <WifiOff className="h-5 w-5" />
-                            <p className="text-sm">You are offline. Please check your internet connection.</p>
+                    ))}
+                    {isLoading && (
+                    <div className="flex items-start gap-4">
+                        <Avatar className="h-8 w-8 border">
+                        <AvatarFallback><span>🤖</span></AvatarFallback>
+                        </Avatar>
+                        <div className="max-w-[75%] rounded-lg bg-muted p-3">
+                        {loadingMessage ? (
+                            <p className="text-sm text-muted-foreground italic">{loadingMessage}</p>
+                        ) : (
+                            <div className="flex items-center space-x-2">
+                                <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
+                                <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
+                                <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
+                            </div>
+                        )}
                         </div>
-                    ) : (
-                        <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
-                            <Input
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Type or record your message..."
-                                className="flex-1"
-                                disabled={isLoading || isRecording}
-                            />
-                            <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn("rounded-full", isRecording && "bg-destructive hover:bg-destructive/90")}>
-                                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                            </Button>
-                            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording || isOffline} className="rounded-full">
-                                <Send className="h-4 w-4" />
-                            </Button>
-                        </form>
+                    </div>
                     )}
-                    <p className="text-xs text-muted-foreground text-center w-full pt-2">
-                        Elysium isn’t a therapy replacement, consult professionals for serious issues
-                    </p>
-                  </div>
-                </CardFooter>
-            </>
-        </Card>
+                </div>
+                </ScrollArea>
+            </main>
+
+            <footer className="p-2 md:p-4">
+                <div className="w-full max-w-3xl mx-auto flex flex-col items-center gap-2">
+                {isOffline ? (
+                    <div className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed bg-muted p-3 text-muted-foreground">
+                        <WifiOff className="h-5 w-5" />
+                        <p className="text-sm">You are offline. Please check your internet connection.</p>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
+                        <Input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Type or record your message..."
+                            className="flex-1"
+                            disabled={isLoading || isRecording}
+                        />
+                        <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn("rounded-full", isRecording && "bg-destructive hover:bg-destructive/90")}>
+                            {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                        </Button>
+                        <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording || isOffline} className="rounded-full">
+                            <Send className="h-4 w-4" />
+                        </Button>
+                    </form>
+                )}
+                <p className="text-xs text-muted-foreground text-center w-full pt-2">
+                    Elysium isn’t a therapy replacement, consult professionals for serious issues
+                </p>
+                </div>
+            </footer>
+        </div>
         <audio ref={audioPlayerRef} className="hidden" />
     </div>
   );
 }
-
 
     
