@@ -22,7 +22,7 @@ export function DashboardCard({ href, emoji, title, description, isLoading, onCl
   
   return (
     <Link href={href} className="group" onClick={handleClick}>
-      <Card className="h-full transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-primary/10">
+      <Card className="h-full transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-primary/10 min-h-[120px]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-6">
           <div className="flex items-center gap-4">
             <div className="text-4xl">
