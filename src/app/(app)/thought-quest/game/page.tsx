@@ -132,8 +132,10 @@ export default function ThoughtQuestGamePage() {
 
   // Fetch the first thought when the component mounts
   useEffect(() => {
+    // We only want to run this once on initial mount
     fetchNewThought(previousThoughts);
-  }, [fetchNewThought, previousThoughts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAnswer = (userChoice: boolean) => {
     if (answered) return;
