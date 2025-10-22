@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { ChatbotLoadingScreen } from '../chatbot/loading-screen';
 import { MoodTrackerLoadingScreen } from '../mood-tracker/loading-screen';
 import { JournalLoadingScreen } from '../journal/loading-screen';
+import { VoiceJournalLoadingScreen } from '../voice-journal/loading-screen';
 
 
 const features = [
@@ -112,6 +113,10 @@ export default function DashboardPage() {
 
   if (loadingCard === '/journal') {
     return <JournalLoadingScreen />;
+  }
+
+  if (loadingCard === '/voice-journal') {
+    return <VoiceJournalLoadingScreen />;
   }
 
   return (
