@@ -3,14 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import { DashboardCard } from "@/components/dashboard-card";
-import {
-  Bot,
-  HeartPulse,
-  BookText,
-  BrainCircuit,
-  Waves,
-  AudioWaveform,
-} from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
@@ -20,37 +12,43 @@ const features = [
     href: "/chatbot",
     title: "AI Chatbot",
     description: "24/7 mental health support",
-    icon: Bot,
+    imageUrl: "https://picsum.photos/seed/chatbot/200/200",
+    imageHint: "robot face"
   },
   {
     href: "/mood-tracker",
     title: "Mood Tracker",
     description: "Log and visualize your daily mood",
-    icon: HeartPulse,
+    imageUrl: "https://picsum.photos/seed/mood/200/200",
+    imageHint: "heartbeat chart"
   },
   {
     href: "/journal",
     title: "Journal",
     description: "Reflect with an intelligent journal",
-    icon: BookText,
+    imageUrl: "https://picsum.photos/seed/journal/200/200",
+    imageHint: "notebook pen"
   },
   {
     href: "/voice-journal",
     title: "Voice Biomarker",
     description: "Analyze your voice for emotional insights",
-    icon: AudioWaveform,
+    imageUrl: "https://picsum.photos/seed/voice/200/200",
+    imageHint: "sound wave"
   },
   {
     href: "/thought-quest",
     title: "Thought Quest",
     description: "A CBT game to challenge thoughts",
-    icon: BrainCircuit,
+    imageUrl: "https://picsum.photos/seed/quest/200/200",
+    imageHint: "brain circuit"
   },
   {
     href: "/exercises",
     title: "Mental Health Exercises",
     description: "Guided practices for wellness",
-    icon: Waves,
+    imageUrl: "https://picsum.photos/seed/exercises/200/200",
+    imageHint: "calm water"
   },
 ];
 
@@ -126,7 +124,8 @@ export default function DashboardPage() {
           <motion.div key={feature.href} variants={itemVariants}>
             <DashboardCard
               href={feature.href}
-              icon={feature.icon}
+              imageUrl={feature.imageUrl}
+              imageHint={feature.imageHint}
               title={feature.title}
               description={feature.description}
               isLoading={loadingCard === feature.href}

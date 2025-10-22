@@ -2,20 +2,21 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ArrowRight, Loader } from 'lucide-react';
-import type { LucideProps } from 'lucide-react';
 
 interface DashboardCardProps {
   href: string;
-  icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
+  imageUrl: string;
+  imageHint: string;
   title: string;
   description: string;
   isLoading?: boolean;
   onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-export function DashboardCard({ href, icon: Icon, title, description, isLoading, onClick }: DashboardCardProps) {
+export function DashboardCard({ href, imageUrl, imageHint, title, description, isLoading, onClick }: DashboardCardProps) {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     onClick(e);
@@ -26,8 +27,15 @@ export function DashboardCard({ href, icon: Icon, title, description, isLoading,
       <Card className="h-full transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-primary/10">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <div>
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Icon className="h-6 w-6" />
+            <div className="relative mb-2 h-10 w-10 overflow-hidden rounded-lg">
+                <Image 
+                    src={imageUrl} 
+                    alt={`${title} icon`} 
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                    data-ai-hint={imageHint}
+                />
             </div>
             <CardTitle className="font-headline">{title}</CardTitle>
             <CardDescription>{description}</CardDescription>
