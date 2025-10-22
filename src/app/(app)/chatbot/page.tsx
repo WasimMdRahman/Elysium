@@ -113,7 +113,7 @@ const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, s
     );
     
     return (
-        <div className="flex flex-col h-full rounded-lg border">
+        <div className="flex flex-col h-full rounded-lg">
             <div className="flex flex-row items-center justify-between p-2 border-b">
                 <div>
                     <h2 className="font-bold font-headline text-lg">Chat History</h2>
@@ -214,11 +214,12 @@ export default function ChatbotPage() {
   
   // When active session changes, update current messages
   useEffect(() => {
+    if (!isMounted) return;
     const session = sessions.find(s => s.id === activeSessionId);
     if(session){
         setCurrentMessages(session.messages);
     }
-  }, [activeSessionId, sessions]);
+  }, [activeSessionId, sessions, isMounted]);
 
 
   // Save sessions to localStorage whenever they change
@@ -603,12 +604,12 @@ export default function ChatbotPage() {
                             <AvatarFallback>🤖</AvatarFallback>
                         </Avatar>
                         )}
-                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm whitespace-pre-wrap break-word ${
+                        <div className={`max-w-[75%] rounded-2xl p-3 text-sm break-word ${
                         message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
                         }`}>
-                            <p>{message.text}</p>
+                            <p className="whitespace-pre-wrap">{message.text}</p>
                         </div>
                         {message.role === 'user' && (
                         <Avatar className="h-8 w-8 border">
@@ -673,3 +674,5 @@ export default function ChatbotPage() {
     </div>
   );
 }
+
+    
