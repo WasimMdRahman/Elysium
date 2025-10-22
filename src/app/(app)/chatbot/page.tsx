@@ -47,7 +47,7 @@ const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, s
     activeSessionId: string | null;
     renamingId: string | null;
     renamingTitle: string;
-    setActiveSessionId: (id: string) => void;
+    setActiveSessionId: (id: string | null) => void;
     startRenameSession: (session: ChatSession) => void;
     confirmRenameSession: (id: string) => void;
     setRenamingTitle: (title: string) => void;
@@ -149,6 +149,7 @@ const ChatList = ({ sessions, activeSessionId, setActiveSessionId, renamingId, s
 export default function ChatbotPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [currentMessages, setCurrentMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
@@ -169,20 +170,13 @@ export default function ChatbotPage() {
 
 
   const activeSession = sessions.find(s => s.id === activeSessionId);
-  const activeMessages = activeSession?.messages || [];
+  const activeMessages = activeSession ? activeSession.messages : currentMessages;
   
   const createNewChat = () => {
-      const newSession: ChatSession = {
-          id: `chat-${new Date().getTime()}-${Math.random().toString(36).substring(7)}`,
-          title: "New Chat",
-          timestamp: new Date(),
-          messages: [
-            { role: 'bot', text: 'Hello! I am your Elysium assistant. How can I support you today?' }
-          ],
-          summary: '',
-      };
-      setSessions(prev => [newSession, ...prev]);
-      setActiveSessionId(newSession.id);
+      setActiveSessionId(null);
+      setCurrentMessages([
+        { role: 'bot', text: 'Hello! I am your Elysium assistant. How can I support you today?' }
+      ]);
       if (isMobile) setSheetOpen(false);
   }
 
@@ -200,6 +194,9 @@ export default function ChatbotPage() {
           const sortedSessions = [...parsedSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           setSessions(sortedSessions);
           setActiveSessionId(sortedSessions[0].id);
+        } else {
+          // If no saved sessions, start a new temp chat
+          createNewChat();
         }
 
         const savedProfile = localStorage.getItem('userProfileSummary');
@@ -209,18 +206,27 @@ export default function ChatbotPage() {
 
     } catch (error) {
         console.error("Failed to load data from localStorage", error);
+        createNewChat();
     }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
+  // When active session changes, update current messages
+  useEffect(() => {
+    const session = sessions.find(s => s.id === activeSessionId);
+    if(session){
+        setCurrentMessages(session.messages);
+    }
+  }, [activeSessionId, sessions]);
+
 
   // Save sessions to localStorage whenever they change
   useEffect(() => {
     try {
         if (sessions.length > 0) {
-            // Filter out empty new chats before saving
             const sessionsToSave = sessions.filter(s => s.messages.length > 1 || s.title !== "New Chat");
             if (sessionsToSave.length > 0) {
                 localStorage.setItem('chatSessions', JSON.stringify(sessionsToSave));
-                // Trigger user profile update when sessions change significantly
                 handleUserProfileUpdate(sessionsToSave); 
             } else {
                  localStorage.removeItem('chatSessions');
@@ -231,6 +237,7 @@ export default function ChatbotPage() {
     } catch (error) {
         console.error("Failed to save chat sessions to localStorage", error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions]);
 
 
@@ -251,7 +258,6 @@ export default function ChatbotPage() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Set initial status
     if (typeof navigator.onLine === 'boolean') {
       setIsOffline(!navigator.onLine);
     }
@@ -273,7 +279,6 @@ export default function ChatbotPage() {
     const session = sessions.find(s => s.id === sessionId);
     if (!session || session.messages.length < 2) return;
 
-    // Check if it's time to summarize (e.g., every 10 messages)
     if (session.messages.length > 1 && session.messages.length % SUMMARIZATION_THRESHOLD === 0) {
       console.log("Threshold met. Summarizing chat...");
       
@@ -315,46 +320,39 @@ export default function ChatbotPage() {
   const processAndSendMessage = async (messageText: string, playResponse: boolean = false) => {
     if (!messageText.trim() || isLoading || isOffline) return;
 
-    // Create a new chat if there's no active one
-    let currentActiveSessionId = activeSessionId;
-    if (!currentActiveSessionId) {
-        const newSession: ChatSession = {
-          id: `chat-${new Date().getTime()}-${Math.random().toString(36).substring(7)}`,
-          title: "New Chat",
-          timestamp: new Date(),
-          messages: [
-            { role: 'bot', text: 'Hello! I am your Elysium assistant. How can I support you today?' }
-          ],
-          summary: '',
-        };
-        setSessions(prev => [newSession, ...prev]);
-        setActiveSessionId(newSession.id);
-        currentActiveSessionId = newSession.id;
-    }
-
-
     const userMessage: Message = { role: 'user', text: messageText };
-    
-    // Optimistically update UI
-    setSessions(prev => prev.map(s => {
-        if (s.id === currentActiveSessionId) {
-            const isNewChat = s.title === "New Chat" && s.messages.length === 1;
-            return { 
-                ...s, 
-                title: isNewChat ? messageText.substring(0, 30) + (messageText.length > 30 ? '...' : '') : s.title,
-                messages: [...s.messages, userMessage], 
-                timestamp: new Date() 
-            };
-        }
-        return s;
-    }));
-
+    const newMessages = [...currentMessages, userMessage];
+    setCurrentMessages(newMessages);
     setInput('');
     setIsLoading(true);
     setLoadingMessage(null);
 
+    let currentSessionId = activeSessionId;
+    let sessionForResponse = activeSession;
+    
+    // If it's a new chat, create and save it now
+    if (!activeSessionId) {
+        const newSession: ChatSession = {
+          id: `chat-${new Date().getTime()}-${Math.random().toString(36).substring(7)}`,
+          title: messageText.substring(0, 30) + (messageText.length > 30 ? '...' : ''),
+          timestamp: new Date(),
+          messages: newMessages,
+          summary: '',
+        };
+        setSessions(prev => [newSession, ...prev]);
+        setActiveSessionId(newSession.id);
+        currentSessionId = newSession.id;
+        sessionForResponse = newSession;
+    } else {
+        setSessions(prev => prev.map(s => 
+            s.id === activeSessionId 
+                ? { ...s, messages: newMessages, timestamp: new Date() } 
+                : s
+        ));
+    }
+
+
     try {
-      const sessionForResponse = sessions.find(s => s.id === currentActiveSessionId);
       const historyMessages = (sessionForResponse?.messages || []).slice(-10);
 
       const chatHistory: ChatHistoryItem[] = historyMessages
@@ -370,12 +368,12 @@ export default function ChatbotPage() {
         tone: tone,
         chatHistory: chatHistory,
         summary: sessionForResponse?.summary,
-        userProfile: userProfile // Pass the global user profile
+        userProfile: userProfile
       });
 
       const botMessage: Message = { role: 'bot', text: response.response };
       
-      setSessions(prev => prev.map(s => s.id === currentActiveSessionId ? { ...s, messages: [...s.messages, botMessage] } : s));
+      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, botMessage] } : s));
       
       if (playResponse) {
         setLoadingMessage('Generating audio...');
@@ -389,13 +387,18 @@ export default function ChatbotPage() {
         }
       }
       
-      // Trigger summarization check after state has been updated
-      handleSummarization(currentActiveSessionId);
+      if (currentSessionId) {
+        handleSummarization(currentSessionId);
+      }
 
     } catch (error) {
       console.error('Error fetching AI response:', error);
       const errorMessage: Message = { role: 'bot', text: 'Sorry, I am having trouble connecting right now.' };
-      setSessions(prev => prev.map(s => s.id === currentActiveSessionId ? { ...s, messages: [...s.messages, errorMessage] } : s));
+      if(currentSessionId){
+         setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...newMessages, errorMessage] } : s));
+      } else {
+         setCurrentMessages(prev => [...prev, errorMessage]);
+      }
     } finally {
       setIsLoading(false);
       setLoadingMessage(null);
@@ -416,7 +419,7 @@ export default function ChatbotPage() {
                     const sortedRemaining = [...remainingSessions].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
                     setActiveSessionId(sortedRemaining[0].id);
                 } else {
-                    setActiveSessionId(null); // No sessions left
+                    createNewChat();
                 }
             }
             
@@ -445,7 +448,7 @@ export default function ChatbotPage() {
         setRenamingTitle('');
     }
 
-    const handleSetActiveSession = (id: string) => {
+    const handleSetActiveSession = (id: string | null) => {
         setActiveSessionId(id);
         if (isMobile) setSheetOpen(false);
     }
@@ -485,7 +488,6 @@ export default function ChatbotPage() {
                              setLoadingMessage(null);
                         }
                     };
-                     // Stop all media tracks to turn off the recording indicator
                     stream.getTracks().forEach(track => track.stop());
                 };
 
@@ -493,11 +495,14 @@ export default function ChatbotPage() {
                 setIsRecording(true);
             } catch (error) {
                 console.error("Error accessing microphone:", error);
-                // You might want to show a toast here to the user
             }
         }
     };
 
+    const getHeaderTitle = () => {
+        if (activeSession) return activeSession.title;
+        return "New Chat";
+    }
 
     const chatListProps = {
         sessions,
@@ -516,174 +521,159 @@ export default function ChatbotPage() {
   return (
     <div className="grid h-[calc(100vh-5rem)] md:h-[calc(100vh-8rem)] grid-cols-1 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
         
-        {/* Desktop Sidebar */}
         <div className="hidden md:flex md:col-span-1 lg:col-span-1">
             <ChatList {...chatListProps} />
         </div>
 
         <Card className="md:col-span-2 lg:col-span-3 flex flex-col border-0 md:border">
-            {activeSession ? (
-                <>
-                    <CardHeader className="flex flex-row items-center justify-between border-b p-2 md:p-6">
-                        <div className="flex items-center gap-2">
-                           <Button asChild variant="ghost" size="icon">
-                             <Link href="/dashboard"><ArrowLeft /></Link>
-                           </Button>
-                           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                                <SheetTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="md:hidden">
-                                        <History className="h-5 w-5" />
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent side="left" className="p-0">
-                                     <SheetHeader>
-                                        <SheetTitle className="sr-only">Chat History</SheetTitle>
-                                     </SheetHeader>
-                                     <ChatList {...chatListProps} />
-                                </SheetContent>
-                            </Sheet>
-                        </div>
+            <>
+                <CardHeader className="flex flex-row items-center justify-between border-b p-2 md:p-6">
+                    <div className="flex items-center gap-2">
+                       <Button asChild variant="ghost" size="icon">
+                         <Link href="/dashboard"><ArrowLeft /></Link>
+                       </Button>
+                       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="md:hidden">
+                                    <History className="h-5 w-5" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="p-0">
+                                 <SheetHeader>
+                                    <SheetTitle className="sr-only">Chat History</SheetTitle>
+                                 </SheetHeader>
+                                 <ChatList {...chatListProps} />
+                            </SheetContent>
+                        </Sheet>
+                    </div>
 
-                        <div className="flex flex-col items-center text-center">
-                            <p className="font-semibold truncate text-base md:hidden">{activeSession.title}</p>
-                            <p className="text-xs text-muted-foreground md:hidden">24/7 mental health support</p>
-                        </div>
-                        
-                        <div className="hidden md:block">
-                            <CardTitle className="font-headline">{activeSession.title}</CardTitle>
-                            <CardDescription>Your 24/7 mental health support</CardDescription>
-                        </div>
-                        
+                    <div className="flex flex-col items-center text-center">
+                        <p className="font-semibold truncate text-base md:hidden">{getHeaderTitle()}</p>
+                        <p className="text-xs text-muted-foreground md:hidden">24/7 mental health support</p>
+                    </div>
+                    
+                    <div className="hidden md:block">
+                        <CardTitle className="font-headline">{getHeaderTitle()}</CardTitle>
+                        <CardDescription>Your 24/7 mental health support</CardDescription>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={createNewChat} className="hidden md:flex">
+                            <MessageSquare className="mr-2 h-4 w-4" /> New Chat
+                        </Button>
+                         <Button variant="ghost" size="icon" onClick={createNewChat} className="md:hidden">
+                            <MessageSquare className="h-5 w-5" />
+                        </Button>
 
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" onClick={createNewChat} className="hidden md:flex">
-                                <MessageSquare className="mr-2 h-4 w-4" /> New Chat
-                            </Button>
-                             <Button variant="ghost" size="icon" onClick={createNewChat} className="md:hidden">
-                                <MessageSquare className="h-5 w-5" />
-                            </Button>
-
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreVertical className="h-5 w-5" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuPortal>
-                                    <DropdownMenuContent align="end">
-                                         <DropdownMenuSub>
-                                            <DropdownMenuSubTrigger>
-                                                <span>Tone: {tone.charAt(0).toUpperCase() + tone.slice(1)}</span>
-                                            </DropdownMenuSubTrigger>
-                                            <DropdownMenuPortal>
-                                                <DropdownMenuSubContent>
-                                                    <DropdownMenuItem onSelect={() => setTone('professional')}>Professional</DropdownMenuItem>
-                                                    <DropdownMenuItem onSelect={() => setTone('friendly')}>Friendly</DropdownMenuItem>
-                                                    <DropdownMenuItem onSelect={() => setTone('empathetic')}>Empathetic</DropdownMenuItem>
-                                                    <DropdownMenuItem onSelect={() => setTone('humorous')}>Humorous</DropdownMenuItem>
-                                                </DropdownMenuSubContent>
-                                            </DropdownMenuPortal>
-                                        </DropdownMenuSub>
-                                    </DropdownMenuContent>
-                                </DropdownMenuPortal>
-                            </DropdownMenu>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="flex-1 overflow-hidden p-0">
-                        <ScrollArea className="h-full" ref={scrollAreaRef}>
-                        <div className="p-6 space-y-6">
-                            {activeMessages.map((message, index) => (
-                            <div
-                                key={index}
-                                className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
-                            >
-                                {message.role === 'bot' && (
-                                <Avatar className="h-8 w-8 border">
-                                    <AvatarFallback><span>🤖</span></AvatarFallback>
-                                </Avatar>
-                                )}
-                                <div className={`max-w-[75%] rounded-lg p-3 ${
-                                message.role === 'user'
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted'
-                                }`}>
-                                <p className="text-sm">{message.text}</p>
-                                </div>
-                                {message.role === 'user' && (
-                                <Avatar className="h-8 w-8 border">
-                                    <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                                </Avatar>
-                                )}
-                            </div>
-                            ))}
-                            {isLoading && (
-                            <div className="flex items-start gap-4">
-                                <Avatar className="h-8 w-8 border">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <MoreVertical className="h-5 w-5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuPortal>
+                                <DropdownMenuContent align="end">
+                                     <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            <span>Tone: {tone.charAt(0).toUpperCase() + tone.slice(1)}</span>
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal>
+                                            <DropdownMenuSubContent>
+                                                <DropdownMenuItem onSelect={() => setTone('professional')}>Professional</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => setTone('friendly')}>Friendly</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => setTone('empathetic')}>Empathetic</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => setTone('humorous')}>Humorous</DropdownMenuItem>
+                                            </DropdownMenuSubContent>
+                                        </DropdownMenuPortal>
+                                    </DropdownMenuSub>
+                                </DropdownMenuContent>
+                            </DropdownMenuPortal>
+                        </DropdownMenu>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-hidden p-0">
+                    <ScrollArea className="h-full" ref={scrollAreaRef}>
+                    <div className="p-6 space-y-6">
+                        {activeMessages.map((message, index) => (
+                        <div
+                            key={index}
+                            className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
+                        >
+                            {message.role === 'bot' && (
+                            <Avatar className="h-8 w-8 border">
                                 <AvatarFallback><span>🤖</span></AvatarFallback>
-                                </Avatar>
-                                <div className="max-w-[75%] rounded-lg bg-muted p-3">
-                                {loadingMessage ? (
-                                    <p className="text-sm text-muted-foreground italic">{loadingMessage}</p>
-                                ) : (
-                                    <div className="flex items-center space-x-2">
-                                        <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
-                                        <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
-                                        <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
-                                    </div>
-                                )}
-                                </div>
+                            </Avatar>
+                            )}
+                            <div className={`max-w-[75%] rounded-lg p-3 ${
+                            message.role === 'user'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted'
+                            }`}>
+                            <p className="text-sm">{message.text}</p>
                             </div>
+                            {message.role === 'user' && (
+                            <Avatar className="h-8 w-8 border">
+                                <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                            </Avatar>
                             )}
                         </div>
-                        </ScrollArea>
-                    </CardContent>
-                    <CardFooter className="border-t p-2 md:p-4">
-                      <div className="w-full flex flex-col items-center gap-2">
-                        {isOffline ? (
-                            <div className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed bg-muted p-3 text-muted-foreground">
-                                <WifiOff className="h-5 w-5" />
-                                <p className="text-sm">You are offline. Please check your internet connection.</p>
+                        ))}
+                        {isLoading && (
+                        <div className="flex items-start gap-4">
+                            <Avatar className="h-8 w-8 border">
+                            <AvatarFallback><span>🤖</span></AvatarFallback>
+                            </Avatar>
+                            <div className="max-w-[75%] rounded-lg bg-muted p-3">
+                            {loadingMessage ? (
+                                <p className="text-sm text-muted-foreground italic">{loadingMessage}</p>
+                            ) : (
+                                <div className="flex items-center space-x-2">
+                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.3s]"></span>
+                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50 [animation-delay:-0.15s]"></span>
+                                    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground/50"></span>
+                                </div>
+                            )}
                             </div>
-                        ) : (
-                            <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
-                                <Input
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Type or record your message..."
-                                    className="flex-1"
-                                    disabled={isLoading || isRecording}
-                                />
-                                <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn("rounded-full", isRecording && "bg-destructive hover:bg-destructive/90")}>
-                                    {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                                </Button>
-                                <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording || isOffline} className="rounded-full">
-                                    <Send className="h-4 w-4" />
-                                </Button>
-                            </form>
+                        </div>
                         )}
-                        <p className="text-xs text-muted-foreground text-center w-full pt-2">
-                            Elysium isn’t a therapy replacement, consult professionals for serious issues
-                        </p>
-                      </div>
-                    </CardFooter>
-                </>
-            ) : (
-                <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-4">
-                    <Button asChild variant="ghost" size="icon" className="absolute top-4 left-4">
-                       <Link href="/dashboard"><ArrowLeft /></Link>
-                    </Button>
-                    <MessageSquare className="w-12 h-12 text-muted-foreground" />
-                    <h2 className="text-xl font-semibold">Start a conversation</h2>
-                    <p className="text-muted-foreground">Click the "New Chat" button to begin your conversation with Elysium.</p>
-                    <Button onClick={createNewChat}>
-                        <MessageSquare className="mr-2 h-4 w-4" /> New Chat
-                    </Button>
-                </div>
-            )}
+                    </div>
+                    </ScrollArea>
+                </CardContent>
+                <CardFooter className="border-t p-2 md:p-4">
+                  <div className="w-full flex flex-col items-center gap-2">
+                    {isOffline ? (
+                        <div className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed bg-muted p-3 text-muted-foreground">
+                            <WifiOff className="h-5 w-5" />
+                            <p className="text-sm">You are offline. Please check your internet connection.</p>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
+                            <Input
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="Type or record your message..."
+                                className="flex-1"
+                                disabled={isLoading || isRecording}
+                            />
+                            <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn("rounded-full", isRecording && "bg-destructive hover:bg-destructive/90")}>
+                                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                            </Button>
+                            <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording || isOffline} className="rounded-full">
+                                <Send className="h-4 w-4" />
+                            </Button>
+                        </form>
+                    )}
+                    <p className="text-xs text-muted-foreground text-center w-full pt-2">
+                        Elysium isn’t a therapy replacement, consult professionals for serious issues
+                    </p>
+                  </div>
+                </CardFooter>
+            </>
         </Card>
         <audio ref={audioPlayerRef} className="hidden" />
     </div>
   );
 }
+
 
     
