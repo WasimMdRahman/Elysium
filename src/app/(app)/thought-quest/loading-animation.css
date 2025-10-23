@@ -75,13 +75,13 @@
 .dot:nth-child(5) {
   top: 25%;
   left: 7%;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
 }
 
 .dot:nth-child(6) {
-  top: 75%;
-  left: 7%;
-  transform: translateY(-50%);
+  bottom: 25%;
+  right: 7%;
+  transform: translate(50%, 50%);
 }
 
 
