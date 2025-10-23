@@ -1,62 +1,58 @@
 
 .loading-screen-chatbot {
-  margin: 0;
+  background-color: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: 100vh;
   position: fixed;
   inset: 0;
-  background-color: #0d1117;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   color: white;
-  font-family: 'Poppins', sans-serif;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
   z-index: 9999;
 }
 
-.loading-emoji-chatbot {
-  font-size: 60px;
-  opacity: 0;
-  text-shadow: 0 0 10px rgba(0, 255, 255, 0);
-  animation: fadeGlowChatbot 2s ease-in-out forwards;
+.chatbot-emoji {
+  font-size: 65px;
+  display: inline-block;
+  animation: jumpSpin-chatbot 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px #00ffff) drop-shadow(0 0 20px #00ffff);
 }
 
-@keyframes fadeGlowChatbot {
+@keyframes jumpSpin-chatbot {
   0% {
-    opacity: 0;
-    text-shadow: 0 0 0px rgba(0, 255, 255, 0);
-    transform: scale(0.9);
+    transform: translateY(0) rotate(0deg);
+    filter: drop-shadow(0 0 5px #00ffff);
+  }
+  25% {
+    transform: translateY(-40px) rotate(180deg);
+    filter: drop-shadow(0 0 25px #00ffff);
   }
   50% {
-    opacity: 1;
-    text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
-    transform: scale(1.05);
+    transform: translateY(0) rotate(360deg);
+    filter: drop-shadow(0 0 10px #00ffff);
+  }
+  75% {
+    transform: translateY(-15px) rotate(540deg);
   }
   100% {
-    opacity: 0.9;
-    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-    transform: scale(1);
+    transform: translateY(0) rotate(720deg);
+    filter: drop-shadow(0 0 20px #00ffff);
   }
 }
 
 .loading-text-chatbot {
   margin-top: 15px;
-  font-size: 16px;
+  font-size: 18px;
+  color: #00ffff;
   letter-spacing: 1px;
-  opacity: 0;
-  animation: textFadeChatbot 2s ease-in-out forwards;
+  animation: fadeText-chatbot 2.5s ease-in-out infinite;
 }
 
-@keyframes textFadeChatbot {
-  0% {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 1;
-  }
+@keyframes fadeText-chatbot {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
 }
