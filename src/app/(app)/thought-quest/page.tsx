@@ -23,8 +23,15 @@ const levels = [
 
 export const LoadingScreen = () => (
     <div className="loading-screen">
-        <div className="loading-emoji">🧠</div>
-        <div className="loading-text">Loading Thought Quest</div>
+      <div className="loader">
+        <div className="brain">🧠</div>
+        <div className="orbit">
+          <div className="dot"></div>
+          <div className="dot"></div>
+          <div className="dot"></div>
+        </div>
+      </div>
+      <div className="loading-text">Loading Thought Quest...</div>
     </div>
 );
 

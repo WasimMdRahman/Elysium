@@ -12,49 +12,78 @@
   z-index: 9999;
 }
 
-.loading-emoji {
-  font-size: 60px;
-  opacity: 0;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0);
-  animation: fadeGlow 2s ease-in-out forwards;
+.loader {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 20px;
 }
 
-@keyframes fadeGlow {
-  0% {
-    opacity: 0;
-    text-shadow: 0 0 0px rgba(255, 255, 255, 0);
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 1;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-    transform: scale(1.05);
-  }
-  100% {
-    opacity: 0.9;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    transform: scale(1);
-  }
+.brain {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 48px;
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s infinite ease-in-out;
+  text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+}
+
+.orbit {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  animation: spin 2.5s linear infinite;
+}
+
+.dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: #00ffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00ffff;
+}
+
+.dot:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dot:nth-child(2) {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.dot:nth-child(3) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
 }
 
 .loading-text {
-  margin-top: 15px;
-  font-size: 16px;
-  letter-spacing: 1px;
-  opacity: 0;
-  animation: textFade 2s ease-in-out forwards;
+  margin-top: 20px;
+  font-size: 18px;
+  color: #ccc;
+  animation: fadeIn 2s infinite ease-in-out;
 }
 
-@keyframes textFade {
-  0% {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 1;
-  }
+@keyframes fadeIn {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
