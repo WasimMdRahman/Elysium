@@ -55,16 +55,35 @@
 }
 
 .dot:nth-child(2) {
-  top: 50%;
-  right: 0;
+  top: 25%;
+  right: 7%;
   transform: translateY(-50%);
 }
 
 .dot:nth-child(3) {
+  top: 75%;
+  right: 7%;
+  transform: translateY(-50%);
+}
+
+.dot:nth-child(4) {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
 }
+
+.dot:nth-child(5) {
+  top: 25%;
+  left: 7%;
+  transform: translateY(-50%);
+}
+
+.dot:nth-child(6) {
+  top: 75%;
+  left: 7%;
+  transform: translateY(-50%);
+}
+
 
 @keyframes spin {
   from { transform: rotate(0deg); }
@@ -80,6 +99,14 @@
   margin-top: 20px;
   font-size: 18px;
   color: #ccc;
+  animation: fadeIn 2s infinite ease-in-out;
+}
+
+.glowing-text {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
   animation: fadeIn 2s infinite ease-in-out;
 }
 

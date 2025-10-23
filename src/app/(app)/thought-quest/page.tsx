@@ -21,7 +21,7 @@ const levels = [
     { name: 'Diamond', type: 'EP', threshold: 3000, color: 'text-blue-300' },
 ];
 
-export const LoadingScreen = () => (
+export const LoadingScreen = ({ text = "Loading Thought Quest...", showSixDots = false }: { text?: string, showSixDots?: boolean }) => (
     <div className="loading-screen">
       <div className="loader">
         <div className="brain">🧠</div>
@@ -29,9 +29,16 @@ export const LoadingScreen = () => (
           <div className="dot"></div>
           <div className="dot"></div>
           <div className="dot"></div>
+          {showSixDots && (
+            <>
+              <div className="dot"></div>
+              <div className="dot"></div>
+              <div className="dot"></div>
+            </>
+          )}
         </div>
       </div>
-      <div className="loading-text">Loading Thought Quest...</div>
+      <div className={cn(text.includes('decode') ? "glowing-text" : "loading-text")}>{text}</div>
     </div>
 );
 
@@ -87,7 +94,7 @@ export default function ThoughtQuestLobbyPage() {
   };
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen text="Get ready to decode your thoughts" showSixDots={true} />;
   }
 
 
