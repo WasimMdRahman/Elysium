@@ -29,9 +29,9 @@ export const LoadingScreen = ({ text = "Loading Thought Quest...", showSixDots =
           <div className="dot"></div>
           <div className="dot"></div>
           <div className="dot"></div>
+          <div className="dot"></div>
           {showSixDots && (
             <>
-              <div className="dot"></div>
               <div className="dot"></div>
               <div className="dot"></div>
             </>
