@@ -19,6 +19,7 @@ import { format, isToday, isYesterday, subDays, isAfter } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import Textarea from 'react-textarea-autosize';
 
 
 type Message = {
@@ -414,8 +415,8 @@ export default function ChatbotPage() {
     }
   }
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     processAndSendMessage(input, false);
   };
   
@@ -653,19 +654,27 @@ export default function ChatbotPage() {
                         <p className="text-sm">You are offline. Please check your internet connection.</p>
                     </div>
                 ) : (
-                    <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
-                        <Input
+                    <form onSubmit={handleSendMessage} className="flex w-full items-end gap-2">
+                        <Textarea
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSendMessage();
+                                }
+                            }}
                             placeholder="Type or record your message..."
-                            className="flex-1 rounded-full"
+                            className="flex-1 resize-none rounded-2xl border-input bg-background p-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            minRows={1}
+                            maxRows={5}
                             disabled={isLoading || isRecording}
                         />
-                        <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn("rounded-full", isRecording && "bg-destructive hover:bg-destructive/90")}>
-                            {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                        <Button type="button" size="icon" onClick={handleVoiceRecording} disabled={isLoading || isOffline} className={cn("rounded-full h-12 w-12 shrink-0", isRecording && "bg-destructive hover:bg-destructive/90")}>
+                            {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                         </Button>
-                        <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording || isOffline} className="rounded-full">
-                            <Send className="h-4 w-4" />
+                        <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isRecording || isOffline} className="rounded-full h-12 w-12 shrink-0">
+                            <Send className="h-5 w-5" />
                         </Button>
                     </form>
                 )}
