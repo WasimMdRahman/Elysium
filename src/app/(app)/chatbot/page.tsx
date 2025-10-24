@@ -665,7 +665,7 @@ export default function ChatbotPage() {
                                 }
                             }}
                             placeholder="Type or record your message..."
-                            className="flex-1 resize-none rounded-2xl border-input bg-background p-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="flex-1 resize-none rounded-2xl border-input bg-background p-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                             minRows={1}
                             maxRows={5}
                             disabled={isLoading || isRecording}
@@ -688,5 +688,7 @@ export default function ChatbotPage() {
     </div>
   );
 }
+
+    
 
     
