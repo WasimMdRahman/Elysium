@@ -3,7 +3,7 @@
 .loading-screen {
   position: fixed;
   inset: 0;
-  background-color: #0d1117; /* Matches body background from your code */
+  background-color: #0a0a0a;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -71,18 +71,6 @@
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-}
-
-.dot:nth-child(5) {
-  top: 14.6%;
-  right: 14.6%;
-  transform: translate(50%, -50%);
-}
-
-.dot:nth-child(6) {
-  bottom: 14.6%;
-  left: 14.6%;
-  transform: translate(-50%, 50%);
 }
 
 

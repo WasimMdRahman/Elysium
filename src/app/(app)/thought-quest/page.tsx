@@ -9,7 +9,6 @@ import { Flame, Star, Gem, ArrowLeft, Play, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import './animations.css';
 import './loading-animation.css';
 import { useRouter } from 'next/navigation';
 
@@ -26,8 +25,6 @@ export const LoadingScreen = ({ text = "Loading Thought Quest..." }: { text?: st
       <div className="loader">
         <div className="brain">🧠</div>
         <div className="orbit">
-          <div className="dot"></div>
-          <div className="dot"></div>
           <div className="dot"></div>
           <div className="dot"></div>
           <div className="dot"></div>
