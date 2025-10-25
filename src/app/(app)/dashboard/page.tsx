@@ -34,7 +34,7 @@ const features = [
   },
   {
     href: "/voice-journal",
-    title: "Voice Biomarker",
+    title: "Vocal Biomarker",
     description: "Analyze your voice for emotional insights",
     emoji: "🎤"
   },
