@@ -25,8 +25,12 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const { toast } = useToast();
+  const [siteUrl, setSiteUrl] = useState('');
 
   useEffect(() => {
+    // This ensures window is defined, so it runs only on the client
+    setSiteUrl(window.location.origin);
+
     if ('Notification' in window) {
       if (Notification.permission === 'granted') {
         setNotificationsEnabled(true);
@@ -59,21 +63,21 @@ export default function SettingsPage() {
                   <AlertDialogTitle>How to Enable Notifications</AlertDialogTitle>
                   <AlertDialogDescription className="text-left pt-2">
                     <p className="font-bold">Google Chrome:</p>
-                    <ol className="list-decimal list-inside text-muted-foreground">
-                      <li>Go to Settings {'>'} Privacy and security {'>'} Site Settings.</li>
-                      <li>Find this site under "Recent activity" or "Permissions".</li>
-                      <li>Change "Notifications" to "Allow".</li>
+                    <ol className="list-decimal list-inside text-muted-foreground space-y-1">
+                      <li>Go to Settings {'>'} Privacy and security {'>'} Site Settings {'>'} Notifications.</li>
+                      <li>Under `Allowed to send notifications`, click `Add`.</li>
+                      <li>Enter the site URL: <code className="bg-muted p-1 rounded-sm text-xs">{siteUrl || 'studio-7201398695-e1d01.firebaseapp.com'}</code> and click `Add`.</li>
                     </ol>
                     <p className="font-bold mt-4">Mozilla Firefox:</p>
-                    <ol className="list-decimal list-inside text-muted-foreground">
+                    <ol className="list-decimal list-inside text-muted-foreground space-y-1">
                       <li>Click the padlock icon in the address bar.</li>
-                      <li>Find "Permissions" and change "Send Notifications" to "Allow".</li>
+                      <li>Find "Permissions" and change "Send Notifications" from "Blocked" to "Allow".</li>
                     </ol>
                     <p className="font-bold mt-4">Safari:</p>
-                     <ol className="list-decimal list-inside text-muted-foreground">
+                     <ol className="list-decimal list-inside text-muted-foreground space-y-1">
                       <li>Go to Safari {'>'} Settings {'>'} Websites tab.</li>
                       <li>Select "Notifications" from the sidebar.</li>
-                      <li>Find this site and set the permission to "Allow".</li>
+                      <li>Find this site (<code className="bg-muted p-1 rounded-sm text-xs">{siteUrl || 'studio-7201398695-e1d01.firebaseapp.com'}</code>) and set the permission to "Allow".</li>
                     </ol>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
