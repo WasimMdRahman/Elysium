@@ -10,6 +10,16 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { quotes } from "@/lib/quotes";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -39,7 +49,40 @@ export default function SettingsPage() {
         toast({
           title: "Notifications Blocked",
           description: "You've previously blocked notifications. Please enable them in your browser settings to receive daily quotes.",
-          action: <a href="https://support.google.com/chrome/answer/3220216" target="_blank" rel="noopener noreferrer" className="ml-4 text-sm font-medium text-primary hover:underline">How?</a>,
+          action: (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="mt-2">How?</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>How to Enable Notifications</AlertDialogTitle>
+                  <AlertDialogDescription className="text-left pt-2">
+                    <p className="font-bold">Google Chrome:</p>
+                    <ol className="list-decimal list-inside text-muted-foreground">
+                      <li>Go to Settings {'>'} Privacy and security {'>'} Site Settings.</li>
+                      <li>Find this site under "Recent activity" or "Permissions".</li>
+                      <li>Change "Notifications" to "Allow".</li>
+                    </ol>
+                    <p className="font-bold mt-4">Mozilla Firefox:</p>
+                    <ol className="list-decimal list-inside text-muted-foreground">
+                      <li>Click the padlock icon in the address bar.</li>
+                      <li>Find "Permissions" and change "Send Notifications" to "Allow".</li>
+                    </ol>
+                    <p className="font-bold mt-4">Safari:</p>
+                     <ol className="list-decimal list-inside text-muted-foreground">
+                      <li>Go to Safari {'>'} Settings {'>'} Websites tab.</li>
+                      <li>Select "Notifications" from the sidebar.</li>
+                      <li>Find this site and set the permission to "Allow".</li>
+                    </ol>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogAction>Got it</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ),
         });
         return;
       }
@@ -53,7 +96,6 @@ export default function SettingsPage() {
         });
         scheduleDailyNotification();
       } else {
-        // This will now only trigger if the user dismisses the prompt ('default')
         setNotificationsEnabled(false); 
         toast({
           title: "Permission Not Granted",
@@ -62,8 +104,6 @@ export default function SettingsPage() {
       }
     } else {
       setNotificationsEnabled(false);
-      // We can't "un-grant" permission, but we can stop scheduling new notifications.
-      // For a full implementation, we'd need to manage subscriptions in a service worker.
       toast({
         title: "Notifications Disabled",
         description: "You will no longer receive daily quotes.",
@@ -74,7 +114,6 @@ export default function SettingsPage() {
   const scheduleDailyNotification = () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         console.warn('Push messaging is not supported');
-        // Fallback for browsers that support Notifications but not Push API (less common)
         const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
         const showNotification = () => {
             new Notification("Your Daily Motivation ✨", {
@@ -82,16 +121,12 @@ export default function SettingsPage() {
                 icon: "/icon-192x192.png",
             });
         };
-        // This is a simple fallback and will only work if the tab is open.
-        // A full PWA implementation would handle this in the service worker.
-        setTimeout(showNotification, 1000 * 60 * 60 * 24); // 24 hours
+        setTimeout(showNotification, 1000 * 60 * 60 * 24);
         return;
     }
 
     navigator.serviceWorker.ready.then(registration => {
       const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-      // This is a simplified example. A real-world app would likely use a backend
-      // to send push notifications, but for a client-only PWA, we can show a local notification.
       registration.showNotification("Your Daily Motivation ✨", {
         body: `"${randomQuote.quote}" - ${randomQuote.author}`,
         icon: "/icon-192x192.png",
