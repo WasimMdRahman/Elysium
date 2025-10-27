@@ -35,6 +35,15 @@ export default function SettingsPage() {
     }
 
     if (enabled) {
+      if (Notification.permission === 'denied') {
+        toast({
+          title: "Notifications Blocked",
+          description: "You've previously blocked notifications. Please enable them in your browser settings to receive daily quotes.",
+          action: <a href="https://support.google.com/chrome/answer/3220216" target="_blank" rel="noopener noreferrer" className="ml-4 text-sm font-medium text-primary hover:underline">How?</a>,
+        });
+        return;
+      }
+        
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         setNotificationsEnabled(true);
@@ -44,10 +53,11 @@ export default function SettingsPage() {
         });
         scheduleDailyNotification();
       } else {
+        // This will now only trigger if the user dismisses the prompt ('default')
+        setNotificationsEnabled(false); 
         toast({
-          variant: "destructive",
-          title: "Permission Denied",
-          description: "You've blocked notifications. To enable them, check your browser settings.",
+          title: "Permission Not Granted",
+          description: "You can enable notifications anytime from settings.",
         });
       }
     } else {
