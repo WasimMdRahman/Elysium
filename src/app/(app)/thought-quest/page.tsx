@@ -136,17 +136,31 @@ export default function ThoughtQuestLobbyPage() {
         <h2 className="text-2xl font-bold font-headline text-center mb-4">Achievements</h2>
         <div className="flex justify-center items-center gap-4 md:gap-8">
           <TooltipProvider>
-            {levels.map(level => {
+            {levels.map((level, index) => {
               const isUnlocked = level.type === 'XP' ? xp >= level.threshold : ep >= level.threshold;
               return (
                 <Tooltip key={level.name}>
                   <TooltipTrigger>
-                    <Star className={cn(
-                        "h-10 w-10 md:h-12 md:w-12 transition-all duration-300",
-                        isUnlocked ? level.color : 'text-gray-400'
-                      )} 
-                      fill={isUnlocked ? 'currentColor' : 'none'}
-                    />
+                    <motion.div
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ 
+                            scale: isUnlocked ? 1 : 0.8, 
+                            opacity: isUnlocked ? 1 : 0.5 
+                        }}
+                        transition={{ 
+                            type: 'spring', 
+                            stiffness: 260, 
+                            damping: 20,
+                            delay: isUnlocked ? index * 0.1 : 0
+                        }}
+                    >
+                        <Star className={cn(
+                            "h-10 w-10 md:h-12 md:w-12 transition-all duration-300",
+                            isUnlocked ? level.color : 'text-gray-400'
+                          )} 
+                          fill={isUnlocked ? 'currentColor' : 'none'}
+                        />
+                    </motion.div>
                   </TooltipTrigger>
                   <TooltipContent>
                       <p className="font-semibold">{level.name}</p>
