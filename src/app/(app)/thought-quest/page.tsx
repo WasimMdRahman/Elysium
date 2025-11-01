@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import './loading-animation.css';
 import { useRouter } from 'next/navigation';
+import { TrophyAnimation } from './trophy-animation';
 
 const levels = [
     { name: 'Bronze', type: 'XP', threshold: 2000, color: 'text-yellow-600' },
@@ -45,12 +46,15 @@ export default function ThoughtQuestLobbyPage() {
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [unlockedAchievement, setUnlockedAchievement] = useState<string | null>(null);
 
-
-  // Load state from localStorage
+  // Load state from localStorage and check for new unlocks
   useEffect(() => {
     try {
       const savedState = localStorage.getItem('thoughtQuestState');
+      const oldXp = savedState ? JSON.parse(savedState).xp || 0 : 0;
+      const oldEp = savedState ? JSON.parse(savedState).ep || 0 : 0;
+
       if (savedState) {
         const { 
             streak: savedStreak = 0,
@@ -65,6 +69,22 @@ export default function ThoughtQuestLobbyPage() {
         setEp(savedEp); 
         setQuestionsAnswered(savedQuestions);
         setScore(savedScore);
+
+        // Check if a new achievement was unlocked since last load
+        const newlyUnlocked = levels.find(level => {
+            if (level.type === 'XP') {
+                return savedXp >= level.threshold && oldXp < level.threshold;
+            }
+            if (level.type === 'EP') {
+                return savedEp >= level.threshold && oldEp < level.threshold;
+            }
+            return false;
+        });
+
+        if (newlyUnlocked) {
+            setUnlockedAchievement(newlyUnlocked.name);
+        }
+
       } else {
         setStreak(2);
         setXp(180);
@@ -85,6 +105,10 @@ export default function ThoughtQuestLobbyPage() {
         router.push('/thought-quest/game');
     }, 2000);
   };
+  
+  const handleAnimationEnd = () => {
+    setUnlockedAchievement(null);
+  };
 
   if (isLoading) {
     return <LoadingScreen text="Get ready to decode your thoughts" />;
@@ -92,6 +116,15 @@ export default function ThoughtQuestLobbyPage() {
 
 
   return (
+    <>
+    <AnimatePresence>
+        {unlockedAchievement && (
+            <TrophyAnimation
+                trophyName={unlockedAchievement}
+                onAnimationComplete={handleAnimationEnd}
+            />
+        )}
+    </AnimatePresence>
     <div className="flex flex-col items-center gap-6">
         <Button asChild variant="ghost" size="icon" className="self-start">
              <Link href="/dashboard"><ArrowLeft /></Link>
@@ -196,5 +229,6 @@ export default function ThoughtQuestLobbyPage() {
         </motion.div>
       </div>
     </div>
+    </>
   );
 }
