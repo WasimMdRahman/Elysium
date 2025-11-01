@@ -15,7 +15,7 @@ const trophyColors: Record<string, string> = {
     'Silver': 'url(#silverGradient)',
     'Gold': 'url(#goldGradient)',
     'Platinum': 'url(#platinumGradient)',
-    'Diamond': '#B9F2FF'
+    'Diamond': 'url(#diamondGradient)'
 };
 
 const StarIcon = ({ color, trophyName }: { color: string, trophyName: string }) => (
@@ -43,6 +43,13 @@ const StarIcon = ({ color, trophyName }: { color: string, trophyName: string }) 
                     <stop offset="100%" stopColor="#b388ff" />
                 </linearGradient>
             )}
+             {trophyName === 'Diamond' && (
+                <linearGradient id="diamondGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#b3e5fc" />
+                    <stop offset="50%" stopColor="#e0f7fa" />
+                    <stop offset="100%" stopColor="#b3e5fc" />
+                </linearGradient>
+            )}
         </defs>
         <path d="M12 .587l3.668 7.431L24 9.75l-6 5.848L19.335 24 12 20.018 4.665 24 6 15.598 0 9.75l8.332-1.732z" />
     </svg>
@@ -57,14 +64,17 @@ const Particle = ({ trophyName }: { trophyName: string }) => {
     let particleContent: React.ReactNode = <StarIcon color={color} trophyName={trophyName} />;
     let textShadow = 'none';
 
-    if (trophyName === 'Gold' || trophyName === 'Platinum') {
+    if (trophyName === 'Gold' || trophyName === 'Platinum' || trophyName === 'Diamond') {
         particleContent = '⭐';
         if (trophyName === 'Gold') {
             color = '#ffeb3b';
             textShadow = '0 0 8px #ffee58';
-        } else {
+        } else if (trophyName === 'Platinum') {
             color = '#c084fc';
             textShadow = '0 0 10px #d8b4fe';
+        } else {
+             color = '#81d4fa';
+             textShadow = '0 0 10px #b3e5fc';
         }
     }
 
@@ -102,7 +112,8 @@ export const TrophyAnimation = ({ trophyName, onAnimationComplete }: TrophyAnima
     }, [onAnimationComplete]);
 
     let messageStyle = {};
-    let messageText = <>Congratulations! You earned the <b>{trophyName} Star!</b></>;
+    let messageText: React.ReactNode = <>Congratulations! You earned the <b>{trophyName} Star!</b></>;
+
     if (trophyName === 'Silver') {
          messageStyle = { background: 'linear-gradient(90deg, #f1f1f1, #a3a3a3, #e5e5e5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' };
     } else if (trophyName === 'Gold') {
@@ -111,6 +122,9 @@ export const TrophyAnimation = ({ trophyName, onAnimationComplete }: TrophyAnima
     } else if (trophyName === 'Platinum') {
         messageStyle = { color: '#c084fc', textShadow: '0 0 10px #d8b4fe'};
         messageText = <>💎 Congratulations! You earned the <b>{trophyName} Star!</b> 💎</>;
+    } else if (trophyName === 'Diamond') {
+        messageStyle = { color: '#81d4fa', textShadow: '0 0 12px #b3e5fc'};
+        messageText = <>💠 Congratulations! You earned the <b>{trophyName} Star!</b> 💠</>;
     }
     else {
         messageStyle = { color };
