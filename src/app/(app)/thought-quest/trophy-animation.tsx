@@ -14,7 +14,7 @@ const trophyColors: Record<string, string> = {
     'Bronze': '#8B4513',
     'Silver': 'url(#silverGradient)',
     'Gold': 'url(#goldGradient)',
-    'Platinum': '#E5E4E2',
+    'Platinum': 'url(#platinumGradient)',
     'Diamond': '#B9F2FF'
 };
 
@@ -36,37 +36,43 @@ const StarIcon = ({ color, trophyName }: { color: string, trophyName: string }) 
                     <stop offset="100%" stopColor="#ffec5c" />
                 </linearGradient>
             )}
+             {trophyName === 'Platinum' && (
+                <linearGradient id="platinumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#b388ff" />
+                    <stop offset="50%" stopColor="#d1c4e9" />
+                    <stop offset="100%" stopColor="#b388ff" />
+                </linearGradient>
+            )}
         </defs>
         <path d="M12 .587l3.668 7.431L24 9.75l-6 5.848L19.335 24 12 20.018 4.665 24 6 15.598 0 9.75l8.332-1.732z" />
     </svg>
 );
 
-const Particle = ({ color, trophyName }: { color: string, trophyName: string }) => {
+const Particle = ({ trophyName }: { trophyName: string }) => {
     const x = (Math.random() - 0.5) * 350;
     const y = (Math.random() - 0.5) * 350;
     const animationDelay = `${Math.random() * 0.5}s`;
+    
+    let color = trophyColors[trophyName] || '#FFD700';
+    let particleContent: React.ReactNode = <StarIcon color={color} trophyName={trophyName} />;
+    let textShadow = 'none';
 
-    if (trophyName === 'Gold') {
-        return (
-             <motion.div
-                className="particle-emoji"
-                initial={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-                animate={{
-                    opacity: 0,
-                    scale: 0.6,
-                    x: x,
-                    y: y
-                }}
-                transition={{ duration: 2, delay: animationDelay, ease: "easeOut" }}
-            >
-                ⭐
-            </motion.div>
-        )
+    if (trophyName === 'Gold' || trophyName === 'Platinum') {
+        particleContent = '⭐';
+        if (trophyName === 'Gold') {
+            color = '#ffeb3b';
+            textShadow = '0 0 8px #ffee58';
+        } else {
+            color = '#c084fc';
+            textShadow = '0 0 10px #d8b4fe';
+        }
     }
 
+
     return (
-        <motion.div
+         <motion.div
             className="particle"
+            style={{ color, textShadow }}
             initial={{ opacity: 1, scale: 1, x: 0, y: 0 }}
             animate={{
                 opacity: 0,
@@ -76,9 +82,9 @@ const Particle = ({ color, trophyName }: { color: string, trophyName: string }) 
             }}
             transition={{ duration: 2, delay: animationDelay, ease: "easeOut" }}
         >
-           <StarIcon color={color} trophyName={trophyName} />
+           {particleContent}
         </motion.div>
-    );
+    )
 };
 
 
@@ -96,11 +102,17 @@ export const TrophyAnimation = ({ trophyName, onAnimationComplete }: TrophyAnima
     }, [onAnimationComplete]);
 
     let messageStyle = {};
+    let messageText = <>Congratulations! You earned the <b>{trophyName} Star!</b></>;
     if (trophyName === 'Silver') {
          messageStyle = { background: 'linear-gradient(90deg, #f1f1f1, #a3a3a3, #e5e5e5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' };
     } else if (trophyName === 'Gold') {
         messageStyle = { color: '#ffeb3b', textShadow: '0 0 8px #ffee58'};
-    } else {
+        messageText = <>🏅 Congratulations! You earned the <b>{trophyName} Star!</b> 🏅</>;
+    } else if (trophyName === 'Platinum') {
+        messageStyle = { color: '#c084fc', textShadow: '0 0 10px #d8b4fe'};
+        messageText = <>💎 Congratulations! You earned the <b>{trophyName} Star!</b> 💎</>;
+    }
+    else {
         messageStyle = { color };
     }
 
@@ -130,11 +142,11 @@ export const TrophyAnimation = ({ trophyName, onAnimationComplete }: TrophyAnima
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 1, delay: 1 }}
                         >
-                            Congratulations! You earned the <b>{trophyName} Star!</b>
+                            {messageText}
                         </motion.div>
 
                         {Array.from({ length: 30 }).map((_, i) => (
-                            <Particle key={i} color={color} trophyName={trophyName}/>
+                            <Particle key={i} trophyName={trophyName}/>
                         ))}
                     </div>
                 </motion.div>
