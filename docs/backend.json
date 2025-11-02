@@ -1,0 +1,500 @@
+{
+  "entities": {
+    "UserAccount": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserAccount",
+      "type": "object",
+      "description": "Represents a user's account within the Zenith Mind application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user account."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "username": {
+          "type": "string",
+          "description": "The username chosen by the user."
+        },
+        "creationDate": {
+          "type": "string",
+          "description": "Date and time when the account was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "username",
+        "creationDate"
+      ]
+    },
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Stores profile information for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "userAccountId": {
+          "type": "string",
+          "description": "Reference to UserAccount. (Relationship: UserAccount 1:1 UserProfile)"
+        },
+        "lastLogin": {
+          "type": "string",
+          "description": "Date and time of the user's last login.",
+          "format": "date-time"
+        },
+        "settings": {
+          "type": "string",
+          "description": "Settings stored in JSON format."
+        }
+      },
+      "required": [
+        "id",
+        "userAccountId",
+        "lastLogin",
+        "settings"
+      ]
+    },
+    "MoodEntry": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MoodEntry",
+      "type": "object",
+      "description": "Represents a single mood entry recorded by the user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MoodEntry."
+        },
+        "userAccountId": {
+          "type": "string",
+          "description": "Reference to UserAccount. (Relationship: UserAccount 1:N MoodEntry)"
+        },
+        "moodScore": {
+          "type": "number",
+          "description": "Mood score recorded by the user (1-10)."
+        },
+        "entryDate": {
+          "type": "string",
+          "description": "Date and time when the mood was recorded.",
+          "format": "date-time"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes associated with the mood entry."
+        }
+      },
+      "required": [
+        "id",
+        "userAccountId",
+        "moodScore",
+        "entryDate"
+      ]
+    },
+    "JournalEntry": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "JournalEntry",
+      "type": "object",
+      "description": "Represents a single journal entry created by the user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the journal entry."
+        },
+        "userAccountId": {
+          "type": "string",
+          "description": "Reference to UserAccount. (Relationship: UserAccount 1:N JournalEntry)"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the journal entry."
+        },
+        "content": {
+          "type": "string",
+          "description": "Content of the journal entry."
+        },
+        "entryDate": {
+          "type": "string",
+          "description": "Date and time when the journal entry was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userAccountId",
+        "title",
+        "content",
+        "entryDate"
+      ]
+    },
+    "Task": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Task",
+      "type": "object",
+      "description": "Represents a task in the user's to-do list.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the task."
+        },
+        "userAccountId": {
+          "type": "string",
+          "description": "Reference to UserAccount. (Relationship: UserAccount 1:N Task)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the task."
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Date when the task is due.",
+          "format": "date-time"
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Indicates whether the task is completed."
+        }
+      },
+      "required": [
+        "id",
+        "userAccountId",
+        "description",
+        "dueDate",
+        "completed"
+      ]
+    },
+    "Thought": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Thought",
+      "type": "object",
+      "description": "Represents a thought generated in the Thought Quest game.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the thought."
+        },
+        "userAccountId": {
+          "type": "string",
+          "description": "Reference to UserAccount. (Relationship: UserAccount 1:N Thought)"
+        },
+        "text": {
+          "type": "string",
+          "description": "The text content of the thought."
+        },
+        "isHelpful": {
+          "type": "boolean",
+          "description": "Indicates whether the thought is classified as helpful."
+        },
+        "generatedDate": {
+          "type": "string",
+          "description": "Date and time when the thought was generated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userAccountId",
+        "text",
+        "isHelpful",
+        "generatedDate"
+      ]
+    },
+    "MentalHealthExercise": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MentalHealthExercise",
+      "type": "object",
+      "description": "Represents a mental health exercise in the library.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the mental health exercise."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the mental health exercise."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the exercise."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the exercise (e.g., anxiety, depression)."
+        },
+        "content": {
+          "type": "string",
+          "description": "Content or instructions for the exercise (can be text or a link to external media)."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "category",
+        "content"
+      ]
+    },
+    "Streak": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Streak",
+      "type": "object",
+      "description": "Represents a user's streak for daily activities.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the streak."
+        },
+        "userAccountId": {
+          "type": "string",
+          "description": "Reference to UserAccount. (Relationship: UserAccount 1:N Streak)"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Date when the streak started.",
+          "format": "date-time"
+        },
+        "currentStreakDays": {
+          "type": "number",
+          "description": "Number of consecutive days the user has maintained the streak."
+        },
+        "longestStreakDays": {
+          "type": "number",
+          "description": "The user's longest streak for this activity."
+        }
+      },
+      "required": [
+        "id",
+        "userAccountId",
+        "startDate",
+        "currentStreakDays",
+        "longestStreakDays"
+      ]
+    },
+    "ChatHistory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChatHistory",
+      "type": "object",
+      "description": "Stores the history of interactions between the user and the AI chatbot.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the chat history entry."
+        },
+        "userAccountId": {
+          "type": "string",
+          "description": "Reference to UserAccount. (Relationship: UserAccount 1:N ChatHistory)"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the chat message.",
+          "format": "date-time"
+        },
+        "userMessage": {
+          "type": "string",
+          "description": "The message sent by the user."
+        },
+        "botResponse": {
+          "type": "string",
+          "description": "The response generated by the AI chatbot."
+        }
+      },
+      "required": [
+        "id",
+        "userAccountId",
+        "timestamp",
+        "userMessage",
+        "botResponse"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userAccountId}",
+        "definition": {
+          "entityName": "UserAccount",
+          "schema": {
+            "$ref": "#/backend/entities/UserAccount"
+          },
+          "description": "Stores user account information. Root collection for all user-specific data.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/profile/{profileId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information, associated with a specific user account.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "profileId",
+              "description": "The unique identifier for the user profile."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/mood_entries/{moodEntryId}",
+        "definition": {
+          "entityName": "MoodEntry",
+          "schema": {
+            "$ref": "#/backend/entities/MoodEntry"
+          },
+          "description": "Stores mood entries for a user.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "moodEntryId",
+              "description": "The unique identifier for the mood entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/journal_entries/{journalEntryId}",
+        "definition": {
+          "entityName": "JournalEntry",
+          "schema": {
+            "$ref": "#/backend/entities/JournalEntry"
+          },
+          "description": "Stores journal entries for a user.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "journalEntryId",
+              "description": "The unique identifier for the journal entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/tasks/{taskId}",
+        "definition": {
+          "entityName": "Task",
+          "schema": {
+            "$ref": "#/backend/entities/Task"
+          },
+          "description": "Stores tasks for a user.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "taskId",
+              "description": "The unique identifier for the task."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/thoughts/{thoughtId}",
+        "definition": {
+          "entityName": "Thought",
+          "schema": {
+            "$ref": "#/backend/entities/Thought"
+          },
+          "description": "Stores thoughts generated by the user.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "thoughtId",
+              "description": "The unique identifier for the thought."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/mental_health_exercises/{exerciseId}",
+        "definition": {
+          "entityName": "MentalHealthExercise",
+          "schema": {
+            "$ref": "#/backend/entities/MentalHealthExercise"
+          },
+          "description": "Stores mental health exercises available in the library.",
+          "params": [
+            {
+              "name": "exerciseId",
+              "description": "The unique identifier for the mental health exercise."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/streaks/{streakId}",
+        "definition": {
+          "entityName": "Streak",
+          "schema": {
+            "$ref": "#/backend/entities/Streak"
+          },
+          "description": "Stores streak data for a user.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "streakId",
+              "description": "The unique identifier for the streak."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userAccountId}/chat_history/{chatHistoryId}",
+        "definition": {
+          "entityName": "ChatHistory",
+          "schema": {
+            "$ref": "#/backend/entities/ChatHistory"
+          },
+          "description": "Stores chat history between the user and the AI chatbot.",
+          "params": [
+            {
+              "name": "userAccountId",
+              "description": "The unique identifier for the user account."
+            },
+            {
+              "name": "chatHistoryId",
+              "description": "The unique identifier for the chat history entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to store user data securely and efficiently, facilitating data recovery across devices when a user signs in. Each user's data is stored under a path derived from their unique `userAccountId`, ensuring data isolation and simplified security rules. This design follows the principle of path-based ownership.  Storing all the data under the user id also enables secure list operations.\n\nSpecifically, the following structure and denormalization strategies ensure Authorization Independence and supports the required QAPs:\n\n1.  **User Accounts and Profiles:**  User accounts are stored in `/users/{userAccountId}` and user profiles in `/users/{userAccountId}/profile`. This structure ensures that profile data is directly tied to the user and easily accessible. No denormalization is required as the UserProfile is only accessible by the user.\n\n2.  **Mood Entries, Journal Entries, Tasks, Thoughts, Streaks, and Chat History:** These entities, which are user-specific, are stored as subcollections under `/users/{userAccountId}`. This allows for easy access to a user's mood entries, journal entries, tasks, thoughts, streaks and chat history. No denormalization is required as these collections are only accessible by the user. This achieves Authorization Independence because access control is based solely on the user's `uid` and the hierarchical path, eliminating the need for `get()` calls in the security rules.\n\n3.  **Mental Health Exercises:** These are stored in the `/mental_health_exercises/{exerciseId}` collection. These are global to the application and not specific to any user. No denormalization is required as these are publicly available.\n\nThis structure supports secure `list` operations (QAPs) because all documents within a collection share the same security requirements.  For example, listing documents under `/users/{userAccountId}/mood_entries` is secure because only the authenticated user with the matching `userAccountId` can access them.  The structure avoids mixing data with different access needs within the same collection, further simplifying the security rules."
+  }
+}
