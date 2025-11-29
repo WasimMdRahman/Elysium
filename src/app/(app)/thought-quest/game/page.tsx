@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown, Loader, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../animations.css';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type Feedback = 'correct' | 'incorrect' | null;
 
@@ -26,6 +27,7 @@ export default function ThoughtQuestGamePage() {
   const [answered, setAnswered] = useState(false);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [previousThoughts, setPreviousThoughts] = useState<string[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // Gamification state
   const [streak, setStreak] = useState(0);
@@ -117,16 +119,24 @@ export default function ThoughtQuestGamePage() {
 
   const fetchNewThoughts = useCallback(async (currentThoughts: string[]) => {
     setIsLoading(true);
+    setErrorMessage(null);
     try {
       const topics = ['social situations', 'work stress', 'self-esteem', 'the future', 'making mistakes', 'personal growth', 'daily life'];
       const randomTopic = topics[Math.floor(Math.random() * topics.length)];
 
       const result = await generateThoughts({ topic: randomTopic, previousThoughts: currentThoughts });
-      setThoughtQueue(result.thoughts);
-      setCurrentThought(result.thoughts[0] || null);
+      
+      if ('error' in result) {
+        setErrorMessage(result.error);
+        setCurrentThought(null);
+        setThoughtQueue([]);
+      } else {
+        setThoughtQueue(result.thoughts);
+        setCurrentThought(result.thoughts[0] || null);
+      }
     } catch (error: any) {
       console.error("Failed to generate thoughts:", error);
-      setCurrentThought({ thought: error.message || "The AI is thinking... please try again in a moment.", isHelpful: true });
+      setErrorMessage("An unexpected error occurred. Please try again in a moment.");
     } finally {
       setIsLoading(false);
     }
@@ -227,10 +237,18 @@ export default function ThoughtQuestGamePage() {
             </motion.div>
           ): null}
         </AnimatePresence>
-        {isLoading && !currentThought && (
+        {isLoading && !currentThought && !errorMessage && (
           <div className="absolute inset-0 flex items-center justify-center">
              <Loader className="h-12 w-12 animate-spin text-primary" />
           </div>
+        )}
+        {errorMessage && (
+            <div className="absolute inset-0 flex items-center justify-center">
+                <Alert variant="destructive" className="max-w-md">
+                    <AlertTitle>Oh no!</AlertTitle>
+                    <AlertDescription>{errorMessage}</AlertDescription>
+                </Alert>
+            </div>
         )}
       </div>
 
@@ -241,7 +259,7 @@ export default function ThoughtQuestGamePage() {
               size="lg"
               variant="outline"
               onClick={() => handleAnswer(false)}
-              disabled={answered || isLoading}
+              disabled={answered || isLoading || !!errorMessage}
           >
               <ThumbsDown className="mr-2 h-5 w-5" /> Unhelpful
           </Button>
@@ -249,7 +267,7 @@ export default function ThoughtQuestGamePage() {
               size="lg"
               variant="outline"
               onClick={() => handleAnswer(true)}
-              disabled={answered || isLoading}
+              disabled={answered || isLoading || !!errorMessage}
           >
               <ThumbsUp className="mr-2 h-5 w-5" /> Helpful
           </Button>

@@ -25,9 +25,17 @@ const ThoughtSchema = z.object({
   isHelpful: z.boolean().describe('Whether the generated thought is helpful (true) or unhelpful (false).'),
 });
 
-const GenerateThoughtOutputSchema = z.object({
+const GenerateThoughtSuccessOutputSchema = z.object({
   thoughts: z.array(ThoughtSchema).length(10).describe('An array of 10 generated thoughts, with a mix of helpful and unhelpful ones.'),
 });
+
+const GenerateThoughtErrorOutputSchema = z.object({
+  error: z.string(),
+});
+
+const GenerateThoughtOutputSchema = z.union([GenerateThoughtSuccessOutputSchema, GenerateThoughtErrorOutputSchema]);
+
+
 export type GenerateThoughtOutput = z.infer<typeof GenerateThoughtOutputSchema>;
 
 export async function generateThoughts(input: GenerateThoughtInput): Promise<GenerateThoughtOutput> {
@@ -37,7 +45,7 @@ export async function generateThoughts(input: GenerateThoughtInput): Promise<Gen
 const prompt = ai.definePrompt({
   name: 'generateThoughtPrompt',
   input: {schema: GenerateThoughtInputSchema},
-  output: {schema: GenerateThoughtOutputSchema},
+  output: {schema: GenerateThoughtSuccessOutputSchema},
   prompt: `You are an AI that generates thoughts for a CBT based game called Thought Quest.
 
   The user will provide you with a topic and you will generate an array of 10 new thoughts related to that topic.
@@ -72,18 +80,18 @@ const generateThoughtFlow = ai.defineFlow(
         return output!;
       } catch (error: any) {
         if (error.message && error.message.includes('429')) {
-             throw new Error('You have exceeded the daily limit for generating thoughts. Please try again tomorrow.');
+             return { error: 'You have exceeded the daily limit for generating thoughts. Please try again tomorrow.' };
         }
         if (error.message && error.message.includes('503')) {
           console.log(`Attempt ${i + 1} for generateThought failed with 503. Retrying...`);
           await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
           continue;
         }
-        // For any other error, throw it immediately
+        // For any other error, throw it so we see it during development
         throw error;
       }
     }
-     // If all retries fail, throw a user-friendly error.
-    throw new Error('The AI service is currently busy. Please try again in a few moments.');
+     // If all retries fail, return a user-friendly error.
+    return { error: 'The AI service is currently busy. Please try again in a few moments.' };
   }
 );
