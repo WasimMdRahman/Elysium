@@ -20,13 +20,17 @@ const GenerateThoughtInputSchema = z.object({
 });
 export type GenerateThoughtInput = z.infer<typeof GenerateThoughtInputSchema>;
 
-const GenerateThoughtOutputSchema = z.object({
+const ThoughtSchema = z.object({
   thought: z.string().describe('The AI generated thought.'),
   isHelpful: z.boolean().describe('Whether the generated thought is helpful (true) or unhelpful (false).'),
 });
+
+const GenerateThoughtOutputSchema = z.object({
+  thoughts: z.array(ThoughtSchema).length(10).describe('An array of 10 generated thoughts, with a mix of helpful and unhelpful ones.'),
+});
 export type GenerateThoughtOutput = z.infer<typeof GenerateThoughtOutputSchema>;
 
-export async function generateThought(input: GenerateThoughtInput): Promise<GenerateThoughtOutput> {
+export async function generateThoughts(input: GenerateThoughtInput): Promise<GenerateThoughtOutput> {
   return generateThoughtFlow(input);
 }
 
@@ -36,7 +40,7 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateThoughtOutputSchema},
   prompt: `You are an AI that generates thoughts for a CBT based game called Thought Quest.
 
-  The user will provide you with a topic and you will generate a new thought related to that topic.
+  The user will provide you with a topic and you will generate an array of 10 new thoughts related to that topic.
   
   **Critically, you must generate a balanced mix of helpful and unhelpful thoughts. Do not only generate unhelpful thoughts.**
   
@@ -48,7 +52,7 @@ const prompt = ai.definePrompt({
   - "{{this}}"
   {{/each}}
 
-  You must also determine if the thought you generated is helpful (true) or unhelpful (false) and set the isHelpful boolean field accordingly.
+  You must also determine if each thought you generated is helpful (true) or unhelpful (false) and set the isHelpful boolean field accordingly for each object in the array.
 
   Topic: {{{topic}}}
   `,
@@ -61,7 +65,7 @@ const generateThoughtFlow = ai.defineFlow(
     outputSchema: GenerateThoughtOutputSchema,
   },
   async input => {
-    // Retry logic for 503 errors
+    // Retry logic
     for (let i = 0; i < 3; i++) {
       try {
         const {output} = await prompt(input);

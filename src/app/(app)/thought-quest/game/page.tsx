@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { generateThought } from '@/ai/flows/thought-quest-game-ai-thought-generation';
+import { generateThoughts } from '@/ai/flows/thought-quest-game-ai-thought-generation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown, Loader, ArrowLeft } from 'lucide-react';
@@ -12,9 +12,14 @@ import '../animations.css';
 
 type Feedback = 'correct' | 'incorrect' | null;
 
+type Thought = {
+  thought: string;
+  isHelpful: boolean;
+};
+
 export default function ThoughtQuestGamePage() {
-  const [thought, setThought] = useState('');
-  const [isHelpful, setIsHelpful] = useState(false);
+  const [currentThought, setCurrentThought] = useState<Thought | null>(null);
+  const [thoughtQueue, setThoughtQueue] = useState<Thought[]>([]);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [feedback, setFeedback] = useState<Feedback>(null);
@@ -110,39 +115,49 @@ export default function ThoughtQuestGamePage() {
   }, [score, questionsAnswered, previousThoughts, streak, xp, ep, correctAnswersCount]);
 
 
-  const fetchNewThought = useCallback(async (currentThoughts: string[]) => {
+  const fetchNewThoughts = useCallback(async (currentThoughts: string[]) => {
     setIsLoading(true);
-    setAnswered(false);
-    setFeedback(null);
     try {
       const topics = ['social situations', 'work stress', 'self-esteem', 'the future', 'making mistakes', 'personal growth', 'daily life'];
       const randomTopic = topics[Math.floor(Math.random() * topics.length)];
 
-      const result = await generateThought({ topic: randomTopic, previousThoughts: currentThoughts });
-      setThought(result.thought);
-      setIsHelpful(result.isHelpful); 
+      const result = await generateThoughts({ topic: randomTopic, previousThoughts: currentThoughts });
+      setThoughtQueue(result.thoughts);
+      setCurrentThought(result.thoughts[0] || null);
     } catch (error: any) {
-      console.error("Failed to generate thought:", error);
-      setThought(error.message || "The AI is thinking... please try again in a moment.");
-      setIsHelpful(true); 
+      console.error("Failed to generate thoughts:", error);
+      setCurrentThought({ thought: error.message || "The AI is thinking... please try again in a moment.", isHelpful: true });
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Fetch the first thought when the component mounts
+  const loadNextThought = useCallback(() => {
+    setAnswered(false);
+    setFeedback(null);
+
+    if (thoughtQueue.length > 1) {
+      const newQueue = thoughtQueue.slice(1);
+      setThoughtQueue(newQueue);
+      setCurrentThought(newQueue[0]);
+    } else {
+      // Fetch a new batch if the queue is empty or has only one item left
+      fetchNewThoughts(previousThoughts);
+    }
+  }, [thoughtQueue, fetchNewThoughts, previousThoughts]);
+
+  // Fetch the first batch of thoughts when the component mounts
   useEffect(() => {
-    // We only want to run this once on initial mount
-    fetchNewThought([]);
+    fetchNewThoughts([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAnswer = (userChoice: boolean) => {
-    if (answered) return;
+    if (answered || !currentThought) return;
     
     setAnswered(true);
     
-    const wasCorrect = userChoice === isHelpful;
+    const wasCorrect = userChoice === currentThought.isHelpful;
     if (wasCorrect) {
       setScore(s => s + 10);
       setFeedback('correct');
@@ -160,10 +175,10 @@ export default function ThoughtQuestGamePage() {
     }
 
     setQuestionsAnswered(q => q + 1);
-    setPreviousThoughts(prev => [...prev, thought]);
+    setPreviousThoughts(prev => [...prev, currentThought.thought]);
 
     setTimeout(() => {
-        fetchNewThought([...previousThoughts, thought]);
+        loadNextThought();
     }, 2000);
   };
 
@@ -178,9 +193,9 @@ export default function ThoughtQuestGamePage() {
       
       <div className="relative w-full max-w-lg h-64">
         <AnimatePresence>
-          {!isLoading ? (
+          {!isLoading && currentThought ? (
             <motion.div
-              key={thought || 'empty'}
+              key={currentThought.thought}
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -50, scale: 0.9 }}
@@ -189,7 +204,7 @@ export default function ThoughtQuestGamePage() {
             >
               <Card className="h-full flex flex-col justify-center items-center text-center">
                 <CardContent className="p-6 relative w-full h-full flex justify-center items-center">
-                  <p className="text-xl font-medium">"{thought}"</p>
+                  <p className="text-xl font-medium">"{currentThought.thought}"</p>
                   <AnimatePresence>
                     {feedback === 'correct' && (
                       <>
@@ -212,7 +227,7 @@ export default function ThoughtQuestGamePage() {
             </motion.div>
           ): null}
         </AnimatePresence>
-        {isLoading && (
+        {isLoading && !currentThought && (
           <div className="absolute inset-0 flex items-center justify-center">
              <Loader className="h-12 w-12 animate-spin text-primary" />
           </div>
