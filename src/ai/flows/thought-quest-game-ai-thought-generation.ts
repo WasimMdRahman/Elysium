@@ -67,6 +67,9 @@ const generateThoughtFlow = ai.defineFlow(
         const {output} = await prompt(input);
         return output!;
       } catch (error: any) {
+        if (error.message && error.message.includes('429')) {
+             throw new Error('You have exceeded the daily limit for generating thoughts. Please try again tomorrow.');
+        }
         if (error.message && error.message.includes('503')) {
           console.log(`Attempt ${i + 1} for generateThought failed with 503. Retrying...`);
           await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
