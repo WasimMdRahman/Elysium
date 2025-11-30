@@ -1,0 +1,52 @@
+
+
+.trophy-screen {
+  position: fixed;
+  inset: 0;
+  background: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
+}
+
+.trophy-container {
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-star {
+  width: 150px;
+  height: 150px;
+  filter: drop-shadow(0 0 20px hsl(var(--primary) / 0.5));
+}
+
+.message {
+  margin-top: 20px;
+  font-size: 28px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 25px;
+  height: 25px;
+}
+
+.particle-emoji {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 24px;
+  text-shadow: 0 0 10px #fff176;
+}

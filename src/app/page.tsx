@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Bot, HeartPulse, BookText, BrainCircuit } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
 const walkthroughSteps = [
     {
@@ -32,7 +33,7 @@ const walkthroughSteps = [
     }
 ];
 
-export default function WalkthroughPage() {
+export default function RootPage() {
     const [step, setStep] = useState(0);
     const [hasCompletedWalkthrough, setHasCompletedWalkthrough] = useState<boolean | null>(null);
     const router = useRouter();
